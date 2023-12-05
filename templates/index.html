@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ChordSync</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='styles/mainpage.css') }}">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('favicon') }}">
+    <link href="https://fonts.cdnfonts.com/css/the-expressions" rel="stylesheet">
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js" integrity="sha384-mZLF4UVrpi/QTWPA7BjNPEnkIfRFn4ZEO3Qt/HFklTJBj/gBOV8G3HcKn4NfQblz" crossorigin="anonymous"></script>
+    <script>
+        //////// GLOBAL VARIABLES ////////
+        // Current track time and complete track duration
+        var track_duration_ms = 0;
+        var progress_ms = 0;
+
+        // Main source
+        var main_chords_body = "";
+        var complete_source_code_found = 0;
+
+        // Flags to check for new track
+        var previous_track_id = -1;
+
+        // flat and sharp
+        var amount_of_flats = 0;
+        var amount_of_sharps = 0;
+        // 0 = none, # = sharp, b = flat
+        var current_flat_or_sharp = "0"; 
+
+        // Recommended, intital capo value for new track
+        var initial_capo_value = 0;
+
+        // Musixmatch lyrics
+        var musixmatch_lyrics_is_linesynced = 0; 
+        var found_musixmatch_lyrics = 0; 
+
+        // False = paused, True = played (String because of python backend)
+        var song_played_or_paused = "False"; 
+
+        // Autoscroll is enabled or disabled
+        var dynamic_scroll = true;
+        
+        // Line/element that is currently synced (i.e. timestamp ≈ progress_ms)
+        var current_synced_line = 0;
+        // Every line/element with "IS_SYNCED_AT:<timestamp>" ID
+        var clickable_synced_lines_array = [];
+        // Array of all existing timestamps in the modified source code
+        var clickable_synced_lines_timestamp_array = [];
+
+        // Song timeline
+        var currently_hovering_timeline = false;
+        var changed_time_via_timeline = false;
+        var clicked_on_timeline = false;
+
+        // Currently changing track (requesting static data, halt dynamic in some places)
+        var in_track_change = false;
+
+        var spotify_error = 0;
+        
+
+        //////// SLEEP/DELAY ////////
+        function sleepPromise(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+
+        //////// WEB SOCKET ////////
+        var socket = io.connect('http://' + document.domain + ':' + location.port);
+
+        socket.on('connect', () => {
+            console.log('WebSocket: Client (JavaScript) connected to Server (Python)');
+        });
+
+        // Repeat dynamic Websocket response every 250ms
+        setInterval(() => {
+            socket.emit('trackDynamicDataRequest');
+        }, 250);
+
+        //////// Websocket response for parameters that DON'T change during the song ////////
+        socket.on('trackStaticDataResponse', (track_static_data) => {
+            in_track_change = false;
+
+            spotify_error = track_static_data.spotify_error;
+            if (spotify_error == 1) {
+                document.getElementById("IDsourceCodeLink").style.opacity = "0.5";
+                document.getElementById('IDdivMainChordsWrapper').style.justifyContent = "center";
+            } else {
+                document.getElementById("IDsourceCodeLink").style.opacity = "1";
+                document.getElementById('IDdivMainChordsWrapper').style.justifyContent = "flex-start";
+            }
+
+            // Scroll to top of page when new track is loaded
+            document.getElementById("IDdivMainChordsWrapper").scrollTo(0, 0);
+
+            // Track name and artist
+            document.getElementById('IDtrackName').textContent = track_static_data.track_name;
+            document.getElementById('IDartistName').textContent = "by " + track_static_data.artist_name;
+
+            // Track album cover (image and background image)
+            if (track_static_data.album_cover_url != "") {
+                document.getElementById('IDAlbum').src = track_static_data.album_cover_url;
+                document.body.style.backgroundImage = `url(' ${track_static_data.album_cover_url} ')`;
+            } else {
+                document.getElementById('IDAlbum').src = "static/empty_album_placeholder.png"
+                document.body.style.backgroundImage = `url(' {{ url_for('static', filename='empty_album_placeholder.png') }} ')`;
+            }
+
+            // Track duration in mm:ss and ms
+            document.getElementById('IDtrackDuration').textContent = track_static_data.track_duration_m_and_s;
+            track_duration_ms = track_static_data.track_duration_ms;
+
+            // Guitar tuning
+            document.getElementById('IDguitarTuning').textContent = track_static_data.guitar_tuning;
+            
+            // Musixmatch lyrics 
+            musixmatch_lyrics_is_linesynced = track_static_data.musixmatch_lyrics_is_linesynced;
+            found_musixmatch_lyrics = track_static_data.found_musixmatch_lyrics;
+
+            if (musixmatch_lyrics_is_linesynced == 0) {
+                dynamic_scroll = false;
+            }
+
+            // Main source 
+            main_chords_body = track_static_data.main_chords_body;
+            document.getElementById('IDdivMainChords').innerHTML = main_chords_body;
+
+            // Make synced lines clickable and add hover effects
+            clickable_synced_lines_array = document.querySelectorAll(`[id*="${"IS_SYNCED_AT:"}"]`);
+            clickable_synced_lines_array.forEach((line) => {
+                let match = line.id.match(/^IS_SYNCED_AT:(.+)/);
+                if (match) {
+                    clickable_synced_lines_timestamp_array.push(parseInt(match[1]));
+                }
+
+                line.addEventListener('click', (event) => {
+                    let syncedLineID = event.target.id;
+                    let match = syncedLineID.match(/^IS_SYNCED_AT:(.+)/);
+                    if (match) {
+                        let lineTimestamp = match[1];
+                        socket.emit('jumpInsideTrack', parseInt(lineTimestamp));
+                    }
+
+                    // Scroll line instantly to center of screen
+                    try {
+                        line.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'center',
+                            inline: 'center'
+                        });
+                        line.scrollTo;
+                    } catch {
+                        console.log('%cNo current synced line available - Could not center current line', 'color: yellow; font-weight: bold;');
+                    }
+
+                    // Wait 1 second before enabling dynamic scrolling again after click on synced line
+                    sleepPromise(1000).then(() => { dynamic_scroll = true; });        
+                });
+
+                line.addEventListener('mouseover', (event) => {
+                    line.style.color = "#34df70";
+                });
+
+                line.addEventListener('mouseout', (event) => {
+                    line.style.color = "white";
+                });
+            });
+
+
+            //////// CHORDS SOURCE CODE URL AND ICON ////////
+            document.getElementById('IDsourceCodeLink').href = track_static_data.complete_source_code_link;
+            complete_source_code_found = track_static_data.complete_source_code_found;
+            if (complete_source_code_found == 1) {
+                document.getElementById('IDsourceCodeLink').querySelector('img').src = "{{ url_for('static', filename='source_icon.png') }}";
+                document.getElementById('IDdivMainChordsWrapper').style.justifyContent = "flex-start";
+            } else if (complete_source_code_found == 0) {
+                document.getElementById('IDsourceCodeLink').querySelector('img').src = "{{ url_for('static', filename='search_icon.png') }}";
+                document.getElementById('IDdivMainChordsWrapper').style.justifyContent = "center";
+            }
+
+
+            //////// CAPO ////////
+            document.getElementById('IDguitarCapo').textContent = track_static_data.guitar_capo;
+            initial_capo_value = track_static_data.guitar_capo;
+            if (initial_capo_value == 0) {
+                document.getElementById('IDcapoMinusButton').style.opacity = "0.5";
+                document.getElementById('IDcapoPlusButton').style.opacity = "1";
+            } else if (initial_capo_value == 12) {
+                document.getElementById('IDcapoMinusButton').style.opacity = "1";
+                document.getElementById('IDcapoPlusButton').style.opacity = "0.5";
+            } else {
+                document.getElementById('IDcapoMinusButton').style.opacity = "1";
+                document.getElementById('IDcapoPlusButton').style.opacity = "1";
+            }
+            document.getElementById("IDguitarCapo").style.fontWeight = "bold";
+            document.getElementById("IDguitarCapo").style.color = "#1DB954";
+
+
+            //////// FLAT OR SHARP ////////
+            let parser = new DOMParser();
+            let parsed_body = parser.parseFromString(document.getElementById('IDdivMainChords').innerHTML, "text/html");
+            let all_chords = parsed_body.getElementsByClassName("chord_span");
+            // Reset global variables
+            amount_of_flats = 0;
+            amount_of_sharps = 0;
+            current_flat_or_sharp = "0";    
+            // Count flats and sharps in source code
+            for (let i = 0; i < all_chords.length; i++) {
+                amount_of_flats += (all_chords[i].innerHTML.match(/b/g) || []).length;
+            }
+            for (let i = 0; i < all_chords.length; i++) {
+                amount_of_sharps += (all_chords[i].innerHTML.match(/#/g) || []).length;
+            }
+            if (amount_of_sharps > amount_of_flats) {
+                document.getElementById("IDsharpSymbol").style.fontWeight = "bold";
+                document.getElementById("IDsharpSymbol").style.color = "#1DB954";
+                current_flat_or_sharp = "#";
+            }
+            if (amount_of_flats > amount_of_sharps) {
+                document.getElementById("IDflatSymbol").style.fontWeight = "bold";
+                document.getElementById("IDflatSymbol").style.color = "#1DB954";
+                current_flat_or_sharp = "b";
+            }
+            if (amount_of_sharps == amount_of_flats) {
+                document.getElementById("IDsharpSymbol").style.fontWeight = "normal";
+                document.getElementById("IDsharpSymbol").style.color = "white";
+                document.getElementById("IDflatSymbol").style.fontWeight = "normal";
+                document.getElementById("IDflatSymbol").style.color = "white";
+                current_flat_or_sharp = "0";
+            }
+
+            //////// USEFUL LOGS ////////
+            console.log('%cArtist Name: ' + track_static_data.artist_name, 'color: #1DB954; font-weight: bold;');
+            console.log('%cTrack Name: ' + track_static_data.track_name, 'color: #1DB954; font-weight: bold;');
+            console.log('%cGuitar Tuning: ' + track_static_data.guitar_tuning, 'color: #1DB954; font-weight: bold;');
+            console.log('%cInitial Guitar Capo: ' + track_static_data.guitar_capo, 'color: #1DB954; font-weight: bold;');
+            console.log('%cFound Chords for Song (0/1): ' + complete_source_code_found, 'color: #1DB954; font-weight: bold;');
+            console.log('%cFound Synced Lyrics (0/1): ' + musixmatch_lyrics_is_linesynced, 'color: #1DB954; font-weight: bold;');
+
+        });
+
+        //////// Websocket response for parameters that change during the song ////////
+        socket.on('trackDynamicDataResponse', (track_dynamic_data) => {
+            // New track -> Request new static Websocket data
+            if (track_dynamic_data.track_id != previous_track_id) {
+                document.getElementById('IDdivMainChordsWrapper').style.justifyContent = "center";
+
+                in_track_change = true;
+                previous_track_id = track_dynamic_data.track_id;
+
+                console.log('%c_____________________________________', 'color: white; font-weight: bold;');
+                console.log('%cTrack ID: ' + track_dynamic_data.track_id, 'color: #1DB954; font-weight: bold;');
+
+                // Insert loading animation until overwriting in Websocket static response
+                document.getElementById('IDdivMainChords').innerHTML = '<img src="static/LoadingAnimation.gif" alt="Loading Animation" style="width: calc(120px + 0.390625vw);">';
+                main_chords_body = '<img src="static/LoadingAnimation.gif" alt="Loading Animation" style="width: calc(120px + 0.390625vw);">';
+
+                // Turn on autoscroll for every new track and scroll to top
+                dynamic_scroll = true;
+                document.getElementById("IDdivMainChordsWrapper").scrollTo(0, 0);
+                socket.emit('trackStaticDataRequest');
+            }
+
+            // Update Play/Pause button dynamically
+            if (track_dynamic_data.play_or_pause == "True") {
+                document.getElementById('IDplayAndPauseButton').src = "static/music_control/PlayedButton.png";
+                song_played_or_paused = "True";
+            } else if (track_dynamic_data.play_or_pause == "False") {
+                document.getElementById('IDplayAndPauseButton').src = "static/music_control/PausedButton.png";
+                song_played_or_paused = "False";
+            }
+
+            // Only update timeline and current time if user hasn't just clicked timeline on it or is currently hovering timeline
+            if (!clicked_on_timeline && !currently_hovering_timeline) {
+                document.getElementById('IDcurrentTime').textContent = track_dynamic_data.current_time;
+                progress_ms = track_dynamic_data.progress_ms;
+
+                let progress_ratio = progress_ms / track_duration_ms;
+                let progress_percent = Math.round(progress_ratio * 100);
+                document.getElementById('IDtimeLineFilled').style.width = progress_percent + "%";
+            }
+
+
+            //////// MAIN ALGORITHM TO PUT CURRENT LINE IN THE CENTER ////////
+            let scroll_box = document.getElementById("IDdivMainChordsWrapper");
+            let scroll_to_value = scroll_box.scrollTop;
+            // Turn of autoscroll if user scrolls manually
+            scroll_box.addEventListener("wheel", () => {
+                dynamic_scroll = false;
+            });
+            scroll_box.addEventListener("touchmove", () => {
+                dynamic_scroll = false;
+            });
+            
+            let max_scroll_value = scroll_box.scrollHeight - scroll_box.clientHeight;
+            let min_scroll_value = 0;
+
+            function calcDynamicScrolling(min_scroll_value, max_scroll_value, track_duration_ms, progress_ms, clickable_synced_lines_timestamp_array) {
+
+                clickable_synced_lines_timestamp_array.forEach((timestamp) => {
+
+                    if (Math.abs(progress_ms - timestamp) <= 200) {
+                        current_synced_line = document.getElementById("IS_SYNCED_AT:" + timestamp);
+
+                        try {
+                            current_synced_line.scrollIntoView({
+                                behavior: 'smooth',
+                                block: 'center',
+                                inline: 'center'
+                            });
+                            current_synced_line.scrollTo;
+                        } catch {
+                            console.log('%cNo current synced line available - Could not center current line', 'color: yellow; font-weight: bold;');
+                        }
+
+                    }
+                });
+            }
+
+            // Depending on wether dynamic scrolling is enabled or disabled -> change sync button appearance and enable calcDynamicScrolling() function
+            let sync_button = document.getElementById("IDsyncButton");
+            if (!dynamic_scroll && musixmatch_lyrics_is_linesynced == 1 && in_track_change == false) {
+                sync_button.src = "{{ url_for('static', filename='sync_button.png') }}";
+                sync_button.style.opacity = "0.5";
+            }
+            if (dynamic_scroll && musixmatch_lyrics_is_linesynced == 1 && in_track_change == false) {
+                calcDynamicScrolling(min_scroll_value, max_scroll_value, track_duration_ms, progress_ms, clickable_synced_lines_timestamp_array);
+                sync_button.src = "{{ url_for('static', filename='sync_button_blue.png') }}";
+                sync_button.style.opacity = "1";
+            }
+
+            // No synced lyrics available cases
+            if (!dynamic_scroll && musixmatch_lyrics_is_linesynced == 0 && in_track_change == false) {
+                document.getElementById('IDdivMainChordsWrapper').style.justifyContent = "flex-start";
+
+                document.getElementById('IDdivMainChords').innerHTML = main_chords_body;
+                sync_button.src = "{{ url_for('static', filename='sync_button.png') }}";
+                sync_button.style.opacity = "0.5";
+            }
+            // If no synced lyrics are available -> Display error message when enabling sync
+            if (dynamic_scroll && musixmatch_lyrics_is_linesynced == 0 && in_track_change == false) {
+                document.getElementById('IDdivMainChordsWrapper').style.justifyContent = "center";
+
+                // Don't also rewrite main_chords_body to persist previous content
+                document.getElementById('IDdivMainChords').innerHTML = "Syncing chords not possible for this song.";
+                sync_button.src = "{{ url_for('static', filename='sync_button_blue.png') }}";
+                sync_button.style.opacity = "1";
+            }
+
+            if (complete_source_code_found == 0) {
+                document.getElementById('IDdivMainChordsWrapper').style.justifyContent = "center";
+            }
+
+        }); 
+
+    </script>
+</head>
+
+<body>
+    <div id="IDdivSmallerBody">
+
+        <div id="IDheadlines">
+            <a href="" title="ChordSync"><h1 id="IDheadline">ChordSync</h1></a>
+            <a href="https://www.simonroedig.com/" target="_blank" title="Website: Simon Roedig"><h1 id="IDunderline">by Simon R.</h1></a>
+            <hr>
+        </div>
+
+        
+        <div id="IDdivAlbumAndTrackAndTime">
+            <div id="IDdivAlbum">
+                <img id="IDAlbum" src="static/empty_album_placeholder.png" alt="Album Cover"> 
+            </div>
+            
+            <div id="IDdivTrackAndTime">
+                <div id="IDdivTrackAndArtist">
+                    <span id="IDtrackName">{{ track_name }}</span>
+                    <span id="IDartistName">{{ artist_name }}</span>
+                </div>
+
+                <div id="IDmusicControl">
+                    <img id="IDbackButton" src="static/music_control/BackwardButton.png"/>
+                    <img id="IDplayAndPauseButton" src="static/music_control/PlayedButton.png"/>
+                    <img id="IDforwardButton" src="static/music_control/ForwardButton.png"/>
+                </div>
+                
+                <div id="IDdivTime">
+                    
+                    <div id="IDtimeLineEmpty">
+                        <div id="IDtimeLineFilled"></div> 
+                    </div>
+                    <div id="IDtimeLineEmpty2">
+                        <div id="IDtimeLineFilled2"></div> 
+                    </div>
+
+                    <div id="IDdivCurrentTime">
+                        <p><span id="IDcurrentTime">{{ minutes }}:{{ "%02d"|format(seconds) }}</span></p>
+                        <p><span id="IDtrackDuration">{{ minutes }}:{{ "%02d"|format(seconds) }}</span></p>
+                    </div>
+                
+                </div>
+                
+            </div>
+            
+        </div>
+    
+        <div id="IDdivAllChordsAndInfos">
+            <hr>
+            
+            <div id="IDdivTuningAndCapo">
+                <p>Tuning: <span id="IDguitarTuning">{{ guitar_tuning }}</span></p>
+
+                <p id="IDverticalDelimeter1">&nbsp;&nbsp;|&nbsp;&nbsp;</p>
+
+                <p id="IDcapoText">Capo:&nbsp;</p>
+                <p id="IDcapoMinusButton" onmousedown="return false" onselectstart="return false">-&nbsp;</p>
+                <p><span id="IDguitarCapo" onmousedown="return false" onselectstart="return false">{{ guitar_capo }}</span></p>
+                <p id="IDcapoPlusButton" onmousedown="return false" onselectstart="return false">&nbsp;+</p>
+
+                <p id="IDverticalDelimeter1">&nbsp;&nbsp;|&nbsp;&nbsp;</p>
+
+                <p id="IDflatOrSharp" onmousedown="return false" onselectstart="return false"><span id="IDsharpSymbol">#</span>/<span id="IDflatSymbol">b</span>&nbsp;</p>
+
+            </div>
+            
+            <hr>
+    
+            <div id="IDdivMainChordsWrapper" onmousedown="return false" onselectstart="return false">
+                <div id="IDdivMainChords">{{ main_chords_body|safe }}</div>
+            </div>
+    
+            <hr>
+
+            <div id="IDdivLoginAndSyncAndSourceCode">
+                {% if is_logged_in %}
+                    <a id="IDlogoutText" href="/logout" title="Logout"><p>&#8672; Logout</p></a>
+                {% else %}
+                    <a id="IDloginText" href="/login" title="Login"><p>&#8674; Login</p></a>
+                {% endif %}
+                <img id="IDsyncButton" src="{{ url_for('static', filename='sync_button.png') }}"/>
+                <a id="IDsourceCodeLink" href="{{ complete_source_code_link }}" target="_blank" title="Find Chords or Look Up Source"><img src="{{ url_for('static', filename='search_icon.png') }}"/></a>
+            </div>
+
+        </div>   
+    </div>
+    
+    </body>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+
+</html> 

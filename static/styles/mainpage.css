@@ -1,0 +1,363 @@
+body, p, div {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color:rgba(0,0,0,0.9);
+    backdrop-filter: blur(20px);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    background-blend-mode: darken;
+    background-clip: content-box;
+    overflow: hidden;
+}
+
+#IDdivSmallerBody {
+    color: #ffffff;
+    font-family: 'Courier New', monospace;
+    text-align: center;
+    height: 100svh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin: 0 5vw 0 5vw;
+    overflow: hidden;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #1DB954;
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #34df70;
+}
+
+
+/********************************************/
+#IDheadlines {
+    margin-top: 20px;
+}
+
+#IDheadline {
+    font-weight: bold;
+    color: #1DB954;
+    font-size: 2.3rem;
+    margin: 0;
+    float: left;
+    margin: -13px 15px 0 0;
+}
+
+#IDunderline {
+    font-weight: lighter;
+    font-family: 'The Expressions', sans-serif;                                            
+    color: #ffffff;
+    font-size: 1.3rem;
+    margin: 0;
+    padding: 0;
+    overflow-wrap: break-word;
+    float: right;
+    margin: 0 0 0 15px;
+}
+
+
+#IDdivAlbumAndTrackAndTime {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    align-content: center;
+    justify-content: center;
+    margin: 2vh 0 2vh 0;
+}
+
+#IDdivTrackAndTime {
+    margin-left: 2vw;
+    text-align: left;
+    height: 175px;
+    font-size: 2rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 400px;
+}
+
+#IDdivTrackAndArtist {
+    margin-top: 0px;
+    line-height: 1.8rem;
+}
+
+#IDtrackName {
+    font-weight: bold;
+    font-size: 2rem;
+    width: 400px;
+    display: inline-block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#IDartistName {
+    font-size: 1.3rem;
+    width: 400px;
+    display: inline-block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#IDdivCurrentTime {
+    font-size: 1.3rem;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    margin-bottom: 0;
+    padding-bottom: 0;
+    margin-top: 0.3em;
+}
+
+#IDAlbum {
+    width: auto;
+    height: 175px;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+/* Music Control */
+#IDmusicControl {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+
+#IDbackButton {
+    width: 40px;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: 0.1s ease-in-out;
+}
+
+#IDplayAndPauseButton {
+    width: 50px;
+    margin-left: 15%;
+    margin-right: 15%;
+    cursor: pointer;
+    scale: 1.0;
+    transition: 0.1s ease-in-out;
+}
+
+#IDforwardButton {
+    width: 40px;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: 0.1s ease-in-out;
+}
+
+#IDtimeLineEmpty {
+    background-color: rgb(181, 181, 181, 0.3);
+    height: 6px;
+    width: 100%;
+    border-radius: 10px;
+    cursor: pointer;
+    visibility: visible;
+    display: block;
+    margin-top: 5%;
+}
+
+#IDtimeLineFilled {
+    background-color: #1DB954;
+    opacity: 1;
+    height: 6px;
+    border-radius: 10px;
+    width: 0%;
+    visibility: visible;
+    display: block;
+    margin-top: 5%;
+}
+
+#IDtimeLineEmpty2 {
+    background-color: rgb(181, 181, 181, 0.3);
+    height: 6px;
+    width: 100%;
+    border-radius: 10px;
+    cursor: pointer;
+    visibility: hidden;
+    display: none;
+    margin-top: 5%;
+}
+
+#IDtimeLineFilled2 {
+    background-color: #1DB954;
+    opacity: 1;
+    height: 6px;
+    border-radius: 10px;
+    width: 0%;
+    visibility: hidden;
+    display: none;
+    margin-top: 5%;
+}
+
+
+/********************************************/
+#IDdivAllChordsAndInfos {
+    margin: 0px 15px 15px 15px;
+}
+
+#IDdivTuningAndCapo {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+#IDverticalDelimeter1 {
+    font-weight: bold;
+}
+
+#IDguitarTuning {
+    margin-top: 10px;
+}
+
+#IDdivMainChordsWrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    overflow-y: scroll; 
+    height: 40vh;
+    white-space: pre-line; 
+    padding: 20px; 
+    margin-top: 25px;
+    margin-bottom: 25px;
+    font-size: 1.5rem;
+    scroll-behavior: smooth;
+}
+
+.chord_span {
+    font-weight: bold;
+    margin: 0px 50px 0 50px;
+}
+
+#IDcapoMinusButton {
+    font-weight: bold;
+    cursor: pointer;
+}
+
+#IDcapoPlusButton {
+    font-weight: bold;
+    cursor: pointer;
+}
+
+#IDflatOrSharp {
+    cursor: pointer;
+}
+
+/* Colors synced lines with according algorithm path */
+/*
+.ONE_LINE_OFF_IS_ONE_UNOFF {
+    color: #1DB954;
+}
+
+.ONE_LINE_OFF_IS_MORE_UNOFF {
+    color: red !important;
+}
+
+.MORE_LINE_OFF_IS_ONE_UNOFF {
+    color: rgb(0, 115, 255) !important;
+}
+
+.LERP_LINE {
+    color:rgb(255, 56, 255);
+}
+*/
+
+.ONE_LINE_OFF_IS_ONE_UNOFF {
+    cursor: pointer;
+}
+
+.ONE_LINE_OFF_IS_MORE_UNOFF {
+    cursor: pointer;
+}
+
+.MORE_LINE_OFF_IS_ONE_UNOFF {
+    cursor: pointer;
+}
+
+.LERP_LINE {
+    cursor: pointer;
+}
+
+
+#IDdivLoginAndSyncAndSourceCode {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
+    align-content: center;
+}
+
+#IDloginText {
+    text-decoration: none;
+    color: #ffffff;
+    font-size: 1.1rem;
+    margin: 0;
+}
+
+#IDlogoutText {
+    text-decoration: none;
+    color: #ffffff;
+    font-size: 1.1rem;
+    margin: 0;
+    font-weight: lighter;
+}
+
+#IDsyncButton {
+    width: 30px;
+    transition: transform 0.2s ease-in-out; 
+    cursor: pointer;
+    transform: rotate(0deg);
+    margin: 2px 70px 0 0;
+}
+
+@media only screen and (max-width: 1200px){
+    #IDsyncButton {
+        width: 40px;
+    }
+    #IDsourceCodeLink img {
+        width: 35px;
+    }
+    #IDbackButton {
+        width: 50px;
+    }
+    
+    #IDplayAndPauseButton {
+        width: 60px;
+    }
+    
+    #IDforwardButton {
+        width: 50px;
+    }
+}
+
+#IDsourceCodeLink img {
+    width: 25px;
+    margin: 2px 0 0 0;
+    transition: transform 0.2s ease-in-out; 
+}
+
+@media (hover: hover) {
+    #IDsourceCodeLink img:hover {
+        transform: rotate(15deg) scale(0.8);;
+    }
+}
