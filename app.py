@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 import os
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
-from spotipy.oauth2 import SpotifyClientCredentials
+from spotipy.exceptions import SpotifyException
 import requests
 from flask import Flask, render_template, jsonify, request, send_from_directory, redirect, session, url_for
 from bs4 import BeautifulSoup
@@ -13,6 +13,7 @@ from fuzzywuzzy import fuzz, process
 import json
 from icecream import ic
 from flask_socketio import SocketIO, emit
+import atexit
 
 
 ######## FLASK ########
@@ -33,7 +34,7 @@ spotify_client_id = os.getenv("SPOTIFY_CLIENT_ID")
 spotify_client_secret = os.getenv("SPOTIFY_CLIENT_SECRET")
 spotify_redirect_uri = os.getenv("SPOTIFY_REDIRECT_URI")
 spotify_scope = 'user-modify-playback-state,user-read-playback-state'
-sp_oauth = SpotifyOAuth(client_id=spotify_client_id, client_secret=spotify_client_secret, redirect_uri=spotify_redirect_uri, scope=spotify_scope)
+sp_oauth = SpotifyOAuth(client_id=spotify_client_id, client_secret=spotify_client_secret, redirect_uri=spotify_redirect_uri, scope=spotify_scope, show_dialog=True, cache_path=None)
 
 
 ######## GOOGLE API ########
@@ -86,15 +87,34 @@ def login():
 @app.route('/logout')
 def logout():
     global is_logged_in
-    session.clear()  # Clearing the session data
+    # Clearing the session data
+    session.clear()  
+    
+    # Delete the Spotipy cache file
+    cache_file = '.cache'
+    if os.path.exists(cache_file):
+        os.remove(cache_file)
+        
     is_logged_in = False
     return redirect('/')  
 
 @app.route('/callback')
 def callback():
     global is_logged_in
-    is_logged_in = True
-    session['token_info'] = sp_oauth.get_access_token(request.args.get('code'))
+    error = request.args.get('error')
+    code = request.args.get('code')
+
+    if error:
+        # User declined the authorization
+        is_logged_in = False
+    elif code:
+        # User accepted the authorization, proceed to get the token
+        is_logged_in = True
+        session['token_info'] = sp_oauth.get_access_token(code)
+    else:
+        # No code and no error, handle according to your application's logic
+        is_logged_in = False
+
     return redirect('/')
 
 def refresh_token():
@@ -125,48 +145,89 @@ def handleStaticDataRequest():
 
 @socketio.on('nextSpotifyTrack')
 def nextSpotifyTrack():
-    token_info = refresh_token()
-    if token_info == 0:
+    try:
+        token_info = refresh_token()
+        if token_info == 0:
+            return redirect('/')
+        
+        spotify = spotipy.Spotify(auth=token_info['access_token'])
+        spotify.next_track()
         return redirect('/')
     
-    spotify = spotipy.Spotify(auth=token_info['access_token'])
-    spotify.next_track()
-    return redirect('/')
+    except SpotifyException as e:
+        if e.http_status == 403 and "PREMIUM_REQUIRED" in str(e):
+            emit('error_message', {'message': 'Error: Spotify Premium required for this action.'})
+        else:
+            print(f'Error: {e}')
+    except Exception as e:
+        print(f'Error: {e}')
+        return redirect('/')
+    
 
 @socketio.on('previousSpotifyTrack')
 def previousSpotifyTrack():
-    token_info = refresh_token()
-    if token_info == 0:
+    try:
+        token_info = refresh_token()
+        if token_info == 0:
+            return redirect('/')
+
+        spotify = spotipy.Spotify(auth=token_info['access_token'])
+        spotify.previous_track()
         return redirect('/')
     
-    spotify = spotipy.Spotify(auth=token_info['access_token'])
-    spotify.previous_track()
-    return redirect('/')
+    except SpotifyException as e:
+        if e.http_status == 403 and "PREMIUM_REQUIRED" in str(e):
+            emit('error_message', {'message': 'Error: Spotify Premium required for this action.'})
+        else:
+            print(f'Error: {e}')
+    except Exception as e:
+        print(f'Error: {e}')
+        return redirect('/')
 
 @socketio.on('playPauseSpotifyTrack')
 def playPauseSpotifyTrack():
-    token_info = refresh_token()
-    if token_info == 0:
+    try:
+        token_info = refresh_token()
+        if token_info == 0:
+            return redirect('/')
+        
+        spotify = spotipy.Spotify(auth=token_info['access_token'])
+        current_track = spotify.current_playback()
+        is_playing = current_track['is_playing']
+        if is_playing:
+            spotify.pause_playback()
+        else:
+            spotify.start_playback()
         return redirect('/')
     
-    spotify = spotipy.Spotify(auth=token_info['access_token'])
-    current_track = spotify.current_playback()
-    is_playing = current_track['is_playing']
-    if is_playing:
-        spotify.pause_playback()
-    else:
-        spotify.start_playback()
-    return redirect('/')
+    except SpotifyException as e:
+        if e.http_status == 403 and "PREMIUM_REQUIRED" in str(e):
+            emit('error_message', {'message': 'Error: Spotify Premium required for this action.'})
+        else:
+            print(f'Error: {e}')
+    except Exception as e:
+        print(f'Error: {e}')
+        return redirect('/')
 
 @socketio.on('jumpInsideTrack')
 def jumpInsideTrack(ms):
-    token_info = refresh_token()
-    if token_info == 0:
+    try:
+        token_info = refresh_token()
+        if token_info == 0:
+            return redirect('/')
+
+        spotify = spotipy.Spotify(auth=token_info['access_token'])
+        spotify.seek_track(ms)
         return redirect('/')
     
-    spotify = spotipy.Spotify(auth=token_info['access_token'])
-    spotify.seek_track(ms)
-    return redirect('/')
+    except SpotifyException as e:
+        if e.http_status == 403 and "PREMIUM_REQUIRED" in str(e):
+            emit('error_message', {'message': 'Error: Spotify Premium required for this action.'})
+        else:
+            print(f'Error: {e}')
+    except Exception as e:
+        print(f'Error: {e}')
+        return redirect('/')
 
 # Called by WebSocket - returns object with parameters that change during the song 
 def getTrackDynamicData():    
@@ -226,7 +287,7 @@ def getTrackStaticData():
         guitar_tuning = "E A D G B E"
         guitar_capo = "0"
                 
-        main_chords_body  = "Login first."
+        main_chords_body  = "Welcome to ChordSync. <br> Login to start."
         
         found_musixmatch_lyrics = 0
         musixmatch_lyrics_is_linesynced = 0
@@ -346,7 +407,7 @@ def getTrackStaticData():
         guitar_tuning = "E A D G B E"
         guitar_capo = "0"
                 
-        main_chords_body  = "Open Spotify somewhere first."
+        main_chords_body  = "Logged in. <br> Open Spotify somewhere and select a song."
         
         found_musixmatch_lyrics = 0
         musixmatch_lyrics_is_linesynced = 0
@@ -1083,11 +1144,22 @@ def mergeSyncedLyricsAndResidual(main_chords_body_line_array_residual_with_index
     
     except:
         print("mergeSyncedLyricsAndResidual failed")    
-  
+
+
+# Delete Spotify cash when program stops (to achieve same functionality as /logout)
+def cleanup():
+    cache_file = '.cache'
+    if os.path.exists(cache_file):
+        os.remove(cache_file)
+        
+atexit.register(cleanup)  
+
 
 ######## START FLASK SERVER ########              
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000, debug=True)
+    
+    
 
 
 

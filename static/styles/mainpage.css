@@ -322,6 +322,20 @@ body {
     font-weight: lighter;
 }
 
+@media (hover: hover) {
+    #IDloginText:hover {
+        font-weight: bold;
+        text-shadow: 0 0 15px #1DB954;
+        color: #1DB954;
+    }
+    
+    #IDlogoutText:hover {
+        font-weight: bold;
+        text-shadow: 0 0 15px #f41818;
+        color: #f41818;
+    }
+}
+
 #IDsyncButton {
     width: 30px;
     transition: transform 0.2s ease-in-out; 
