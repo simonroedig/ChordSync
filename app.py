@@ -7,7 +7,6 @@
   \_____|_| |_|\___/|_|  \__,_|_____/ \__, |_| |_|\___|
                                        __/ |           
                                       |___/            
-  
 by Simon Roedig (Mediainformatics @LMU Munich)
 Bachelor's Thesis (WS 2023/2024)
 """
