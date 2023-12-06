@@ -1,3 +1,14 @@
+
+""" 
+┏┓┓      ┓┏┓     
+┃ ┣┓┏┓┏┓┏┫┗┓┓┏┏┓┏
+┗┛┛┗┗┛┛ ┗┻┗┛┗┫┛┗┗
+             ┛   
+by Simon Roedig (Mediainformatics)
+Bachelor's Thesis (2023/2024)
+"""
+
+
 ######## IMPORTS (DUH) ########
 from dotenv import load_dotenv
 import os
