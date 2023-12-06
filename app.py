@@ -1,9 +1,14 @@
 
 """ 
-┏┓┓      ┓┏┓     
-┃ ┣┓┏┓┏┓┏┫┗┓┓┏┏┓┏
-┗┛┛┗┗┛┛ ┗┻┗┛┗┫┛┗┗
-             ┛   
+   _____ _                   _  _____                  
+  / ____| |                 | |/ ____|                 
+ | |    | |__   ___  _ __ __| | (___  _   _ _ __   ___ 
+ | |    | '_ \ / _ \| '__/ _` |\___ \| | | | '_ \ / __|
+ | |____| | | | (_) | | | (_| |____) | |_| | | | | (__ 
+  \_____|_| |_|\___/|_|  \__,_|_____/ \__, |_| |_|\___|
+                                       __/ |           
+                                      |___/            
+  
 by Simon Roedig (Mediainformatics)
 Bachelor's Thesis (2023/2024)
 """
@@ -73,6 +78,8 @@ spotify_error = 0
 
 is_logged_in = False
 
+spotify_user_name = ""
+
 
 ######## HTTP ROUTES ########
 @app.route('/favicon.ico')
@@ -87,7 +94,21 @@ def index():
         is_logged_in = False
     else:
         is_logged_in = True
-    return render_template('index.html', album_cover_url="", track_name="Track", artist_name="Artist", minutes=0, seconds=00, guitar_tuning="E A D G B E", guitar_capo="0", main_chords_body="", complete_source_code_link='javascript:void(0)', is_logged_in=is_logged_in)
+        
+    token_info = refresh_token()
+    if token_info != 0:
+        spotify = spotipy.Spotify(auth=token_info['access_token'])
+        spotify_user_name = spotify.current_user()['display_name']
+        image = spotify.current_user()['images']
+        spotify_user_image = image[0]['url'] if image else ""
+
+    else:
+        spotify_user_name = ""
+        spotify_user_image = ""
+            
+    return render_template('index.html', album_cover_url="", track_name="Track", artist_name="Artist", minutes=0, seconds=00, 
+                           guitar_tuning="E A D G B E", guitar_capo="0", main_chords_body="", complete_source_code_link='javascript:void(0)', 
+                           is_logged_in=is_logged_in, spotify_user_name=spotify_user_name, spotify_user_image=spotify_user_image)
 
 
 @app.route('/login')
@@ -252,8 +273,12 @@ def getTrackDynamicData():
         }
     spotify = spotipy.Spotify(auth=token_info['access_token'])
     
-    current_track = spotify.current_playback()
-
+    try:
+        current_track = spotify.current_playback()
+    except SpotifyException as e:
+        current_track = None
+        ic(f'Error: {e}')
+        
     if current_track is None:
         return {
             'track_id': "0",
@@ -323,7 +348,11 @@ def getTrackStaticData():
         
     spotify = spotipy.Spotify(auth=token_info['access_token'])
     
-    current_track = spotify.current_playback()
+    try:
+        current_track = spotify.current_playback()
+    except SpotifyException as e:
+        current_track = None
+        ic(f'Error: {e}')
     
     if current_track is not None:
         track_id = current_track['item']['id']
@@ -418,7 +447,7 @@ def getTrackStaticData():
         guitar_tuning = "E A D G B E"
         guitar_capo = "0"
                 
-        main_chords_body  = "Logged in. <br> Open Spotify somewhere and select a song."
+        main_chords_body  = "Open Spotify somewhere and select a song."
         
         found_musixmatch_lyrics = 0
         musixmatch_lyrics_is_linesynced = 0

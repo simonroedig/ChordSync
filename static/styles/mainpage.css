@@ -3,6 +3,10 @@ body, p, div {
     padding: 0;
 }
 
+a {
+    text-decoration: none;
+}
+
 body {
     background-color:rgba(0,0,0,0.9);
     backdrop-filter: blur(20px);
@@ -50,14 +54,65 @@ body {
     margin-top: 20px;
 }
 
+#IDheadlineAndUser {
+    display: flex;
+    flex-direction: column;
+    float: left;
+    align-items: flex-start;
+}
+
+
 #IDheadline {
     font-weight: bold;
     color: #1DB954;
     font-size: 2.3rem;
     margin: 0;
-    float: left;
     margin: -13px 15px 0 0;
 }
+
+#IDusernameAndImage {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+#IDspotifyUserImage {
+    object-fit: cover;
+    width: 30px;
+    height: 30px;
+    border-radius: 100%;
+    margin: 0 10px 0 0;
+}
+
+#IDspotifyUserName {
+    width: 8.5rem;
+    color: #ffffff;
+    font-size: 1rem;
+    margin-right: 10px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    text-align: left;
+}
+
+#IDuserNameArrow {
+    color: #ffffff;
+    font-size: 1rem;
+    margin-right: 10px;
+}
+@media (hover: hover) {
+    #IDspotifyUser:hover #IDuserNameArrow {
+        color: #1DB954;
+    }
+    #IDheadline:hover {
+        color: #34df70;
+    }
+    #IDunderline:hover {
+        font-weight: bold;
+    }
+}
+
+
 
 #IDunderline {
     font-weight: lighter;
@@ -78,7 +133,7 @@ body {
     align-items: center;
     align-content: center;
     justify-content: center;
-    margin: 2vh 0 2vh 0;
+    margin: 0 0 2vh 0;
 }
 
 #IDdivTrackAndTime {
@@ -361,6 +416,10 @@ body {
     
     #IDforwardButton {
         width: 50px;
+    }
+
+    #IDdivAlbumAndTrackAndTime {
+        margin: 2vh 0 2vh 0;
     }
 }
 

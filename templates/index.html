@@ -7,9 +7,6 @@
     <link href="https://fonts.cdnfonts.com/css/the-expressions" rel="stylesheet">
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js" integrity="sha384-mZLF4UVrpi/QTWPA7BjNPEnkIfRFn4ZEO3Qt/HFklTJBj/gBOV8G3HcKn4NfQblz" crossorigin="anonymous"></script>
     <script>
-        socket.on('error_message', function(data) {
-            alert(data.message);
-        });
         //////// GLOBAL VARIABLES ////////
         // Current track time and complete track duration
         var track_duration_ms = 0;
@@ -57,6 +54,8 @@
         var in_track_change = false;
 
         var spotify_error = 0;
+
+        var lines_hover_and_clickable = "";
         
 
         //////// SLEEP/DELAY ////////
@@ -70,6 +69,10 @@
 
         socket.on('connect', () => {
             console.log('WebSocket: Client (JavaScript) connected to Server (Python)');
+        });
+
+        socket.on('error_message', function(data) {
+            alert(data.message);
         });
 
         // Repeat dynamic Websocket response every 250ms
@@ -126,45 +129,50 @@
             document.getElementById('IDdivMainChords').innerHTML = main_chords_body;
 
             // Make synced lines clickable and add hover effects
-            clickable_synced_lines_array = document.querySelectorAll(`[id*="${"IS_SYNCED_AT:"}"]`);
-            clickable_synced_lines_array.forEach((line) => {
-                let match = line.id.match(/^IS_SYNCED_AT:(.+)/);
-                if (match) {
-                    clickable_synced_lines_timestamp_array.push(parseInt(match[1]));
-                }
-
-                line.addEventListener('click', (event) => {
-                    let syncedLineID = event.target.id;
-                    let match = syncedLineID.match(/^IS_SYNCED_AT:(.+)/);
+            lines_hover_and_clickable = function () {
+                clickable_synced_lines_array = document.querySelectorAll(`[id*="${"IS_SYNCED_AT:"}"]`);
+                clickable_synced_lines_array.forEach((line) => {
+                    let match = line.id.match(/^IS_SYNCED_AT:(.+)/);
                     if (match) {
-                        let lineTimestamp = match[1];
-                        socket.emit('jumpInsideTrack', parseInt(lineTimestamp));
+                        clickable_synced_lines_timestamp_array.push(parseInt(match[1]));
                     }
 
-                    // Scroll line instantly to center of screen
-                    try {
-                        line.scrollIntoView({
-                            behavior: 'smooth',
-                            block: 'center',
-                            inline: 'center'
-                        });
-                        line.scrollTo;
-                    } catch {
-                        console.log('%cNo current synced line available - Could not center current line', 'color: yellow; font-weight: bold;');
-                    }
+                    line.addEventListener('click', (event) => {
+                        let syncedLineID = event.target.id;
+                        let match = syncedLineID.match(/^IS_SYNCED_AT:(.+)/);
+                        if (match) {
+                            let lineTimestamp = match[1];
+                            socket.emit('jumpInsideTrack', parseInt(lineTimestamp));
+                        }
 
-                    // Wait 1 second before enabling dynamic scrolling again after click on synced line
-                    sleepPromise(1000).then(() => { dynamic_scroll = true; });        
-                });
+                        // Scroll line instantly to center of screen
+                        try {
+                            line.scrollIntoView({
+                                behavior: 'smooth',
+                                block: 'center',
+                                inline: 'center'
+                            });
+                            line.scrollTo;
+                        } catch {
+                            console.log('%cNo current synced line available - Could not center current line', 'color: yellow; font-weight: bold;');
+                        }
 
-                line.addEventListener('mouseover', (event) => {
-                    line.style.color = "#34df70";
-                });
+                        // Wait 1 second before enabling dynamic scrolling again after click on synced line
+                        sleepPromise(1000).then(() => { dynamic_scroll = true; });        
+                    });
 
-                line.addEventListener('mouseout', (event) => {
-                    line.style.color = "white";
+                    line.addEventListener('mouseover', (event) => {
+                        line.style.color = "#34df70";
+                    });
+
+                    line.addEventListener('mouseout', (event) => {
+                        line.style.color = "white";
+                    });
+
                 });
-            });
+            }
+            lines_hover_and_clickable();
+            
 
 
             //////// CHORDS SOURCE CODE URL AND ICON ////////
@@ -360,7 +368,26 @@
     <div id="IDdivSmallerBody">
 
         <div id="IDheadlines">
-            <a href="" title="ChordSync"><h1 id="IDheadline">ChordSync</h1></a>
+            <div id="IDheadlineAndUser">
+                <a href="" title="ChordSync"><h1 id="IDheadline">ChordSync</h1></a>
+
+                {% if is_logged_in %}
+                    <a href="https://www.spotify.com/" id="IDspotifyUser" target="_blank" title="Open Spotify">
+                        <div id="IDusernameAndImage">
+                            <p id="IDuserNameArrow">➤</p>
+
+                            {% if spotify_user_image == "" %}
+                                <img id="IDspotifyUserImage" src="{{ url_for('static', filename='empty_user_image.png') }}" alt="Spotify User Image">
+                            {% else %}
+                                <img id="IDspotifyUserImage" src="{{ spotify_user_image }}" alt="Spotify User Image">
+                            {% endif %}
+
+                            <p id="IDspotifyUserName">{{ spotify_user_name }}</p>
+                        </div>
+                    </a>
+                {% endif %}
+
+            </div>
             <a href="https://www.simonroedig.com/" target="_blank" title="Website: Simon Roedig"><h1 id="IDunderline">by Simon R.</h1></a>
             <hr>
         </div>
@@ -378,9 +405,9 @@
                 </div>
 
                 <div id="IDmusicControl">
-                    <img id="IDbackButton" src="static/music_control/BackwardButton.png"/>
-                    <img id="IDplayAndPauseButton" src="static/music_control/PlayedButton.png"/>
-                    <img id="IDforwardButton" src="static/music_control/ForwardButton.png"/>
+                    <img id="IDbackButton" title="Previous Song" src="static/music_control/BackwardButton.png"/>
+                    <img id="IDplayAndPauseButton" title="Play or Pause Song" src="static/music_control/PlayedButton.png"/>
+                    <img id="IDforwardButton" title="Next Song" src="static/music_control/ForwardButton.png"/>
                 </div>
                 
                 <div id="IDdivTime">
@@ -412,13 +439,13 @@
                 <p id="IDverticalDelimeter1">&nbsp;&nbsp;|&nbsp;&nbsp;</p>
 
                 <p id="IDcapoText">Capo:&nbsp;</p>
-                <p id="IDcapoMinusButton" onmousedown="return false" onselectstart="return false">-&nbsp;</p>
+                <p id="IDcapoMinusButton" title="Transpose Chords One Semitone Up" onmousedown="return false" onselectstart="return false">-&nbsp;</p>
                 <p><span id="IDguitarCapo" onmousedown="return false" onselectstart="return false">{{ guitar_capo }}</span></p>
-                <p id="IDcapoPlusButton" onmousedown="return false" onselectstart="return false">&nbsp;+</p>
+                <p id="IDcapoPlusButton" title="Tranpose Chords One Semitone Down" onmousedown="return false" onselectstart="return false">&nbsp;+</p>
 
                 <p id="IDverticalDelimeter1">&nbsp;&nbsp;|&nbsp;&nbsp;</p>
 
-                <p id="IDflatOrSharp" onmousedown="return false" onselectstart="return false"><span id="IDsharpSymbol">#</span>/<span id="IDflatSymbol">b</span>&nbsp;</p>
+                <p id="IDflatOrSharp" title="Toggle Between Sharp- and Flat Chords" onmousedown="return false" onselectstart="return false"><span id="IDsharpSymbol">#</span>/<span id="IDflatSymbol">b</span>&nbsp;</p>
 
             </div>
             
@@ -436,7 +463,7 @@
                 {% else %}
                     <a id="IDloginText" href="/login" title="Login"><p>&#8674; Login</p></a>
                 {% endif %}
-                <img id="IDsyncButton" src="{{ url_for('static', filename='sync_button.png') }}"/>
+                <img id="IDsyncButton" title="Sync or Unsync Song" src="{{ url_for('static', filename='sync_button.png') }}"/>
                 <a id="IDsourceCodeLink" href="{{ complete_source_code_link }}" target="_blank" title="Find Chords or Look Up Source"><img src="{{ url_for('static', filename='search_icon.png') }}"/></a>
             </div>
 

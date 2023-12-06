@@ -72,6 +72,8 @@ capo_minus_button.addEventListener("click", () => {
         document.getElementById("IDflatSymbol").style.color = "white";
         // Do not reasign current_flat_or_sharp to persist the previous value when changing capo afterwards again
     }
+
+    lines_hover_and_clickable();
 });
 
 // Capo plus -> transpose chords -1
@@ -140,6 +142,8 @@ capo_plus_button.addEventListener("click", () => {
         document.getElementById("IDflatSymbol").style.color = "white";
         // Do not reasign current_flat_or_sharp to persist the previous value when changing capo afterwards again
     }
+
+    lines_hover_and_clickable();
 });
 
 
@@ -244,6 +248,7 @@ flat_or_sharp_button.addEventListener("click", () => {
         document.getElementById("IDflatSymbol").style.fontWeight = "normal";
         document.getElementById("IDflatSymbol").style.color = "white";
     }
+    lines_hover_and_clickable();
 });
 
 
