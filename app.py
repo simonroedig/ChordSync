@@ -1,4 +1,3 @@
-
 """ 
    _____ _                   _  _____                  
   / ____| |                 | |/ ____|                 
@@ -9,8 +8,8 @@
                                        __/ |           
                                       |___/            
   
-by Simon Roedig (Mediainformatics)
-Bachelor's Thesis (2023/2024)
+by Simon Roedig (Mediainformatics @LMU Munich)
+Bachelor's Thesis (WS 2023/2024)
 """
 
 
