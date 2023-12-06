@@ -129,7 +129,7 @@
             document.getElementById('IDdivMainChords').innerHTML = main_chords_body;
 
             // Make synced lines clickable and add hover effects
-            lines_hover_and_clickable = function () {
+            lines_hover_and_clickable = () => {
                 clickable_synced_lines_array = document.querySelectorAll(`[id*="${"IS_SYNCED_AT:"}"]`);
                 clickable_synced_lines_array.forEach((line) => {
                     let match = line.id.match(/^IS_SYNCED_AT:(.+)/);
