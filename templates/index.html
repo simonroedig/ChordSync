@@ -56,6 +56,8 @@
         var spotify_error = 0;
 
         var lines_hover_and_clickable = "";
+
+        var sync_skip_on = 0;
         
 
         //////// SLEEP/DELAY ////////
@@ -405,6 +407,7 @@
                 </div>
 
                 <div id="IDmusicControl">
+                    <input id="IDsyncSkipToggle" type="checkbox"/>
                     <img id="IDbackButton" title="Previous Song" src="static/music_control/BackwardButton.png"/>
                     <img id="IDplayAndPauseButton" title="Play or Pause Song" src="static/music_control/PlayedButton.png"/>
                     <img id="IDforwardButton" title="Next Song" src="static/music_control/ForwardButton.png"/>
@@ -434,11 +437,14 @@
             <hr>
             
             <div id="IDdivTuningAndCapo">
-                <p>Tuning: <span id="IDguitarTuning">{{ guitar_tuning }}</span></p>
+                <!--<p>Tuning: <span id="IDguitarTuning">{{ guitar_tuning }}</span></p>-->
+                <img id="IDtuningIcon" src="static/tuning_icon.png"></img><span id="IDguitarTuning">{{ guitar_tuning }}</span>
+
 
                 <p id="IDverticalDelimeter1">&nbsp;&nbsp;|&nbsp;&nbsp;</p>
 
-                <p id="IDcapoText">Capo:&nbsp;</p>
+                <!--<p id="IDcapoText">Capo:&nbsp;</p>-->
+                <img id="IDcapoIcon" src="static/capo_icon.png"></img>
                 <p id="IDcapoMinusButton" title="Transpose Chords One Semitone Up" onmousedown="return false" onselectstart="return false">-&nbsp;</p>
                 <p><span id="IDguitarCapo" onmousedown="return false" onselectstart="return false">{{ guitar_capo }}</span></p>
                 <p id="IDcapoPlusButton" title="Tranpose Chords One Semitone Down" onmousedown="return false" onselectstart="return false">&nbsp;+</p>

@@ -78,6 +78,10 @@ is_logged_in = False
 
 spotify_user_name = ""
 
+sync_skip_on = 0
+just_clicked_skip = 0
+just_clicked_previous = 0
+
 
 ######## HTTP ROUTES ########
 @app.route('/favicon.ico')
@@ -171,10 +175,31 @@ def handleDynamicDataRequest():
     
 @socketio.on('trackStaticDataRequest')
 def handleStaticDataRequest():
+    global just_clicked_skip
+    global just_clicked_previous
+    
+    if (sync_skip_on == 1 and just_clicked_skip == 1 and complete_source_code_found == 0 and musixmatch_lyrics_is_linesynced == 0):
+        socketio.emit('nextSpotifyTrack')
+        return
+    
+    if (sync_skip_on == 1 and just_clicked_previous == 1 and complete_source_code_found == 0 and musixmatch_lyrics_is_linesynced == 0):
+        socketio.emit('previousSpotifyTrack')
+        return
+    
+    if (sync_skip_on == 1 and just_clicked_previous == 0 and just_clicked_skip == 0 and complete_source_code_found == 0 and musixmatch_lyrics_is_linesynced == 0):
+        socketio.emit('nextSpotifyTrack')
+        return
+    
+    just_clicked_skip = 0
+    just_clicked_previous = 0
+    
     emit('trackStaticDataResponse', getTrackStaticData())
 
 @socketio.on('nextSpotifyTrack')
 def nextSpotifyTrack():
+    global just_clicked_skip
+    just_clicked_skip = 1
+    
     try:
         token_info = refresh_token()
         if token_info == 0:
@@ -193,9 +218,11 @@ def nextSpotifyTrack():
         print(f'Error: {e}')
         return redirect('/')
     
-
 @socketio.on('previousSpotifyTrack')
 def previousSpotifyTrack():
+    global just_clicked_previous
+    just_clicked_previous = 1
+    
     try:
         token_info = refresh_token()
         if token_info == 0:
@@ -258,6 +285,17 @@ def jumpInsideTrack(ms):
     except Exception as e:
         print(f'Error: {e}')
         return redirect('/')
+
+@socketio.on('syncSkip')
+def syncSkip(value):
+    global sync_skip_on
+    
+    if value == 1:
+        sync_skip_on = 1
+    else:
+        sync_skip_on = 0
+    
+    ic(sync_skip_on)
 
 # Called by WebSocket - returns object with parameters that change during the song 
 def getTrackDynamicData():    

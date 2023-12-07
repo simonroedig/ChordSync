@@ -473,7 +473,20 @@ sync_button.addEventListener('click', () =>  {
 });
 
 
-
-
-
-
+var sync_skip_toggle = document.getElementById("IDsyncSkipToggle");
+sync_skip_toggle.addEventListener('click', () =>  {
+    if (spotify_error == 1) {
+        return;
+    }
+    if (sync_skip_on == 0) {
+        sync_skip_on = 1;
+        document.getElementById("IDforwardButton").src = "static/music_control/ForwardButton_Blue.png";
+        document.getElementById("IDbackButton").src = "static/music_control/BackwardButton_Blue.png";
+    }
+    else if (sync_skip_on == 1) {
+        sync_skip_on = 0;
+        document.getElementById("IDforwardButton").src = "static/music_control/ForwardButton.png";
+        document.getElementById("IDbackButton").src = "static/music_control/BackwardButton.png";
+    }
+    socket.emit('syncSkip', sync_skip_on);
+});
