@@ -443,7 +443,7 @@ body {
     z-index: 2;
     width: 20px;
     height: 16px;
-    background-image: url('/static/music_control/ForwardButton.png');
+    background-image: url('/static/img/music_control/forward_button.png');
     background-size: cover;
     left: -2px;
     top: -3px;
@@ -457,7 +457,7 @@ body {
   
 #IDsyncSkipToggle:checked:before {
     left: 18px;
-    background-image: url('/static/music_control/ForwardButton_Blue.png');
+    background-image: url('/static/img/music_control/forward_button_blue.png');
     background-size: cover;
 }
 

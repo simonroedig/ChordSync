@@ -118,8 +118,8 @@
                 document.getElementById('IDAlbum').src = track_static_data.album_cover_url;
                 document.body.style.backgroundImage = `url(' ${track_static_data.album_cover_url} ')`;
             } else {
-                document.getElementById('IDAlbum').src = "static/empty_album_placeholder.png"
-                document.body.style.backgroundImage = `url(' {{ url_for('static', filename='empty_album_placeholder.png') }} ')`;
+                document.getElementById('IDAlbum').src = "static/img/empty_album_placeholder.png"
+                document.body.style.backgroundImage = `url(' {{ url_for('static', filename='/img/empty_album_placeholder.png') }} ')`;
             }
 
             // Track duration in mm:ss and ms
@@ -192,10 +192,10 @@
             document.getElementById('IDsourceCodeLink').href = track_static_data.complete_source_code_link;
             complete_source_code_found = track_static_data.complete_source_code_found;
             if (complete_source_code_found == 1) {
-                document.getElementById('IDsourceCodeLink').querySelector('img').src = "{{ url_for('static', filename='source_icon.png') }}";
+                document.getElementById('IDsourceCodeLink').querySelector('img').src = "{{ url_for('static', filename='/img/source_icon.png') }}";
                 document.getElementById('IDdivMainChordsWrapper').style.justifyContent = "flex-start";
             } else if (complete_source_code_found == 0) {
-                document.getElementById('IDsourceCodeLink').querySelector('img').src = "{{ url_for('static', filename='search_icon.png') }}";
+                document.getElementById('IDsourceCodeLink').querySelector('img').src = "{{ url_for('static', filename='/img/search_icon.png') }}";
                 document.getElementById('IDdivMainChordsWrapper').style.justifyContent = "center";
             }
 
@@ -273,8 +273,8 @@
                 console.log('%cTrack ID: ' + track_dynamic_data.track_id, 'color: #1DB954; font-weight: bold;');
 
                 // Insert loading animation until overwriting in Websocket static response
-                document.getElementById('IDdivMainChords').innerHTML = '<img src="static/LoadingAnimation.gif" alt="Loading Animation" style="width: calc(120px + 0.390625vw);">';
-                main_chords_body = '<img src="static/LoadingAnimation.gif" alt="Loading Animation" style="width: calc(120px + 0.390625vw);">';
+                document.getElementById('IDdivMainChords').innerHTML = '<img src="static/loading_animation.gif" alt="Loading Animation" style="width: calc(120px + 0.390625vw);">';
+                main_chords_body = '<img src="static/loading_animation.gif" alt="Loading Animation" style="width: calc(120px + 0.390625vw);">';
 
                 // Turn on autoscroll for every new track and scroll to top
                 dynamic_scroll = true;
@@ -284,10 +284,10 @@
 
             // Update Play/Pause button dynamically
             if (track_dynamic_data.play_or_pause == "True") {
-                document.getElementById('IDplayAndPauseButton').src = "static/music_control/PlayedButton.png";
+                document.getElementById('IDplayAndPauseButton').src = "static/img/music_control/play_button.png";
                 song_played_or_paused = "True";
             } else if (track_dynamic_data.play_or_pause == "False") {
-                document.getElementById('IDplayAndPauseButton').src = "static/music_control/PausedButton.png";
+                document.getElementById('IDplayAndPauseButton').src = "static/img/music_control/pause_button.png";
                 song_played_or_paused = "False";
             }
 
@@ -341,12 +341,12 @@
             // Depending on wether dynamic scrolling is enabled or disabled -> change sync button appearance and enable calcDynamicScrolling() function
             let sync_button = document.getElementById("IDsyncButton");
             if (!dynamic_scroll && musixmatch_lyrics_is_linesynced == 1 && in_track_change == false) {
-                sync_button.src = "{{ url_for('static', filename='sync_button.png') }}";
+                sync_button.src = "{{ url_for('static', filename='/img/sync_button.png') }}";
                 sync_button.style.opacity = "0.5";
             }
             if (dynamic_scroll && musixmatch_lyrics_is_linesynced == 1 && in_track_change == false) {
                 calcDynamicScrolling(min_scroll_value, max_scroll_value, track_duration_ms, progress_ms, clickable_synced_lines_timestamp_array);
-                sync_button.src = "{{ url_for('static', filename='sync_button_blue.png') }}";
+                sync_button.src = "{{ url_for('static', filename='/img/sync_button_blue.png') }}";
                 sync_button.style.opacity = "1";
             }
 
@@ -355,7 +355,7 @@
                 document.getElementById('IDdivMainChordsWrapper').style.justifyContent = "flex-start";
 
                 document.getElementById('IDdivMainChords').innerHTML = main_chords_body;
-                sync_button.src = "{{ url_for('static', filename='sync_button.png') }}";
+                sync_button.src = "{{ url_for('static', filename='/img/sync_button.png') }}";
                 sync_button.style.opacity = "0.5";
             }
             // If no synced lyrics are available -> Display error message when enabling sync
@@ -364,7 +364,7 @@
 
                 // Don't also rewrite main_chords_body to persist previous content
                 document.getElementById('IDdivMainChords').innerHTML = "Syncing chords not possible for this song.";
-                sync_button.src = "{{ url_for('static', filename='sync_button_blue.png') }}";
+                sync_button.src = "{{ url_for('static', filename='/img/sync_button_blue.png') }}";
                 sync_button.style.opacity = "1";
             }
 
@@ -390,7 +390,7 @@
                             <p id="IDuserNameArrow">➤</p>
 
                             {% if spotify_user_image == "" %}
-                                <img id="IDspotifyUserImage" src="{{ url_for('static', filename='empty_user_image.png') }}" alt="Spotify User Image">
+                                <img id="IDspotifyUserImage" src="{{ url_for('static', filename='/img/empty_user_placeholder.png') }}" alt="Spotify User Image">
                             {% else %}
                                 <img id="IDspotifyUserImage" src="{{ spotify_user_image }}" alt="Spotify User Image">
                             {% endif %}
@@ -408,7 +408,7 @@
         
         <div id="IDdivAlbumAndTrackAndTime">
             <div id="IDdivAlbum">
-                <img id="IDAlbum" src="static/empty_album_placeholder.png" alt="Album Cover"> 
+                <img id="IDAlbum" src="static/img/empty_album_placeholder.png" alt="Album Cover"> 
             </div>
             
             <div id="IDdivTrackAndTime">
@@ -418,9 +418,9 @@
                 </div>
 
                 <div id="IDmusicControl">
-                    <img id="IDbackButton" title="Previous Song" src="static/music_control/BackwardButton.png"/>
-                    <img id="IDplayAndPauseButton" title="Play or Pause Song" src="static/music_control/PlayedButton.png"/>
-                    <img id="IDforwardButton" title="Next Song" src="static/music_control/ForwardButton.png"/>
+                    <img id="IDbackButton" title="Previous Song" src="static/img/music_control/back_button.png"/>
+                    <img id="IDplayAndPauseButton" title="Play or Pause Song" src="static/img/music_control/play_button.png"/>
+                    <img id="IDforwardButton" title="Next Song" src="static/img/music_control/forward_button.png"/>
                 </div>
                 
                 <div id="IDdivTime">
@@ -436,10 +436,10 @@
                         <p><span id="IDcurrentTime">{{ minutes }}:{{ "%02d"|format(seconds) }}</span></p>
 
                         <div id="IDdivSyncButtonAndTime">
+                            
                             <input id="IDsyncSkipToggle" type="checkbox"/>
 
                             <p><span id="IDtrackDuration">{{ minutes }}:{{ "%02d"|format(seconds) }}</span></p>
-
 
                         </div>
 
@@ -456,13 +456,13 @@
             
             <div id="IDdivTuningAndCapo">
                 <!--<p>Tuning: <span id="IDguitarTuning">{{ guitar_tuning }}</span></p>-->
-                <img id="IDtuningIcon" src="static/tuning_icon.png"></img><span id="IDguitarTuning">{{ guitar_tuning }}</span>
+                <img id="IDtuningIcon" src="static/img/tuning_icon.png"></img><span id="IDguitarTuning">{{ guitar_tuning }}</span>
 
 
                 <p id="IDverticalDelimeter1">&nbsp;&nbsp;|&nbsp;&nbsp;</p>
 
                 <!--<p id="IDcapoText">Capo:&nbsp;</p>-->
-                <img id="IDcapoIcon" src="static/capo_icon.png"></img>
+                <img id="IDcapoIcon" src="static/img/capo_icon.png"></img>
                 <p id="IDcapoMinusButton" title="Transpose Chords One Semitone Up" onmousedown="return false" onselectstart="return false">-&nbsp;</p>
                 <p><span id="IDguitarCapo" onmousedown="return false" onselectstart="return false">{{ guitar_capo }}</span></p>
                 <p id="IDcapoPlusButton" title="Tranpose Chords One Semitone Down" onmousedown="return false" onselectstart="return false">&nbsp;+</p>
@@ -487,8 +487,8 @@
                 {% else %}
                     <a id="IDloginText" href="/login" title="Login"><p>&#8674; Login</p></a>
                 {% endif %}
-                <img id="IDsyncButton" title="Sync or Unsync Song" src="{{ url_for('static', filename='sync_button.png') }}"/>
-                <a id="IDsourceCodeLink" href="{{ complete_source_code_link }}" target="_blank" title="Find Chords or Look Up Source"><img src="{{ url_for('static', filename='search_icon.png') }}"/></a>
+                <img id="IDsyncButton" title="Sync or Unsync Song" src="{{ url_for('static', filename='/img/sync_button.png') }}"/>
+                <a id="IDsourceCodeLink" href="{{ complete_source_code_link }}" target="_blank" title="Find Chords or Look Up Source"><img src="{{ url_for('static', filename='/img/search_icon.png') }}"/></a>
             </div>
 
         </div>   

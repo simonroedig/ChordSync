@@ -463,12 +463,12 @@ sync_button.addEventListener('click', () =>  {
 
     dynamic_scroll = !dynamic_scroll;
     if (!dynamic_scroll) {
-        sync_button.src = "static/sync_button.png";
+        sync_button.src = "static/img/sync_button.png";
         sync_button.style.opacity = "0.5";
     }
 
     if (dynamic_scroll) {
-        sync_button.src = "static/sync_button_blue.png";
+        sync_button.src = "static/img/sync_button_blue.png";
         sync_button.style.opacity = "1";
     }
 });
@@ -476,17 +476,15 @@ sync_button.addEventListener('click', () =>  {
 
 var sync_skip_toggle = document.getElementById("IDsyncSkipToggle");
 sync_skip_toggle.addEventListener('click', () =>  {
-    if (spotify_error == 1) {
-        return;
-    }
+
     if (sync_skip_on == 0) {
         sync_skip_on = 1;
-        document.getElementById("IDforwardButton").src = "static/music_control/ForwardButton_Blue.png";
-        document.getElementById("IDbackButton").src = "static/music_control/BackwardButton_Blue.png";
+        document.getElementById("IDforwardButton").src = "static/img/music_control/forward_button_blue.png";
+        document.getElementById("IDbackButton").src = "static/img/music_control/back_button_blue.png";
     }
     else if (sync_skip_on == 1) {
         sync_skip_on = 0;
-        document.getElementById("IDforwardButton").src = "static/music_control/ForwardButton.png";
-        document.getElementById("IDbackButton").src = "static/music_control/BackwardButton.png";
+        document.getElementById("IDforwardButton").src = "static/img/music_control/forward_button.png";
+        document.getElementById("IDbackButton").src = "static/img/music_control/back_button.png";
     }
 });
