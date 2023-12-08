@@ -260,11 +260,11 @@ next_spotify_track_button.addEventListener("click", () => {
 });
 next_spotify_track_button.addEventListener("mouseover", () => {
     if (!is_on_touch_device) {
-        next_spotify_track_button.style.opacity = "1";
+        next_spotify_track_button.style.scale = "1.1";
     }
 });
 next_spotify_track_button.addEventListener("mouseout", () => {
-    next_spotify_track_button.style.opacity = "0.7";
+    next_spotify_track_button.style.scale = "1";
 });
 
 // Previous Song
@@ -275,11 +275,11 @@ previous_spotify_track_button.addEventListener("click", () => {
 });
 previous_spotify_track_button.addEventListener("mouseover", () => {
     if (!is_on_touch_device) {
-        previous_spotify_track_button.style.opacity = "1";
+        previous_spotify_track_button.style.scale = "1.1";
     }
 });
 previous_spotify_track_button.addEventListener("mouseout", () => {
-    previous_spotify_track_button.style.opacity = "0.7";
+    previous_spotify_track_button.style.scale = "1";
 });
 
 // Play/Pause Song

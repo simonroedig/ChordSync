@@ -200,7 +200,7 @@ body {
 #IDbackButton {
     width: 40px;
     cursor: pointer;
-    opacity: 0.7;
+    opacity: 1;
     transition: 0.1s ease-in-out;
 }
 
@@ -216,7 +216,7 @@ body {
 #IDforwardButton {
     width: 40px;
     cursor: pointer;
-    opacity: 0.7;
+    opacity: 1;
     transition: 0.1s ease-in-out;
 }
 
@@ -228,7 +228,7 @@ body {
     cursor: pointer;
     visibility: visible;
     display: block;
-    margin-top: 5%;
+    margin-top: 3%;
 }
 
 #IDtimeLineFilled {
@@ -239,7 +239,7 @@ body {
     width: 0%;
     visibility: visible;
     display: block;
-    margin-top: 5%;
+    margin-top: 3%;
 }
 
 #IDtimeLineEmpty2 {
@@ -250,7 +250,7 @@ body {
     cursor: pointer;
     visibility: hidden;
     display: none;
-    margin-top: 5%;
+    margin-top: 3%;
 }
 
 #IDtimeLineFilled2 {
@@ -261,7 +261,7 @@ body {
     width: 0%;
     visibility: hidden;
     display: none;
-    margin-top: 5%;
+    margin-top: 3%;
 }
 
 
@@ -409,23 +409,30 @@ body {
     }
 }
 
+#IDdivSyncButtonAndTime {
+    display: flex;
+    flex-direction: row;
+}
+
 #IDsyncSkipToggle {
-    margin-left: -74px;
-    margin-right: 35px;
+    margin: 0;
+    margin-top: 3px;
+    margin-left: 10px;
+    margin-right: 10px;
+
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
     width: 40px;
-    height: 18px;
+    height: 16px;
     display: inline-block;
     position: relative;
-    border-radius: 50px;
+    border: solid 1px #ffffff;
+    border-top-right-radius: 50px;
+    border-bottom-right-radius: 50px;
     overflow: hidden;
-    outline: none;
-    border: none;
     cursor: pointer;
-    background-color: white;
-    opacity: 0.7;
+    opacity: 1;
     transition: background-color ease 0.3s;
 }
 
@@ -434,34 +441,26 @@ body {
     display: block;
     position: absolute;
     z-index: 2;
-    width: 12px;
-    height: 12px;
-    background: black;
-    left: 4px;
-    top: 3px;
-    border-radius: 50%;
-    font: 10px/10px Helvetica;
-    text-transform: uppercase;
-    font-weight: bold;
-    text-indent: -12px;
-    word-spacing: 37px;
-    color: black;
-    text-shadow: -1px -1px rgba(0,0,0,0.15);
-    white-space: nowrap;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    width: 20px;
+    height: 16px;
+    background-image: url('/static/music_control/ForwardButton.png');
+    background-size: cover;
+    left: -2px;
+    top: -3px;
     transition: all cubic-bezier(0.3, 1.5, 0.7, 1) 0.3s;
 }
   
 #IDsyncSkipToggle:checked {
-    background-color: #62dbfb;
-    opacity: 1.0;
+    border: solid 1px #62dbfb;
+    border-radius: 50px;
 }
   
 #IDsyncSkipToggle:checked:before {
-    left: 25px;
-    background: black;
-
+    left: 18px;
+    background-image: url('/static/music_control/ForwardButton_Blue.png');
+    background-size: cover;
 }
+
 
 
 @media only screen and (max-width: 1200px){
@@ -485,10 +484,6 @@ body {
 
     #IDdivAlbumAndTrackAndTime {
         margin: 2vh 0 2vh 0;
-    }
-    #IDsyncSkipToggle {
-        margin-left: -60px;
-        margin-right: 20px;
     }
 }
 
