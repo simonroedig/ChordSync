@@ -58,6 +58,7 @@
         var lines_hover_and_clickable = "";
 
         var sync_skip_on = 0;
+        var clicked_previous = 0;
         
 
         //////// SLEEP/DELAY ////////
@@ -84,6 +85,16 @@
 
         //////// Websocket response for parameters that DON'T change during the song ////////
         socket.on('trackStaticDataResponse', (track_static_data) => {
+            if (sync_skip_on == 1 && clicked_previous == 0 && (track_static_data.musixmatch_lyrics_is_linesynced == 0 || track_static_data.complete_source_code_found == 0)) {
+                socket.emit('nextSpotifyTrack');
+                return;
+            }
+            if (sync_skip_on == 1 && clicked_previous == 1 && (track_static_data.musixmatch_lyrics_is_linesynced == 0 || track_static_data.complete_source_code_found == 0)) {
+                socket.emit('previousSpotifyTrack');
+                return;
+            }
+            clicked_previous = 0;
+
             in_track_change = false;
 
             spotify_error = track_static_data.spotify_error;

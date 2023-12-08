@@ -78,10 +78,6 @@ is_logged_in = False
 
 spotify_user_name = ""
 
-sync_skip_on = 0
-just_clicked_skip = 0
-just_clicked_previous = 0
-
 
 ######## HTTP ROUTES ########
 @app.route('/favicon.ico')
@@ -175,31 +171,11 @@ def handleDynamicDataRequest():
     
 @socketio.on('trackStaticDataRequest')
 def handleStaticDataRequest():
-    global just_clicked_skip
-    global just_clicked_previous
-    
-    if (sync_skip_on == 1 and just_clicked_skip == 1 and complete_source_code_found == 0 and musixmatch_lyrics_is_linesynced == 0):
-        socketio.emit('nextSpotifyTrack')
-        return
-    
-    if (sync_skip_on == 1 and just_clicked_previous == 1 and complete_source_code_found == 0 and musixmatch_lyrics_is_linesynced == 0):
-        socketio.emit('previousSpotifyTrack')
-        return
-    
-    if (sync_skip_on == 1 and just_clicked_previous == 0 and just_clicked_skip == 0 and complete_source_code_found == 0 and musixmatch_lyrics_is_linesynced == 0):
-        socketio.emit('nextSpotifyTrack')
-        return
-    
-    just_clicked_skip = 0
-    just_clicked_previous = 0
-    
     emit('trackStaticDataResponse', getTrackStaticData())
+    
 
 @socketio.on('nextSpotifyTrack')
 def nextSpotifyTrack():
-    global just_clicked_skip
-    just_clicked_skip = 1
-    
     try:
         token_info = refresh_token()
         if token_info == 0:
@@ -220,9 +196,6 @@ def nextSpotifyTrack():
     
 @socketio.on('previousSpotifyTrack')
 def previousSpotifyTrack():
-    global just_clicked_previous
-    just_clicked_previous = 1
-    
     try:
         token_info = refresh_token()
         if token_info == 0:
@@ -286,16 +259,6 @@ def jumpInsideTrack(ms):
         print(f'Error: {e}')
         return redirect('/')
 
-@socketio.on('syncSkip')
-def syncSkip(value):
-    global sync_skip_on
-    
-    if value == 1:
-        sync_skip_on = 1
-    else:
-        sync_skip_on = 0
-    
-    ic(sync_skip_on)
 
 # Called by WebSocket - returns object with parameters that change during the song 
 def getTrackDynamicData():    
@@ -860,7 +823,7 @@ def getSyncedLyricsJson(track_id):
         response.raise_for_status() 
         origin_string = response.text
         response_json = json.loads(origin_string)
-        ic(response_json)
+        # ic(response_json)
         
         # Found lyrics but not synced
         if 'syncType' in response_json and response_json['syncType'] == 'UNSYNCED':
@@ -914,7 +877,7 @@ def insertTimestampsToMainChordsBody(synced_lyrics_tupel_array, main_chords_body
     # Add "NOTSYNCED" to each line which will then be replaced with the timestamp
     main_chords_body_line_array_lyrics_with_index_and_timestamp = [["NOTSYNCED", t[0], t[1]] for t in main_chords_body_line_array_lyrics_with_index]
     
-    ic(main_chords_body_line_array_lyrics_with_index_and_timestamp)
+    # ic(main_chords_body_line_array_lyrics_with_index_and_timestamp)
     
     # Inserts timestamps into main_chords_body_line_array_lyrics_with_index_and_timestamp by fuzzy lyrics matching
     # official_lyrics_line = Lyrics Line from MusixMatch API
@@ -1077,7 +1040,7 @@ def insertTimestampsToMainChordsBody(synced_lyrics_tupel_array, main_chords_body
     merged_array = lerpNOTSYNCEDLastLines(merged_array, track_length_ms)
     merged_array = lerpNOTSYNCEDFirstLines(merged_array)
     
-    ic(merged_array)
+    # ic(merged_array)
     
     ############################################
     

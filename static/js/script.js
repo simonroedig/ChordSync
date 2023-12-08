@@ -270,6 +270,7 @@ next_spotify_track_button.addEventListener("mouseout", () => {
 // Previous Song
 var previous_spotify_track_button = document.getElementById("IDbackButton");
 previous_spotify_track_button.addEventListener("click", () => {
+    clicked_previous = 1;
     socket.emit('previousSpotifyTrack');
 });
 previous_spotify_track_button.addEventListener("mouseover", () => {
@@ -488,5 +489,4 @@ sync_skip_toggle.addEventListener('click', () =>  {
         document.getElementById("IDforwardButton").src = "static/music_control/ForwardButton.png";
         document.getElementById("IDbackButton").src = "static/music_control/BackwardButton.png";
     }
-    socket.emit('syncSkip', sync_skip_on);
 });
