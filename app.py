@@ -132,6 +132,7 @@ def logout():
 
 @app.route('/callback')
 def callback():
+    logout()
     global is_logged_in
     error = request.args.get('error')
     code = request.args.get('code')
@@ -166,7 +167,6 @@ def refresh_token():
 @socketio.on('connect')
 def handleConnect():
     print('WebSocket: Client (JavaScript) connected to Server (Python)')
-    return redirect('/logout')  
     
 @socketio.on('trackDynamicDataRequest')
 def handleDynamicDataRequest():
