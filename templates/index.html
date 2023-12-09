@@ -81,7 +81,7 @@
         // Repeat dynamic Websocket response every 250ms
         setInterval(() => {
             socket.emit('trackDynamicDataRequest');
-        }, 30000);
+        }, 250);
 
         //////// Websocket response for parameters that DON'T change during the song ////////
         socket.on('trackStaticDataResponse', (track_static_data) => {
