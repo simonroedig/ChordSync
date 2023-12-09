@@ -165,7 +165,6 @@ def refresh_token():
 ######## WEBSOCKET ROUTES ########
 @socketio.on('connect')
 def handleConnect():
-    logout()
     print('WebSocket: Client (JavaScript) connected to Server (Python)')
     
 @socketio.on('trackDynamicDataRequest')
