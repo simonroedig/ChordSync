@@ -169,10 +169,12 @@ def handleConnect():
     
 @socketio.on('trackDynamicDataRequest')
 def handleDynamicDataRequest():
+    print('WebSocket: in handleDynamicDataRequest')
     emit('trackDynamicDataResponse', getTrackDynamicData())
     
 @socketio.on('trackStaticDataRequest')
 def handleStaticDataRequest():
+    print('WebSocket: in handleStaticDataRequest')
     emit('trackStaticDataResponse', getTrackStaticData())
     
 
