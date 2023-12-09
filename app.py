@@ -165,6 +165,14 @@ def refresh_token():
 ######## WEBSOCKET ROUTES ########
 @socketio.on('connect')
 def handleConnect():
+    # Clearing the session data
+    session.clear()  
+    
+    # Delete the Spotipy cache file
+    cache_file = '.cache'
+    if os.path.exists(cache_file):
+        os.remove(cache_file)
+        
     print('WebSocket: Client (JavaScript) connected to Server (Python)')
     
 @socketio.on('trackDynamicDataRequest')
