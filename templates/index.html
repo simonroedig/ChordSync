@@ -68,7 +68,7 @@
 
 
         //////// WEB SOCKET ////////
-        var socket = io.connect('http://' + document.domain + ':' + location.port);
+        var socket = io.connect('https://chordsync.onrender.com');
 
         socket.on('connect', () => {
             console.log('WebSocket: Client (JavaScript) connected to Server (Python)');
