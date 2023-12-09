@@ -68,7 +68,7 @@
 
 
         //////// WEB SOCKET ////////
-        var socket = io.connect('ws://chordsync.onrender.com');
+        var socket = io.connect('wss://chordsync.onrender.com');
 
         socket.on('connect', () => {
             console.log('WebSocket: Client (JavaScript) connected to Server (Python)');
@@ -80,11 +80,13 @@
 
         // Repeat dynamic Websocket response every 250ms
         setInterval(() => {
+            console.log("Trying to request Dynamic Data");
             socket.emit('trackDynamicDataRequest');
         }, 250);
 
         //////// Websocket response for parameters that DON'T change during the song ////////
         socket.on('trackStaticDataResponse', (track_static_data) => {
+            console.log("In trackStaticDataResponse");
             if (sync_skip_on == 1 && clicked_previous == 0 && (track_static_data.musixmatch_lyrics_is_linesynced == 0 || track_static_data.complete_source_code_found == 0)) {
                 socket.emit('nextSpotifyTrack');
                 return;
@@ -262,6 +264,7 @@
 
         //////// Websocket response for parameters that change during the song ////////
         socket.on('trackDynamicDataResponse', (track_dynamic_data) => {
+            console.log("In trackDynamicDataResponse");
             // New track -> Request new static Websocket data
             if (track_dynamic_data.track_id != previous_track_id) {
                 document.getElementById('IDdivMainChordsWrapper').style.justifyContent = "center";
