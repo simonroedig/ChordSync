@@ -59,6 +59,11 @@
 
         var sync_skip_on = 0;
         var clicked_previous = 0;
+
+        var sync_button = "";
+        var bottom_hr = "";
+
+        var is_on_touch_device = !!("ontouchstart" in window) || window.navigator.msMaxTouchPoints > 0;
         
 
         //////// SLEEP/DELAY ////////
@@ -67,8 +72,9 @@
         }
 
 
-        //////// WEB SOCKET ////////
-        var socket = io.connect('wss://chordsync.onrender.com');
+        //////// WEB SOCKET (Choose if Local or Production) ////////
+        var socket = io.connect('wss://chordsync.onrender.com'); // Production
+        // var socket = io.connect('http://' + document.domain + ':' + location.port); // Local
 
         socket.on('connect', () => {
             console.log('WebSocket: Client (JavaScript) connected to Server (Python)');
@@ -80,13 +86,14 @@
 
         // Repeat dynamic Websocket response every 250ms
         setInterval(() => {
-            console.log("Trying to request Dynamic Data");
             socket.emit('trackDynamicDataRequest');
         }, 250);
 
         //////// Websocket response for parameters that DON'T change during the song ////////
         socket.on('trackStaticDataResponse', (track_static_data) => {
-            console.log("In trackStaticDataResponse");
+            sync_button = document.getElementById("IDsyncButton");
+            bottom_hr = document.getElementById("IDbottomHR");
+
             if (sync_skip_on == 1 && clicked_previous == 0 && (track_static_data.musixmatch_lyrics_is_linesynced == 0 || track_static_data.complete_source_code_found == 0)) {
                 socket.emit('nextSpotifyTrack');
                 return;
@@ -137,6 +144,11 @@
 
             if (musixmatch_lyrics_is_linesynced == 0) {
                 dynamic_scroll = false;
+                document.getElementById('IDsyncAvailableIMG').style.visibility = "hidden";
+                document.getElementById('IDsyncAvailableIMG').style.display = "none";
+            } else if (musixmatch_lyrics_is_linesynced == 1) {
+                document.getElementById('IDsyncAvailableIMG').style.visibility = "visible";
+                document.getElementById('IDsyncAvailableIMG').style.display = "block";
             }
 
             // Main source 
@@ -177,11 +189,15 @@
                     });
 
                     line.addEventListener('mouseover', (event) => {
-                        line.style.color = "#34df70";
+                        if (!is_on_touch_device) {
+                            line.style.color = "#34df70";
+                        }
                     });
 
                     line.addEventListener('mouseout', (event) => {
-                        line.style.color = "white";
+                        if (!is_on_touch_device) {
+                            line.style.color = "white";
+                        }
                     });
 
                 });
@@ -264,7 +280,6 @@
 
         //////// Websocket response for parameters that change during the song ////////
         socket.on('trackDynamicDataResponse', (track_dynamic_data) => {
-            console.log("In trackDynamicDataResponse");
             // New track -> Request new static Websocket data
             if (track_dynamic_data.track_id != previous_track_id) {
                 document.getElementById('IDdivMainChordsWrapper').style.justifyContent = "center";
@@ -342,15 +357,19 @@
             }
 
             // Depending on wether dynamic scrolling is enabled or disabled -> change sync button appearance and enable calcDynamicScrolling() function
-            let sync_button = document.getElementById("IDsyncButton");
             if (!dynamic_scroll && musixmatch_lyrics_is_linesynced == 1 && in_track_change == false) {
                 sync_button.src = "{{ url_for('static', filename='/img/sync_button.png') }}";
+                sync_button.style.filter = "";
                 sync_button.style.opacity = "0.5";
+                bottom_hr.classList.remove("classHRsyncOn");
+
             }
             if (dynamic_scroll && musixmatch_lyrics_is_linesynced == 1 && in_track_change == false) {
                 calcDynamicScrolling(min_scroll_value, max_scroll_value, track_duration_ms, progress_ms, clickable_synced_lines_timestamp_array);
                 sync_button.src = "{{ url_for('static', filename='/img/sync_button_blue.png') }}";
+                sync_button.style.filter = "drop-shadow(0 0 15px #62dbfb)";
                 sync_button.style.opacity = "1";
+                bottom_hr.classList.add("classHRsyncOn");
             }
 
             // No synced lyrics available cases
@@ -359,7 +378,9 @@
 
                 document.getElementById('IDdivMainChords').innerHTML = main_chords_body;
                 sync_button.src = "{{ url_for('static', filename='/img/sync_button.png') }}";
+                sync_button.style.filter = "";
                 sync_button.style.opacity = "0.5";
+                bottom_hr.classList.remove("classHRsyncOn");
             }
             // If no synced lyrics are available -> Display error message when enabling sync
             if (dynamic_scroll && musixmatch_lyrics_is_linesynced == 0 && in_track_change == false) {
@@ -368,7 +389,9 @@
                 // Don't also rewrite main_chords_body to persist previous content
                 document.getElementById('IDdivMainChords').innerHTML = "Syncing chords not possible for this song.";
                 sync_button.src = "{{ url_for('static', filename='/img/sync_button_blue.png') }}";
+                sync_button.style.filter = "drop-shadow(0 0 15px #62dbfb)";
                 sync_button.style.opacity = "1";
+                bottom_hr.classList.add("classHRsyncOn");
             }
 
             if (complete_source_code_found == 0) {
@@ -416,7 +439,10 @@
             
             <div id="IDdivTrackAndTime">
                 <div id="IDdivTrackAndArtist">
-                    <span id="IDtrackName">{{ track_name }}</span>
+                    <div id="IDdivCheckAndTitle">
+                        <img id="IDsyncAvailableIMG" src="static/img/sync_available_check.png" title="Sync Available"> 
+                        <span id="IDtrackName">{{ track_name }}</span>
+                    </div>
                     <span id="IDartistName">{{ artist_name }}</span>
                 </div>
 
@@ -440,7 +466,7 @@
 
                         <div id="IDdivSyncButtonAndTime">
                             
-                            <input id="IDsyncSkipToggle" type="checkbox"/>
+                            <input id="IDsyncSkipToggle" type="checkbox"/ title="Turn On/Off: Show Only Syncable Songs">
 
                             <p><span id="IDtrackDuration">{{ minutes }}:{{ "%02d"|format(seconds) }}</span></p>
 
@@ -482,7 +508,7 @@
                 <div id="IDdivMainChords">{{ main_chords_body|safe }}</div>
             </div>
     
-            <hr>
+            <hr id="IDbottomHR" class="classHRsyncOn">
 
             <div id="IDdivLoginAndSyncAndSourceCode">
                 {% if is_logged_in %}

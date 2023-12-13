@@ -1,5 +1,3 @@
-var is_on_touch_device = !!("ontouchstart" in window) || window.navigator.msMaxTouchPoints > 0;
-
 //////// CAPO ////////
 var capo_minus_button = document.getElementById("IDcapoMinusButton");
 var capo_plus_button = document.getElementById("IDcapoPlusButton");
@@ -431,6 +429,7 @@ line_empty_2.addEventListener("click", (event) => {
 //////// SYNC BUTTON ////////
 var sync_button = document.getElementById("IDsyncButton");
 var sync_button_current_rotation = 0;
+var bottom_hr = document.getElementById("IDbottomHR");
 
 // Hover effects
 sync_button.addEventListener('mouseover', () =>  {
@@ -464,12 +463,16 @@ sync_button.addEventListener('click', () =>  {
     dynamic_scroll = !dynamic_scroll;
     if (!dynamic_scroll) {
         sync_button.src = "static/img/sync_button.png";
+        sync_button.style.filter = "";
         sync_button.style.opacity = "0.5";
+        bottom_hr.classList.remove("classHRsyncOn");
     }
 
     if (dynamic_scroll) {
         sync_button.src = "static/img/sync_button_blue.png";
+        sync_button.style.filter = " drop-shadow(0 0 15px #62dbfb)";
         sync_button.style.opacity = "1";
+        bottom_hr.classList.add("classHRsyncOn");
     }
 });
 
@@ -480,11 +483,15 @@ sync_skip_toggle.addEventListener('click', () =>  {
     if (sync_skip_on == 0) {
         sync_skip_on = 1;
         document.getElementById("IDforwardButton").src = "static/img/music_control/forward_button_blue.png";
+        document.getElementById("IDforwardButton").title = "Next Syncable Song";
         document.getElementById("IDbackButton").src = "static/img/music_control/back_button_blue.png";
+        document.getElementById("IDbackButton").title = "Previous Syncable Song";
     }
     else if (sync_skip_on == 1) {
         sync_skip_on = 0;
         document.getElementById("IDforwardButton").src = "static/img/music_control/forward_button.png";
+        document.getElementById("IDforwardButton").title = "Next Song";
         document.getElementById("IDbackButton").src = "static/img/music_control/back_button.png";
+        document.getElementById("IDbackButton").title = "Previous Song";
     }
 });

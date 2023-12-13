@@ -46,9 +46,18 @@ load_dotenv()
 
 
 ######## SPOTIFY API ########
+"""
+# If local development
+spotify_client_id = os.getenv("SPOTIFY_CLIENT_ID_LOCAL")
+spotify_client_secret = os.getenv("SPOTIFY_CLIENT_SECRET_LOCAL")
+spotify_redirect_uri = os.getenv("SPOTIFY_REDIRECT_URI_LOCAL")
+"""
+
+# If deployed
 spotify_client_id = os.getenv("SPOTIFY_CLIENT_ID")
 spotify_client_secret = os.getenv("SPOTIFY_CLIENT_SECRET")
 spotify_redirect_uri = os.getenv("SPOTIFY_REDIRECT_URI")
+
 spotify_scope = 'user-modify-playback-state,user-read-playback-state'
 sp_oauth = SpotifyOAuth(client_id=spotify_client_id, client_secret=spotify_client_secret, redirect_uri=spotify_redirect_uri, scope=spotify_scope, show_dialog=True, cache_path=None)
 
@@ -170,12 +179,10 @@ def handleConnect():
     
 @socketio.on('trackDynamicDataRequest')
 def handleDynamicDataRequest():
-    print('WebSocket: in handleDynamicDataRequest')
     emit('trackDynamicDataResponse', getTrackDynamicData())
     
 @socketio.on('trackStaticDataRequest')
 def handleStaticDataRequest():
-    print('WebSocket: in handleStaticDataRequest')
     emit('trackStaticDataResponse', getTrackStaticData())
     
 
@@ -481,7 +488,7 @@ def googleChords(track_name, artist_name):
     global spotify_error
     
     ### Example Response to prevent daily free Google API quota from being exceeded
-    """ 
+    """
     url = 'https://tabs.ultimate-guitar.com/tab/dekker/maybe-october-chords-4033981'
     try:
         response = requests.get(url)
@@ -815,7 +822,7 @@ def getSyncedLyricsJson(track_id):
                                'startTimeMs': '156010',
                                'syllables': [],
                                'words': ''}],
-                    'syncType': 'LINE_SYNCED'}
+                    'syncType': 'LINE_SYNCED'}, 1, 1
     """
     
     # MusixMatchs' free API doesn't include synced lyrics (i.e. timestamps) as well as just a part of the lyrics 
@@ -1199,7 +1206,8 @@ def cleanup():
 atexit.register(cleanup)  
 
 """
+# Hide next lines if in Production
 ######## START FLASK SERVER ########              
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000, debug=True)
-""" 
+"""
