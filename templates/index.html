@@ -251,11 +251,13 @@
                 amount_of_sharps += (all_chords[i].innerHTML.match(/#/g) || []).length;
             }
             if (amount_of_sharps > amount_of_flats) {
+                console.log("Hit sharps bigger flat");
                 document.getElementById("IDsharpSymbol").style.fontWeight = "bold";
                 document.getElementById("IDsharpSymbol").style.color = "#1DB954";
                 current_flat_or_sharp = "#";
             }
             if (amount_of_flats > amount_of_sharps) {
+                console.log("Hit flats bigger sharp");
                 document.getElementById("IDflatSymbol").style.fontWeight = "bold";
                 document.getElementById("IDflatSymbol").style.color = "#1DB954";
                 current_flat_or_sharp = "b";

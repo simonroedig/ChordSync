@@ -46,17 +46,17 @@ load_dotenv()
 
 
 ######## SPOTIFY API ########
+# If deployed
+spotify_client_id = os.getenv("SPOTIFY_CLIENT_ID")
+spotify_client_secret = os.getenv("SPOTIFY_CLIENT_SECRET")
+spotify_redirect_uri = os.getenv("SPOTIFY_REDIRECT_URI")
+
 """
 # If local development
 spotify_client_id = os.getenv("SPOTIFY_CLIENT_ID_LOCAL")
 spotify_client_secret = os.getenv("SPOTIFY_CLIENT_SECRET_LOCAL")
 spotify_redirect_uri = os.getenv("SPOTIFY_REDIRECT_URI_LOCAL")
 """
-
-# If deployed
-spotify_client_id = os.getenv("SPOTIFY_CLIENT_ID")
-spotify_client_secret = os.getenv("SPOTIFY_CLIENT_SECRET")
-spotify_redirect_uri = os.getenv("SPOTIFY_REDIRECT_URI")
 
 spotify_scope = 'user-modify-playback-state,user-read-playback-state'
 sp_oauth = SpotifyOAuth(client_id=spotify_client_id, client_secret=spotify_client_secret, redirect_uri=spotify_redirect_uri, scope=spotify_scope, show_dialog=True, cache_path=None)
@@ -906,13 +906,13 @@ def insertTimestampsToMainChordsBody(synced_lyrics_tupel_array, main_chords_body
             official_lyrics_line += 1
             continue
         
-        # Only alway search - for every official lyrics line - the next three unofficial lyrics lines
+        # Only alway search - for every official lyrics line - the next five unofficial lyrics lines
         # Only if first match was found (insert_hit != 0) check next three unofficial lyrics lines
         # Thus not regard any informative text in the source code before the first unofficial lyrics lines occurs
         if (insert_hit == 0):
             max_unoffical_line_iteration = len(main_chords_body_line_array_lyrics_with_index)
         else:
-            max_unoffical_line_iteration = insert_hit + 2
+            max_unoffical_line_iteration = insert_hit + 5
             if max_unoffical_line_iteration >= len(main_chords_body_line_array_lyrics_with_index):
                 max_unoffical_line_iteration = len(main_chords_body_line_array_lyrics_with_index)
                 
