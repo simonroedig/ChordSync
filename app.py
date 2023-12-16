@@ -43,20 +43,18 @@ socketio = SocketIO(app)
 
 ######## .env ########
 load_dotenv()
+dev_or_prod = os.getenv("DEV_OR_PROD")
 
 
 ######## SPOTIFY API ########
-# If deployed
-spotify_client_id = os.getenv("SPOTIFY_CLIENT_ID")
-spotify_client_secret = os.getenv("SPOTIFY_CLIENT_SECRET")
-spotify_redirect_uri = os.getenv("SPOTIFY_REDIRECT_URI")
-
-"""
-# If local development
-spotify_client_id = os.getenv("SPOTIFY_CLIENT_ID_LOCAL")
-spotify_client_secret = os.getenv("SPOTIFY_CLIENT_SECRET_LOCAL")
-spotify_redirect_uri = os.getenv("SPOTIFY_REDIRECT_URI_LOCAL")
-"""
+if (dev_or_prod == "PRODUCTION"):
+    spotify_client_id = os.getenv("SPOTIFY_CLIENT_ID")
+    spotify_client_secret = os.getenv("SPOTIFY_CLIENT_SECRET")
+    spotify_redirect_uri = os.getenv("SPOTIFY_REDIRECT_URI")
+else:
+    spotify_client_id = os.getenv("SPOTIFY_CLIENT_ID_LOCAL")
+    spotify_client_secret = os.getenv("SPOTIFY_CLIENT_SECRET_LOCAL")
+    spotify_redirect_uri = os.getenv("SPOTIFY_REDIRECT_URI_LOCAL")
 
 spotify_scope = 'user-modify-playback-state,user-read-playback-state'
 sp_oauth = SpotifyOAuth(client_id=spotify_client_id, client_secret=spotify_client_secret, redirect_uri=spotify_redirect_uri, scope=spotify_scope, show_dialog=True, cache_path=None)
@@ -117,7 +115,7 @@ def index():
             
     return render_template('index.html', album_cover_url="", track_name="Track", artist_name="Artist", minutes=0, seconds=00, 
                            guitar_tuning="E A D G B E", guitar_capo="0", main_chords_body="", complete_source_code_link='javascript:void(0)', 
-                           is_logged_in=is_logged_in, spotify_user_name=spotify_user_name, spotify_user_image=spotify_user_image)
+                           is_logged_in=is_logged_in, spotify_user_name=spotify_user_name, spotify_user_image=spotify_user_image, dev_or_prod=dev_or_prod)
 
 
 @app.route('/login')
@@ -430,6 +428,8 @@ def getTrackStaticData():
         else:
             guitar_tuning = "E A D G B E"
             guitar_capo = "0"
+            
+            spotify_error = 1
                         
             found_musixmatch_lyrics = 0
             musixmatch_lyrics_is_linesynced = 0
@@ -595,10 +595,30 @@ def extractMainChordsBody(complete_source_code):
     if match:
         result = match.group(1)
         # Modify source code to include line breaks and span tags for chords
+        result = replace_spaces_within_chords(result)
         return result.replace("\\r\\n", "<br>").replace("[ch]", '<span class="chord_span">').replace("[/ch]", "</span>").replace("[tab]", "").replace("[/tab]", "")
     else:
         return "Failed to find main chords/lyrics content of the source code"
 
+
+def replace_spaces_within_chords(input_string):
+    pattern = re.compile(r'\[tab\](\s+)\[ch\]')
+    pattern_2 = re.compile(r'\[/ch\](\s+)\[ch\]')
+
+    def replace_1(match):
+        spaces = match.group(1)
+        nbsp_replacement = '&nbsp;' * len(spaces)
+        return f'[tab]{nbsp_replacement}[ch]'
+    
+    def replace_2(match):
+        spaces = match.group(1)
+        nbsp_replacement = '&nbsp;' * len(spaces)
+        return f'[/ch]{nbsp_replacement}[ch]'
+
+    result_string_1 = re.sub(pattern, replace_1, input_string)
+    result_string_2 = re.sub(pattern_2, replace_2, result_string_1)
+
+    return result_string_2
 
 ######## MUSIXMATCH API ########
 # Returns the synced lyrics json from the musixmatch (respectively free GitHub) API
@@ -1205,9 +1225,8 @@ def cleanup():
         
 atexit.register(cleanup)  
 
-"""
-# Hide next lines if in Production
-######## START FLASK SERVER ########              
+
+######## START FLASK SERVER ########        
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=5000, debug=True)
-"""
+    if (dev_or_prod != "PRODUCTION"):
+        app.run(host="0.0.0.0", port=5000, debug=True)

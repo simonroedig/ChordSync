@@ -56,18 +56,22 @@ capo_minus_button.addEventListener("click", () => {
     if (amount_of_sharps > amount_of_flats) {
         document.getElementById("IDsharpSymbol").style.fontWeight = "bold";
         document.getElementById("IDsharpSymbol").style.color = "#1DB954";
+        document.getElementById("IDsharpSymbol").style.filter = "drop-shadow(0 0 8px #1DB954)";
         current_flat_or_sharp = "#";
     }
     if (amount_of_flats > amount_of_sharps) {
         document.getElementById("IDflatSymbol").style.fontWeight = "bold";
         document.getElementById("IDflatSymbol").style.color = "#1DB954";
+        document.getElementById("IDflatSymbol").style.filter = "drop-shadow(0 0 8px #1DB954)";
         current_flat_or_sharp = "b";
     }
     if (amount_of_sharps == amount_of_flats) {
         document.getElementById("IDsharpSymbol").style.fontWeight = "normal";
         document.getElementById("IDsharpSymbol").style.color = "white";
+        document.getElementById("IDsharpSymbol").style.filter = "";
         document.getElementById("IDflatSymbol").style.fontWeight = "normal";
         document.getElementById("IDflatSymbol").style.color = "white";
+        document.getElementById("IDflatSymbol").style.filter = "";
         // Do not reasign current_flat_or_sharp to persist the previous value when changing capo afterwards again
     }
 
@@ -126,18 +130,22 @@ capo_plus_button.addEventListener("click", () => {
     if (amount_of_sharps > amount_of_flats) {
         document.getElementById("IDsharpSymbol").style.fontWeight = "bold";
         document.getElementById("IDsharpSymbol").style.color = "#1DB954";
+        document.getElementById("IDsharpSymbol").style.filter = "drop-shadow(0 0 8px #1DB954)";
         current_flat_or_sharp = "#";
     }
     if (amount_of_flats > amount_of_sharps) {
         document.getElementById("IDflatSymbol").style.fontWeight = "bold";
         document.getElementById("IDflatSymbol").style.color = "#1DB954";
+        document.getElementById("IDflatSymbol").style.filter = "drop-shadow(0 0 8px #1DB954)";
         current_flat_or_sharp = "b";
     }
     if (amount_of_sharps == amount_of_flats) {
         document.getElementById("IDsharpSymbol").style.fontWeight = "normal";
         document.getElementById("IDsharpSymbol").style.color = "white";
+        document.getElementById("IDsharpSymbol").style.filter = "";
         document.getElementById("IDflatSymbol").style.fontWeight = "normal";
         document.getElementById("IDflatSymbol").style.color = "white";
+        document.getElementById("IDflatSymbol").style.filter = "";
         // Do not reasign current_flat_or_sharp to persist the previous value when changing capo afterwards again
     }
 
@@ -226,8 +234,10 @@ flat_or_sharp_button.addEventListener("click", () => {
 
         document.getElementById("IDsharpSymbol").style.fontWeight = "normal";
         document.getElementById("IDsharpSymbol").style.color = "white";    
+        document.getElementById("IDsharpSymbol").style.filter = "";
         document.getElementById("IDflatSymbol").style.fontWeight = "bold";
         document.getElementById("IDflatSymbol").style.color = "#1DB954";
+        document.getElementById("IDflatSymbol").style.filter = "drop-shadow(0 0 8px #1DB954)";
         
     } else if (current_flat_or_sharp == "b") {
         current_flat_or_sharp = "#";
@@ -243,8 +253,10 @@ flat_or_sharp_button.addEventListener("click", () => {
 
         document.getElementById("IDsharpSymbol").style.fontWeight = "bold";
         document.getElementById("IDsharpSymbol").style.color = "#1DB954";    
+        document.getElementById("IDsharpSymbol").style.filter = "drop-shadow(0 0 8px #1DB954)";
         document.getElementById("IDflatSymbol").style.fontWeight = "normal";
         document.getElementById("IDflatSymbol").style.color = "white";
+        document.getElementById("IDflatSymbol").style.filter = "";
     }
     lines_hover_and_clickable();
 });
@@ -327,7 +339,7 @@ line_empty.addEventListener("mousemove", (event) => {
 line_empty_2.addEventListener("mousemove", (event) => {
     currently_hovering_timeline = true;
     if (!is_on_touch_device) {
-        line_empty_2.style.transform = "scaleY(2)";
+        line_empty_2.style.transform = "scaleY(1.5)";
         line_filled_2.style.backgroundColor = "#34df70";
     }
     line_empty.style.visibility = "hidden";
@@ -429,7 +441,6 @@ line_empty_2.addEventListener("click", (event) => {
 //////// SYNC BUTTON ////////
 var sync_button = document.getElementById("IDsyncButton");
 var sync_button_current_rotation = 0;
-var bottom_hr = document.getElementById("IDbottomHR");
 
 // Hover effects
 sync_button.addEventListener('mouseover', () =>  {
@@ -466,6 +477,7 @@ sync_button.addEventListener('click', () =>  {
         sync_button.style.filter = "";
         sync_button.style.opacity = "0.5";
         bottom_hr.classList.remove("classHRsyncOn");
+        top_hr.classList.remove("classHRsyncOn");
     }
 
     if (dynamic_scroll) {
@@ -473,6 +485,7 @@ sync_button.addEventListener('click', () =>  {
         sync_button.style.filter = " drop-shadow(0 0 15px #62dbfb)";
         sync_button.style.opacity = "1";
         bottom_hr.classList.add("classHRsyncOn");
+        top_hr.classList.add("classHRsyncOn");
     }
 });
 
@@ -484,14 +497,18 @@ sync_skip_toggle.addEventListener('click', () =>  {
         sync_skip_on = 1;
         document.getElementById("IDforwardButton").src = "static/img/music_control/forward_button_blue.png";
         document.getElementById("IDforwardButton").title = "Next Syncable Song";
+        document.getElementById("IDforwardButton").style.filter = " drop-shadow(0 0 10px #62dbfb)";
         document.getElementById("IDbackButton").src = "static/img/music_control/back_button_blue.png";
         document.getElementById("IDbackButton").title = "Previous Syncable Song";
+        document.getElementById("IDbackButton").style.filter = " drop-shadow(0 0 10px #62dbfb)";
     }
     else if (sync_skip_on == 1) {
         sync_skip_on = 0;
         document.getElementById("IDforwardButton").src = "static/img/music_control/forward_button.png";
         document.getElementById("IDforwardButton").title = "Next Song";
+        document.getElementById("IDforwardButton").style.filter = "";
         document.getElementById("IDbackButton").src = "static/img/music_control/back_button.png";
         document.getElementById("IDbackButton").title = "Previous Song";
+        document.getElementById("IDbackButton").style.filter = "";
     }
 });
