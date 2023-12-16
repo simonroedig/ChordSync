@@ -74,8 +74,8 @@
 
 
         //////// WEB SOCKET ////////
-        var def_or_prod = "{{ def_or_prod }}";
-        if (def_or_prod == "PRODUCTION") {
+        var dev_or_prod = "{{ dev_or_prod }}";
+        if (dev_or_prod == "PRODUCTION") {
             console.log("In Production");
             var socket = io.connect('wss://chordsync.onrender.com');
         }

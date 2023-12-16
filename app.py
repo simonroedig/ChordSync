@@ -48,10 +48,12 @@ dev_or_prod = os.getenv("DEV_OR_PROD")
 
 ######## SPOTIFY API ########
 if (dev_or_prod == "PRODUCTION"):
+    print("In Production")
     spotify_client_id = os.getenv("SPOTIFY_CLIENT_ID")
     spotify_client_secret = os.getenv("SPOTIFY_CLIENT_SECRET")
     spotify_redirect_uri = os.getenv("SPOTIFY_REDIRECT_URI")
 else:
+    print("In Development")
     spotify_client_id = os.getenv("SPOTIFY_CLIENT_ID_LOCAL")
     spotify_client_secret = os.getenv("SPOTIFY_CLIENT_SECRET_LOCAL")
     spotify_redirect_uri = os.getenv("SPOTIFY_REDIRECT_URI_LOCAL")
@@ -112,7 +114,7 @@ def index():
     else:
         spotify_user_name = ""
         spotify_user_image = ""
-            
+
     return render_template('index.html', album_cover_url="", track_name="Track", artist_name="Artist", minutes=0, seconds=00, 
                            guitar_tuning="E A D G B E", guitar_capo="0", main_chords_body="", complete_source_code_link='javascript:void(0)', 
                            is_logged_in=is_logged_in, spotify_user_name=spotify_user_name, spotify_user_image=spotify_user_image, dev_or_prod=dev_or_prod)
