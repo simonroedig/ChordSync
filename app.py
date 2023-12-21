@@ -30,6 +30,14 @@ import json
 from icecream import ic
 from flask_socketio import SocketIO, emit
 import atexit
+import datetime
+
+timestamp = datetime.datetime.now().strftime("%d_%m_%Y__%H_%M_%S")
+log_file_path = f'logs/log__{timestamp}.txt'
+
+######## .env ########
+load_dotenv()
+dev_or_prod = os.getenv("DEV_OR_PROD")
 
 
 ######## FLASK ########
@@ -41,18 +49,13 @@ app.secret_key = os.getenv("FLASK_SECRET_KEY")
 socketio = SocketIO(app)
 
 
-######## .env ########
-load_dotenv()
-dev_or_prod = os.getenv("DEV_OR_PROD")
-
-
 ######## SPOTIFY API ########
 if (dev_or_prod == "PRODUCTION"):
     print("In Production")
     spotify_client_id = os.getenv("SPOTIFY_CLIENT_ID")
     spotify_client_secret = os.getenv("SPOTIFY_CLIENT_SECRET")
     spotify_redirect_uri = os.getenv("SPOTIFY_REDIRECT_URI")
-else:
+elif (dev_or_prod == "DEVELOPMENT"):
     print("In Development")
     spotify_client_id = os.getenv("SPOTIFY_CLIENT_ID_LOCAL")
     spotify_client_secret = os.getenv("SPOTIFY_CLIENT_SECRET_LOCAL")
@@ -372,6 +375,13 @@ def getTrackStaticData():
         track_duration_ms = current_track["item"]["duration_ms"]
         minutes, seconds = divmod(track_duration_ms / 1000, 60)
         album_cover_url = current_track['item']['album']['images'][0]['url']
+        
+        if (dev_or_prod == "DEVELOPMENT"):
+            with open(log_file_path, 'a') as file:
+                file.write(f"TRACK ID: {track_id}\n")
+                file.write(f"TRACK NAME: {track_name}\n")
+                file.write(f"ARTIST NAME: {artist_name}\n")
+    
         
         spotify_error = 0
         
@@ -1278,5 +1288,5 @@ atexit.register(cleanup)
 
 ######## START FLASK SERVER ########        
 if __name__ == '__main__':
-    if (dev_or_prod != "PRODUCTION"):
+    if (dev_or_prod == "DEVELOPMENT"):
         app.run(host="0.0.0.0", port=5000, debug=True)
