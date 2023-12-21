@@ -943,8 +943,10 @@ def insertTimestampsToMainChordsBody(synced_lyrics_tupel_array, main_chords_body
             green_path_ratio = 0
             red_path_ratio = 0
             red_path_ratio_2 = 0
+            red_path_ratio_3 = 0
             blue_path_ratio = 0
             blue_path_ratio_2 = 0
+            blue_path_ratio_3 = 0
             
             
             ### Get fuzzy ratios for all possible paths ###
@@ -974,6 +976,16 @@ def insertTimestampsToMainChordsBody(synced_lyrics_tupel_array, main_chords_body
                     if (green_path_ratio_next_next >= fuzzy_onelineofficial_is_threelineunofficial):
                         continue
                     red_path_ratio_2 = fuzzy_onelineofficial_is_threelineunofficial
+            
+            # One official lyrics line fuzzy matches four consecutive unofficial lyrics lines (RED)
+            if unofficial_lyrics_line < len(main_chords_body_line_array_lyrics_with_index)-3:
+                fuzzy_onelineofficial_is_fourlineunofficial = fuzz.ratio(synced_lyrics_tupel_array[official_lyrics_line][1].lower(), main_chords_body_line_array_lyrics_with_index[unofficial_lyrics_line][1].lower() + " " + main_chords_body_line_array_lyrics_with_index[unofficial_lyrics_line+1][1].lower() + " " + main_chords_body_line_array_lyrics_with_index[unofficial_lyrics_line+2][1].lower() + " " + main_chords_body_line_array_lyrics_with_index[unofficial_lyrics_line+3][1].lower())
+                if fuzzy_onelineofficial_is_fourlineunofficial >= 70:
+                    # Analog to previous Red Path
+                    green_path_ratio_next_next_next = fuzz.ratio(synced_lyrics_tupel_array[official_lyrics_line][1].lower(), main_chords_body_line_array_lyrics_with_index[unofficial_lyrics_line+3][1].lower())
+                    if (green_path_ratio_next_next_next >= fuzzy_onelineofficial_is_fourlineunofficial):
+                        continue
+                    red_path_ratio_3 = fuzzy_onelineofficial_is_fourlineunofficial
                     
             # Two consecutive official lyric lines fuzzy matches one unofficial lyric line (BLUE)
             if official_lyrics_line < len(synced_lyrics_tupel_array)-1:
@@ -987,18 +999,24 @@ def insertTimestampsToMainChordsBody(synced_lyrics_tupel_array, main_chords_body
                 if fuzzy_threelineofficial_is_onelineunofficial >= 70:
                     blue_path_ratio_2 = fuzzy_threelineofficial_is_onelineunofficial
                     
+            # Four consecutive official lyric lines fuzzy matches one unofficial lyric line (BLUE)
+            if official_lyrics_line < len(synced_lyrics_tupel_array)-3:
+                fuzzy_fourlineofficial_is_onelineunofficial = fuzz.ratio(synced_lyrics_tupel_array[official_lyrics_line][1].lower() + " " + synced_lyrics_tupel_array[official_lyrics_line+1][1].lower() + " " + synced_lyrics_tupel_array[official_lyrics_line+2][1].lower() + " " + synced_lyrics_tupel_array[official_lyrics_line+3][1].lower(), main_chords_body_line_array_lyrics_with_index[unofficial_lyrics_line][1].lower())
+                if fuzzy_fourlineofficial_is_onelineunofficial >= 70:
+                    blue_path_ratio_3 = fuzzy_fourlineofficial_is_onelineunofficial
+                    
             
-            ### Decide which path to take ###
+            ### Decide which path to take ### #########################################################
                     
             # GREEN PATH
-            if green_path_ratio > red_path_ratio and green_path_ratio > blue_path_ratio and green_path_ratio > blue_path_ratio_2 and green_path_ratio > red_path_ratio_2:
+            if green_path_ratio > red_path_ratio and green_path_ratio > blue_path_ratio and green_path_ratio > blue_path_ratio_2 and green_path_ratio > red_path_ratio_2 and green_path_ratio > red_path_ratio_3 and green_path_ratio > blue_path_ratio_3:
                 main_chords_body_line_array_lyrics_with_index_and_timestamp[unofficial_lyrics_line][0] = str(synced_lyrics_tupel_array[official_lyrics_line][0]) + "\" class='ONE_LINE_OFF_IS_ONE_UNOFF'"
                 amm_of_lines_succ_synced += 1
                 insert_hit = unofficial_lyrics_line + 1
                 break
             
             # RED PATH
-            elif red_path_ratio > green_path_ratio and red_path_ratio > blue_path_ratio and red_path_ratio > blue_path_ratio_2 and red_path_ratio > red_path_ratio_2:
+            elif red_path_ratio > green_path_ratio and red_path_ratio > blue_path_ratio and red_path_ratio > blue_path_ratio_2 and red_path_ratio > red_path_ratio_2 and red_path_ratio > red_path_ratio_3 and red_path_ratio > blue_path_ratio_3:
                 # Mean of two timestamps and its delta plus
                 try:
                     timestamp_for_second_line = ((synced_lyrics_tupel_array[official_lyrics_line][0] + synced_lyrics_tupel_array[official_lyrics_line + 1][0]) / 2) - synced_lyrics_tupel_array[official_lyrics_line][0]
@@ -1013,11 +1031,11 @@ def insertTimestampsToMainChordsBody(synced_lyrics_tupel_array, main_chords_body
                 break
             
             # RED PATH 2
-            elif red_path_ratio_2 > green_path_ratio and red_path_ratio_2 > blue_path_ratio and red_path_ratio_2 > blue_path_ratio_2 and red_path_ratio_2 > red_path_ratio:
+            elif red_path_ratio_2 > green_path_ratio and red_path_ratio_2 > blue_path_ratio and red_path_ratio_2 > blue_path_ratio_2 and red_path_ratio_2 > red_path_ratio and red_path_ratio_2 > red_path_ratio_3 and red_path_ratio_2 > blue_path_ratio_3:
                 # Disperse timstamps by 1/3 and 2/3 of the delta
                 try:
                     timestamp_for_second_line = ((synced_lyrics_tupel_array[official_lyrics_line][0] + (1/3) * (synced_lyrics_tupel_array[official_lyrics_line + 1][0] - synced_lyrics_tupel_array[official_lyrics_line][0]))) - synced_lyrics_tupel_array[official_lyrics_line][0]
-                    timestamp_for_third_line = ((synced_lyrics_tupel_array[official_lyrics_line][0] + (2/3) * (synced_lyrics_tupel_array[official_lyrics_line + 1][0] - synced_lyrics_tupel_array[official_lyrics_line][0]))) - synced_lyrics_tupel_array[official_lyrics_line][0]
+                    timestamp_for_third_line =  ((synced_lyrics_tupel_array[official_lyrics_line][0] + (2/3) * (synced_lyrics_tupel_array[official_lyrics_line + 1][0] - synced_lyrics_tupel_array[official_lyrics_line][0]))) - synced_lyrics_tupel_array[official_lyrics_line][0]
                 except:
                     timestamp_for_second_line = 1500
                     timestamp_for_third_line = 3000
@@ -1030,8 +1048,29 @@ def insertTimestampsToMainChordsBody(synced_lyrics_tupel_array, main_chords_body
                 insert_hit = unofficial_lyrics_line + 3
                 break
             
+            # RED PATH 3
+            elif red_path_ratio_3 > green_path_ratio and red_path_ratio_3 > blue_path_ratio and red_path_ratio_3 > blue_path_ratio_2 and red_path_ratio_3 > red_path_ratio and red_path_ratio_3 > red_path_ratio_2 and red_path_ratio_3 > blue_path_ratio_3:
+                # Disperse timstamps by 1/4 and 2/4 and 3/4 of the delta
+                try:
+                    timestamp_for_second_line = ((synced_lyrics_tupel_array[official_lyrics_line][0] + (1/4) * (synced_lyrics_tupel_array[official_lyrics_line + 1][0] - synced_lyrics_tupel_array[official_lyrics_line][0]))) - synced_lyrics_tupel_array[official_lyrics_line][0]
+                    timestamp_for_third_line =  ((synced_lyrics_tupel_array[official_lyrics_line][0] + (2/4) * (synced_lyrics_tupel_array[official_lyrics_line + 1][0] - synced_lyrics_tupel_array[official_lyrics_line][0]))) - synced_lyrics_tupel_array[official_lyrics_line][0]
+                    timestamp_for_fourth_line = ((synced_lyrics_tupel_array[official_lyrics_line][0] + (3/4) * (synced_lyrics_tupel_array[official_lyrics_line + 1][0] - synced_lyrics_tupel_array[official_lyrics_line][0]))) - synced_lyrics_tupel_array[official_lyrics_line][0]
+                except:
+                    timestamp_for_second_line = 1500
+                    timestamp_for_third_line = 3000
+                    timestamp_for_fourth_line = 4500
+                
+                main_chords_body_line_array_lyrics_with_index_and_timestamp[unofficial_lyrics_line][0] = str(synced_lyrics_tupel_array[official_lyrics_line][0]) + "\" class='ONE_LINE_OFF_IS_MORE_UNOFF'"
+                main_chords_body_line_array_lyrics_with_index_and_timestamp[unofficial_lyrics_line+1][0] = str(synced_lyrics_tupel_array[official_lyrics_line][0] + timestamp_for_second_line) + "\" class='ONE_LINE_OFF_IS_MORE_UNOFF'"
+                main_chords_body_line_array_lyrics_with_index_and_timestamp[unofficial_lyrics_line+2][0] = str(synced_lyrics_tupel_array[official_lyrics_line][0] + timestamp_for_third_line) + "\" class='ONE_LINE_OFF_IS_MORE_UNOFF'"
+                main_chords_body_line_array_lyrics_with_index_and_timestamp[unofficial_lyrics_line+3][0] = str(synced_lyrics_tupel_array[official_lyrics_line][0] + timestamp_for_fourth_line) + "\" class='ONE_LINE_OFF_IS_MORE_UNOFF'"
+                
+                amm_of_lines_succ_synced += 1
+                insert_hit = unofficial_lyrics_line + 4
+                break
+            
             # BLUE PATH
-            elif blue_path_ratio > green_path_ratio and blue_path_ratio > red_path_ratio and blue_path_ratio > blue_path_ratio_2 and blue_path_ratio > red_path_ratio_2:
+            elif blue_path_ratio > green_path_ratio and blue_path_ratio > red_path_ratio and blue_path_ratio > blue_path_ratio_2 and blue_path_ratio > red_path_ratio_2 and blue_path_ratio > red_path_ratio_3 and blue_path_ratio > blue_path_ratio_3:
                 main_chords_body_line_array_lyrics_with_index_and_timestamp[unofficial_lyrics_line][0] = str(synced_lyrics_tupel_array[official_lyrics_line][0]) + "\" class='MORE_LINE_OFF_IS_ONE_UNOFF'"
                 amm_of_lines_succ_synced += 2
                 insert_hit = unofficial_lyrics_line + 1
@@ -1040,12 +1079,21 @@ def insertTimestampsToMainChordsBody(synced_lyrics_tupel_array, main_chords_body
                 break  
             
             # BLUE PATH 2
-            elif blue_path_ratio_2 > green_path_ratio and blue_path_ratio_2 > red_path_ratio and blue_path_ratio_2 > blue_path_ratio and blue_path_ratio_2 > red_path_ratio_2:
+            elif blue_path_ratio_2 > green_path_ratio and blue_path_ratio_2 > red_path_ratio and blue_path_ratio_2 > blue_path_ratio and blue_path_ratio_2 > red_path_ratio_2 and blue_path_ratio_2 > red_path_ratio_3 and blue_path_ratio_2 > blue_path_ratio_3:
                 main_chords_body_line_array_lyrics_with_index_and_timestamp[unofficial_lyrics_line][0] = str(synced_lyrics_tupel_array[official_lyrics_line][0]) + "\" class='MORE_LINE_OFF_IS_ONE_UNOFF'"
                 amm_of_lines_succ_synced += 3
                 insert_hit = unofficial_lyrics_line + 1
                 # Skip next two official lyrics lines
                 official_lyrics_line += 2
+                break
+            
+            # BLUE PATH 3
+            elif blue_path_ratio_3 > green_path_ratio and blue_path_ratio_3 > red_path_ratio and blue_path_ratio_3 > red_path_ratio_2 and blue_path_ratio_3 > red_path_ratio_3 and blue_path_ratio_3 > blue_path_ratio and blue_path_ratio_3 > blue_path_ratio_2:
+                main_chords_body_line_array_lyrics_with_index_and_timestamp[unofficial_lyrics_line][0] = str(synced_lyrics_tupel_array[official_lyrics_line][0]) + "\" class='MORE_LINE_OFF_IS_ONE_UNOFF'"
+                amm_of_lines_succ_synced += 4
+                insert_hit = unofficial_lyrics_line + 1
+                # Skip next two official lyrics lines
+                official_lyrics_line += 3
                 break
              
         official_lyrics_line += 1             

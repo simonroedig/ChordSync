@@ -1,7 +1,7 @@
 from fuzzywuzzy import fuzz, process
+from icecream import ic
 
-title = 'Sorry About The Carpet Chords by Agar Agar '
-track_name = 'Sorry About The Carpet Remastered 2011'
-artist_name = 'Agar Agar 2'
+official_lyrics_line = 'This is a test'
+unofficial_lyrics_line = 'This is a tost'
 
-print(fuzz.partial_ratio(title, track_name))
+ic(fuzz.ratio(official_lyrics_line, unofficial_lyrics_line))
