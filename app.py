@@ -31,6 +31,7 @@ from icecream import ic
 from flask_socketio import SocketIO, emit
 import atexit
 import datetime
+import html
 
 timestamp = datetime.datetime.now().strftime("%d_%m_%Y__%H_%M_%S")
 log_file_path = f'logs/log__{timestamp}.txt'
@@ -399,13 +400,14 @@ def getTrackStaticData():
         
         spotify_error = 0
         
-        complete_source_code, complete_source_code_link, complete_source_code_found = googleChords(track_name, artist_name)
+        complete_source_code, complete_source_code_link, complete_source_code_found, result_index = googleChords(track_name, artist_name)
         main_chords_body = complete_source_code;
         
         if dev_or_prod == "DEVELOPMENT":
             with open(log_file_path, 'a') as file:
                 file.write(f"FOUND ULTIMATE GUITAR CHORDS: {'YES' if complete_source_code_found else 'NO'}\n")
                 file.write(f"ULTIMATE GUITAR URL: {complete_source_code_link}\n")
+                file.write(f"GOOGLE RESULT INDEX: {result_index}\n")
                 file.write(f"-----\n")
                 
         
@@ -556,6 +558,8 @@ def googleChords(track_name, artist_name):
     search_url = f"https://www.googleapis.com/customsearch/v1?key={google_api_key}&cx={google_search_engine_id}&q={query}"
     
     desired_url_substring = 'tabs.ultimate-guitar.com/tab'
+    
+    result_index = 0
 
     try:
         #raise Exception("To not succeed daily free Google API quota -> Raise Exception to respond with example source code")
@@ -565,8 +569,10 @@ def googleChords(track_name, artist_name):
                 
         if 'items' in search_results and len(search_results['items']) > 0:
             
-            # Iterate over the (first five) search results 
-            for result in search_results['items'][:5]:
+            # Iterate over the (first ten) search results 
+            for result in search_results['items'][:10]:
+                result_index += 1
+                
                 link = result.get('link', '')
                 ic('POSSIBLE LINK: ' + link)
                 
@@ -585,26 +591,33 @@ def googleChords(track_name, artist_name):
                     # Check if the found Ultimate Guitar link depicts the desired song
                     # The title on Ultimate Guitar may look something like this: <title>BREATHE CHORDS (ver 2) by Pink Floyd @ Ultimate-Guitar.Com</title>
                     # Fuzzy check if this title contains the song name and artist name (remove "version", "Ultimate-Guitar.Com",...) for better fuyy matching
-                    title_text_no_ver = re.sub(r'\(ver \d+\)', '', title_text)
+                    title_text_no_ver = (re.sub(r'\(ver \d+\)', '', title_text)).replace("  ", " ")
                     title_text_no_ue = title_text_no_ver.replace(" @ Ultimate-Guitar.Com", "")
+                    title_text_no_ue = title_text_no_ue.lower()
                     
-                    if ((title_text_no_ue.lower().find("chords") != -1) 
+                    title_text_no_ue_chord_tab = title_text_no_ue.replace("chords", "").replace("chord", "").replace("tab", "").replace("tabs", "")
+                    track_name_on_ue = title_text_no_ue_chord_tab.replace(f"by {artist_name.lower()}")
+                    artist_name_on_ue = title_text_no_ue_chord_tab.replace(f"{track_name.lower()} by ")
+                    ic(track_name_on_ue)
+                    ic(artist_name_on_ue)
+                    #TODO
+                    if ((title_text_no_ue.find("chords") != -1) 
                         and (fuzz.partial_ratio(title_text_no_ue.lower(), track_name.lower().replace('remastered', '').replace('remaster', '').replace('version', '')) >= 40) 
                         and (fuzz.partial_ratio(title_text_no_ue.lower(), artist_name.lower()) >= 60)):
                         
-                        return source_code, link, 1
+                        return source_code, link, 1, result_index
                 
             ic("COULDN'T FIND ANY CHORDS FOR THAT SONG")
-            return "Couldn't find chords for that song.", "https://www.google.de/search?q=" + query, 0
+            return "Couldn't find chords for that song.", "https://www.google.de/search?q=" + query, 0, 0
         
         else:
             ic("GOOGLE SEARCH FOR CHORDS FAILED")
-            return "Google for chords failed.", "https://www.google.de/search?q=" + query, 0
+            return "Google for chords failed.", "https://www.google.de/search?q=" + query, 0, 0
         
     except Exception as e:
         ic("Probably exceeded daily free Google API quota")
         ic(f"Error: {e}")
-        return "Google for chords failed - daily quota exceeded.", "https://www.google.de/search?q=" + query, 0
+        return "Google for chords failed - daily quota exceeded.", "https://www.google.de/search?q=" + query, 0, 0
         #return example_source()
 
 # Returns the tuning values of the guitar, e.g. "E A D G B E"
@@ -688,7 +701,7 @@ def getSyncedLyricsJson(track_id):
             response.raise_for_status() 
             origin_string = response.text
             response_json = json.loads(origin_string)
-            ic(response_json)
+            # ic(response_json)
             
             # Found lyrics but not synced
             if 'syncType' in response_json and response_json['syncType'] == 'UNSYNCED':
@@ -721,7 +734,7 @@ def getSyncedLyricsJson(track_id):
         try:
             original_json = selfmade_spotify_lyrics.getLyrics(track_id)
             response_json = {'lines': original_json['lyrics']['lines'], "syncType":  original_json['lyrics']['syncType']}
-            ic(response_json)
+            # ic(response_json)
             
             # Found lyrics but not synced
             if 'syncType' in response_json and response_json['syncType'] == 'UNSYNCED':
@@ -771,13 +784,14 @@ def insertTimestampsToMainChordsBody(synced_lyrics_tupel_array, main_chords_body
     # Array of all new lines in the source code  
     main_chords_body_line_array = main_chords_body.split("<br>")
     
-    # Array of occurences of "only" real lyrics line from Ultimate Guitar with index where it occurs
+    # Array of occurences of "only" real lyrics line from Ultimate Guitar with index where it occurs (unescape html to make e.g. Steht&#039;s -> Steht's)
     main_chords_body_line_array_lyrics_with_index = [
-        [index, line] for index, line in enumerate(main_chords_body_line_array)
+        [index, html.unescape(line)] for index, line in enumerate(main_chords_body_line_array)
         if not (line == "" or "chord_span" in line or "[" in line or "]" in line or "|-" in line or "-|" in line or "capo" in line.lower() or "n.c." in line.lower() or "tuning" in line.lower())
     ]
+    
     # Add "NOTSYNCED" to each line which will then be replaced with the timestamp
-    main_chords_body_line_array_lyrics_with_index_and_timestamp = [["NOTSYNCED", t[0], t[1]] for t in main_chords_body_line_array_lyrics_with_index]
+    main_chords_body_line_array_lyrics_with_index_and_timestamp = [["NOTSYNCED", t[0], html.unescape(t[1])] for t in main_chords_body_line_array_lyrics_with_index]
     
     # ic(main_chords_body_line_array_lyrics_with_index_and_timestamp)
     
@@ -1008,22 +1022,23 @@ def insertTimestampsToMainChordsBody(synced_lyrics_tupel_array, main_chords_body
             with open(log_file_path, 'a') as file:
                 file.write(f"AMMOUNT OF MUSIXMATCH LYRICS TO SYNC (without empty or note): {amm_of_lines_to_sync}\n")
                 file.write(f"AMMOUNT OF SUCCESSFULLY SYNCED MUSIXMATCH LYRICS: {amm_of_lines_succ_synced}\n")
+                file.write(f"SYNC RATIO: {round((amm_of_lines_succ_synced/amm_of_lines_to_sync)*100, 2)}%\n")
                 file.write(f"GREEN PATH AMMOUNT: {green_path_ratio_COUNTER}\n")
                 file.write(f"RED PATH AMMOUNT: {red_path_ratio_COUNTER}\n")
                 file.write(f"RED PATH 2 AMMOUNT: {red_path_ratio_2_COUNTER}\n")
                 file.write(f"RED PATH 3 AMMOUNT: {red_path_ratio_3_COUNTER}\n")
                 file.write(f"BLUE PATH AMMOUNT: {blue_path_ratio_COUNTER}\n")
                 file.write(f"BLUE PATH 2 AMMOUNT: {blue_path_ratio_2_COUNTER}\n")
-                file.write(f"BLUE PATH 3 AMMOUNT: {blue_path_ratio_3_COUNTER}\n")
-                file.write(f"-----\n")           
+                file.write(f"BLUE PATH 3 AMMOUNT: {blue_path_ratio_3_COUNTER}\n")     
                 
-                
+    """
     ### Interpolate timestamps for lyrics lines that couldn't be matched ###
     main_chords_body_line_array_lyrics_with_index_and_timestamp = lerpNOTSYNCEDWithin(main_chords_body_line_array_lyrics_with_index_and_timestamp)
     # Don't call last and first interpolation, as there might be just chords at end and beginning of song, call rather with merged array to consider those chords
+    # If you already call first and last lerp the function applies the last line with the length of the song, if after merging, there are chords or others further at the end, i can't be lerped anymore
     #main_chords_body_line_array_lyrics_with_index_and_timestamp = lerpNOTSYNCEDLastLines(main_chords_body_line_array_lyrics_with_index_and_timestamp, track_length_ms)
     #main_chords_body_line_array_lyrics_with_index_and_timestamp = lerpNOTSYNCEDFirstLines(main_chords_body_line_array_lyrics_with_index_and_timestamp)
-    
+    """    
     ############################################
     
     ### Consider all other lines from Ultimate Guitar that are probably not lyrics lines ### 

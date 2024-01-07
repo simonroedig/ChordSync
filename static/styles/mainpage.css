@@ -368,7 +368,7 @@ body {
 }
 
 /* Colors synced lines with according algorithm path */
-/*
+
 .ONE_LINE_OFF_IS_ONE_UNOFF {
     color: #1DB954;
 }
@@ -384,7 +384,7 @@ body {
 .LERP_LINE {
     color:rgb(255, 56, 255);
 }
-*/
+
 
 .ONE_LINE_OFF_IS_ONE_UNOFF {
     cursor: pointer;
