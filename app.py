@@ -34,10 +34,18 @@ import datetime
 
 timestamp = datetime.datetime.now().strftime("%d_%m_%Y__%H_%M_%S")
 log_file_path = f'logs/log__{timestamp}.txt'
+song_in_log = 1
+
 
 ######## .env ########
 load_dotenv()
 dev_or_prod = os.getenv("DEV_OR_PROD")
+
+
+######## SELFMADE SPOTIFY LYRICS ########
+from spotify_lyrics import SpotifyLyrics
+sp_dc_cookie = os.getenv("SP_DC_COOKIE")
+selfmade_spotify_lyrics = SpotifyLyrics(sp_dc_cookie)
 
 
 ######## FLASK ########
@@ -121,7 +129,6 @@ def index():
     return render_template('index.html', album_cover_url="", track_name="Track", artist_name="Artist", minutes=0, seconds=00, 
                            guitar_tuning="E A D G B E", guitar_capo="0", main_chords_body="", complete_source_code_link='javascript:void(0)', 
                            is_logged_in=is_logged_in, spotify_user_name=spotify_user_name, spotify_user_image=spotify_user_image, dev_or_prod=dev_or_prod)
-
 
 @app.route('/login')
 def login():
@@ -329,6 +336,8 @@ def getTrackStaticData():
     
     global spotify_error
     
+    global song_in_log
+    
     token_info = refresh_token()
     if token_info == 0:
         complete_source_code_link = ""
@@ -378,15 +387,27 @@ def getTrackStaticData():
         
         if (dev_or_prod == "DEVELOPMENT"):
             with open(log_file_path, 'a') as file:
+                file.write(f"\n")
+                file.write(f"-------------------------\n")
+                file.write(f"SONG: {song_in_log}\n")
                 file.write(f"TRACK ID: {track_id}\n")
                 file.write(f"TRACK NAME: {track_name}\n")
                 file.write(f"ARTIST NAME: {artist_name}\n")
+                file.write(f"-----\n")
+                song_in_log += 1
     
         
         spotify_error = 0
         
         complete_source_code, complete_source_code_link, complete_source_code_found = googleChords(track_name, artist_name)
         main_chords_body = complete_source_code;
+        
+        if dev_or_prod == "DEVELOPMENT":
+            with open(log_file_path, 'a') as file:
+                file.write(f"FOUND ULTIMATE GUITAR CHORDS: {'YES' if complete_source_code_found else 'NO'}\n")
+                file.write(f"ULTIMATE GUITAR URL: {complete_source_code_link}\n")
+                file.write(f"-----\n")
+                
         
         if complete_source_code_found == 1:
             guitar_tuning = extractTuning(complete_source_code)
@@ -396,10 +417,17 @@ def getTrackStaticData():
             
             synced_lyrics_json, found_musixmatch_lyrics, musixmatch_lyrics_is_linesynced = getSyncedLyricsJson(track_id)
             
+            if dev_or_prod == "DEVELOPMENT":
+                with open(log_file_path, 'a') as file:
+                    file.write(f"FOUND LYRICS: {'YES' if found_musixmatch_lyrics else 'NO'}\n")
+                    file.write(f"LYRICS IS LINE SYNCED: {'YES' if musixmatch_lyrics_is_linesynced else 'NO'}\n")
+                    file.write(f"-----\n")
+            
             # Happy Path: Chords and synced lyrics found
             if (found_musixmatch_lyrics == 1 and musixmatch_lyrics_is_linesynced == 1):
                 synced_lyrics_tupel_array = parseSyncedLyricsJsonToTupelArray(synced_lyrics_json)
 
+                ### Main Algorithm
                 main_chords_body = insertTimestampsToMainChordsBody(synced_lyrics_tupel_array, main_chords_body, track_duration_ms)
                 
                 return {
@@ -438,6 +466,15 @@ def getTrackStaticData():
                 
         # No chords found, also regard as no synced lyrics found    
         else:
+            synced_lyrics_json, found_musixmatch_lyrics, musixmatch_lyrics_is_linesynced = getSyncedLyricsJson(track_id)
+            if dev_or_prod == "DEVELOPMENT":
+                with open(log_file_path, 'a') as file:
+                    file.write(f"FOUND LYRICS: {'YES' if found_musixmatch_lyrics else 'NO'}\n")
+                    file.write(f"LYRICS ARE LINE SYNCED: {'YES' if musixmatch_lyrics_is_linesynced else 'NO'}\n")
+                    file.write(f"-----\n")
+                    
+            ####################################
+                    
             guitar_tuning = "E A D G B E"
             guitar_capo = "0"
             
@@ -638,261 +675,79 @@ def getSyncedLyricsJson(track_id):
     global found_musixmatch_lyrics
     global musixmatch_lyrics_is_linesynced
     
-    """
-    # Return example synced lyrics json for debugging
-    musixmatch_lyrics_is_linesynced = 1
-    return {'error': False,
-                    'lines': [{'endTimeMs': '0',
-                               'startTimeMs': '15530',
-                               'syllables': [],
-                               'words': "I've heard it said that life is like a roller coaster"},
-                              {'endTimeMs': '0',
-                               'startTimeMs': '19100',
-                               'syllables': [],
-                               'words': 'Up with the worry and down in a flurry'},
-                              {'endTimeMs': '0',
-                               'startTimeMs': '22740',
-                               'syllables': [],
-                               'words': 'She looks at me and I can feel my mind is racing'},
-                              {'endTimeMs': '0',
-                               'startTimeMs': '26120',
-                               'syllables': [],
-                               'words': 'How can I be exactly what she needs'},
-                              {'endTimeMs': '0',
-                               'startTimeMs': '29570',
-                               'syllables': [],
-                               'words': "In another week I'll be sober"},
-                              {'endTimeMs': '0',
-                               'startTimeMs': '33300',
-                               'syllables': [],
-                               'words': 'In another year'},
-                              {'endTimeMs': '0',
-                               'startTimeMs': '34010',
-                               'syllables': [],
-                               'words': 'On another day'},
-                              {'endTimeMs': '0',
-                               'startTimeMs': '34710',
-                               'syllables': [],
-                               'words': 'Maybe October'},
-                              {'endTimeMs': '0',
-                               'startTimeMs': '36820',
-                               'syllables': [],
-                               'words': 'But I know that we will be stronger'},
-                              {'endTimeMs': '0',
-                               'startTimeMs': '40230',
-                               'syllables': [],
-                               'words': "That we're gonna scream"},
-                              {'endTimeMs': '0',
-                               'startTimeMs': '41510',
-                               'syllables': [],
-                               'words': "That we're gonna laugh"},
-                              {'endTimeMs': '0',
-                               'startTimeMs': '42590',
-                               'syllables': [],
-                               'words': "And that I'm going to hold her"},
-                              {'endTimeMs': '0',
-                               'startTimeMs': '51970',
-                               'syllables': [],
-                               'words': 'I tend to measure everything that I build'},
-                              {'endTimeMs': '0',
-                               'startTimeMs': '55170',
-                               'syllables': [],
-                               'words': 'I work for the money and shake for the living'},
-                              {'endTimeMs': '0',
-                               'startTimeMs': '59550',
-                               'syllables': [],
-                               'words': "I've never seen a penny that I didn't spend"},
-                              {'endTimeMs': '0',
-                               'startTimeMs': '62720',
-                               'syllables': [],
-                               'words': 'I earn what I earn and I spend what we spend'},
-                              {'endTimeMs': '0',
-                               'startTimeMs': '66670',
-                               'syllables': [],
-                               'words': "In another week I'll be sober"},
-                              {'endTimeMs': '0',
-                               'startTimeMs': '70220',
-                               'syllables': [],
-                               'words': 'In another year'},
-                              {'endTimeMs': '0',
-                               'startTimeMs': '71020',
-                               'syllables': [],
-                               'words': 'On another day'},
-                              {'endTimeMs': '0',
-                               'startTimeMs': '71840',
-                               'syllables': [],
-                               'words': 'Maybe October'},
-                              {'endTimeMs': '0',
-                               'startTimeMs': '73650',
-                               'syllables': [],
-                               'words': 'But I know that we will be stronger'},
-                              {'endTimeMs': '0',
-                               'startTimeMs': '77010',
-                               'syllables': [],
-                               'words': "That we're gonna scream"},
-                              {'endTimeMs': '0',
-                               'startTimeMs': '78160',
-                               'syllables': [],
-                               'words': "That we're gonna laugh"},
-                              {'endTimeMs': '0',
-                               'startTimeMs': '78980',
-                               'syllables': [],
-                               'words': "And that I'm gonna hold her"},
-                              {'endTimeMs': '0',
-                               'startTimeMs': '80740',
-                               'syllables': [],
-                               'words': "In another week I'll be sober"},
-                              {'endTimeMs': '0',
-                               'startTimeMs': '84670',
-                               'syllables': [],
-                               'words': 'In another year'},
-                              {'endTimeMs': '0',
-                               'startTimeMs': '85750',
-                               'syllables': [],
-                               'words': 'On another day'},
-                              {'endTimeMs': '0',
-                               'startTimeMs': '86600',
-                               'syllables': [],
-                               'words': 'Maybe October'},
-                              {'endTimeMs': '0',
-                               'startTimeMs': '88330',
-                               'syllables': [],
-                               'words': 'But I know that we will be stronger'},
-                              {'endTimeMs': '0',
-                               'startTimeMs': '91970',
-                               'syllables': [],
-                               'words': "That we're gonna scream"},
-                              {'endTimeMs': '0',
-                               'startTimeMs': '92980',
-                               'syllables': [],
-                               'words': "That we're gonna laugh"},
-                              {'endTimeMs': '0',
-                               'startTimeMs': '93760',
-                               'syllables': [],
-                               'words': "And that I'm gonna hold her"},
-                              {'endTimeMs': '0',
-                               'startTimeMs': '98770',
-                               'syllables': [],
-                               'words': 'Ho-ho-hold her maybe October'},
-                              {'endTimeMs': '0',
-                               'startTimeMs': '106300',
-                               'syllables': [],
-                               'words': 'Ho-ho-hold her maybe October'},
-                              {'endTimeMs': '0',
-                               'startTimeMs': '110570',
-                               'syllables': [],
-                               'words': "In another week I'll be sober"},
-                              {'endTimeMs': '0',
-                               'startTimeMs': '114130',
-                               'syllables': [],
-                               'words': 'In another year'},
-                              {'endTimeMs': '0',
-                               'startTimeMs': '115200',
-                               'syllables': [],
-                               'words': 'On another day'},
-                              {'endTimeMs': '0',
-                               'startTimeMs': '115770',
-                               'syllables': [],
-                               'words': 'Maybe October'},
-                              {'endTimeMs': '0',
-                               'startTimeMs': '117850',
-                               'syllables': [],
-                               'words': 'But I know that we will be stronger'},
-                              {'endTimeMs': '0',
-                               'startTimeMs': '121530',
-                               'syllables': [],
-                               'words': "That we're gonna scream"},
-                              {'endTimeMs': '0',
-                               'startTimeMs': '122500',
-                               'syllables': [],
-                               'words': "That we're gonna laugh"},
-                              {'endTimeMs': '0',
-                               'startTimeMs': '123360',
-                               'syllables': [],
-                               'words': "And that I'm gonna hold her"},
-                              {'endTimeMs': '0',
-                               'startTimeMs': '125110',
-                               'syllables': [],
-                               'words': "In another week I'll be sober"},
-                              {'endTimeMs': '0',
-                               'startTimeMs': '129080',
-                               'syllables': [],
-                               'words': 'In another year'},
-                              {'endTimeMs': '0',
-                               'startTimeMs': '129820',
-                               'syllables': [],
-                               'words': 'On another day'},
-                              {'endTimeMs': '0',
-                               'startTimeMs': '130660',
-                               'syllables': [],
-                               'words': 'Maybe October'},
-                              {'endTimeMs': '0',
-                               'startTimeMs': '132790',
-                               'syllables': [],
-                               'words': 'But I know that we will be stronger'},
-                              {'endTimeMs': '0',
-                               'startTimeMs': '136690',
-                               'syllables': [],
-                               'words': "That we're gonna scream"},
-                              {'endTimeMs': '0',
-                               'startTimeMs': '137770',
-                               'syllables': [],
-                               'words': "That we're gonna laugh"},
-                              {'endTimeMs': '0',
-                               'startTimeMs': '137900',
-                               'syllables': [],
-                               'words': "And that I'm gonna hold her"},
-                              {'endTimeMs': '0',
-                               'startTimeMs': '143140',
-                               'syllables': [],
-                               'words': 'Ho-ho-hold her maybe October'},
-                              {'endTimeMs': '0',
-                               'startTimeMs': '150510',
-                               'syllables': [],
-                               'words': 'Ho-ho-hold her maybe October'},
-                              {'endTimeMs': '0',
-                               'startTimeMs': '156010',
-                               'syllables': [],
-                               'words': ''}],
-                    'syncType': 'LINE_SYNCED'}, 1, 1
-    """
     
+    ### REST API APPROACH:
     # MusixMatchs' free API doesn't include synced lyrics (i.e. timestamps) as well as just a part of the lyrics 
     # Akashrchandran (GitHub) provides a free API endpoint for the full synced lyrics
     # https://github.com/akashrchandran/spotify-lyrics-api
-    url = "https://spotify-lyric-api-984e7b4face0.herokuapp.com/?trackid=" + str(track_id)
-    
-    try:
-        response = requests.get(url)
-        response.raise_for_status() 
-        origin_string = response.text
-        response_json = json.loads(origin_string)
-        # ic(response_json)
+    if (dev_or_prod == "PRODUCTION"):
+        url = "https://spotify-lyric-api-984e7b4face0.herokuapp.com/?trackid=" + str(track_id)    
         
-        # Found lyrics but not synced
-        if 'syncType' in response_json and response_json['syncType'] == 'UNSYNCED':
-            found_musixmatch_lyrics = 1
-            musixmatch_lyrics_is_linesynced = 0
-            return "JUST FOUND UNSYNCED LYRICS", found_musixmatch_lyrics, musixmatch_lyrics_is_linesynced
-        
-        # Found synced lyrics
-        elif 'syncType' in response_json and response_json['syncType'] == 'LINE_SYNCED':
-            found_musixmatch_lyrics = 1
-            musixmatch_lyrics_is_linesynced = 1
-            return response_json, found_musixmatch_lyrics, musixmatch_lyrics_is_linesynced
-        
-        # Probably found lyrics but with other error (regard as not found)
-        else:
+        try:
+            response = requests.get(url)
+            response.raise_for_status() 
+            origin_string = response.text
+            response_json = json.loads(origin_string)
+            ic(response_json)
+            
+            # Found lyrics but not synced
+            if 'syncType' in response_json and response_json['syncType'] == 'UNSYNCED':
+                found_musixmatch_lyrics = 1
+                musixmatch_lyrics_is_linesynced = 0
+                return "JUST FOUND UNSYNCED LYRICS", found_musixmatch_lyrics, musixmatch_lyrics_is_linesynced
+            
+            # Found synced lyrics
+            elif 'syncType' in response_json and response_json['syncType'] == 'LINE_SYNCED':
+                found_musixmatch_lyrics = 1
+                musixmatch_lyrics_is_linesynced = 1
+                return response_json, found_musixmatch_lyrics, musixmatch_lyrics_is_linesynced
+            
+            # Probably found lyrics but with other error (regard as not found)
+            else:
+                found_musixmatch_lyrics = 0
+                musixmatch_lyrics_is_linesynced = 0
+                return "FOUND LYRICS, ERROR IN RESPONSE", found_musixmatch_lyrics, musixmatch_lyrics_is_linesynced
+
+        # Couldn't find lyrics
+        except Exception as e:
             found_musixmatch_lyrics = 0
             musixmatch_lyrics_is_linesynced = 0
-            return "FOUND LYRICS, ERROR IN RESPONSE", found_musixmatch_lyrics, musixmatch_lyrics_is_linesynced
+            ic(f'Error making lyrics request, Perhaps no lyrics available: {e}')
+            return "COULDN'T FIND LYRICS, ERROR REQUESTING", found_musixmatch_lyrics, musixmatch_lyrics_is_linesynced
+    
+    
+    ### SELF-MADE SPOTIFY LYRICS APPROACH:
+    if (dev_or_prod == "DEVELOPMENT"):
+        try:
+            original_json = selfmade_spotify_lyrics.getLyrics(track_id)
+            response_json = {'lines': original_json['lyrics']['lines'], "syncType":  original_json['lyrics']['syncType']}
+            ic(response_json)
+            
+            # Found lyrics but not synced
+            if 'syncType' in response_json and response_json['syncType'] == 'UNSYNCED':
+                found_musixmatch_lyrics = 1
+                musixmatch_lyrics_is_linesynced = 0
+                return "JUST FOUND UNSYNCED LYRICS", found_musixmatch_lyrics, musixmatch_lyrics_is_linesynced
+            
+            # Found synced lyrics
+            elif 'syncType' in response_json and response_json['syncType'] == 'LINE_SYNCED':
+                found_musixmatch_lyrics = 1
+                musixmatch_lyrics_is_linesynced = 1
+                return response_json, found_musixmatch_lyrics, musixmatch_lyrics_is_linesynced
+            
+            # Probably found lyrics but with other error (regard as not found)
+            else:
+                found_musixmatch_lyrics = 0
+                musixmatch_lyrics_is_linesynced = 0
+                return "FOUND LYRICS, ERROR IN RESPONSE", found_musixmatch_lyrics, musixmatch_lyrics_is_linesynced
 
-    # Couldn't find lyrics
-    except Exception as e:
-        found_musixmatch_lyrics = 0
-        musixmatch_lyrics_is_linesynced = 0
-        ic(f'Error making lyrics request, Perhaps no lyrics available: {e}')
-        return "COULDN'T FIND LYRICS, ERROR REQUESTING", found_musixmatch_lyrics, musixmatch_lyrics_is_linesynced
+        # Couldn't find lyrics
+        except Exception as e:
+            found_musixmatch_lyrics = 0
+            musixmatch_lyrics_is_linesynced = 0
+            ic(f'Error making lyrics request, Perhaps no lyrics available: {e}')
+            return "COULDN'T FIND LYRICS, ERROR REQUESTING", found_musixmatch_lyrics, musixmatch_lyrics_is_linesynced
+    
 
 # Returns an array of tupels of the form (timestamp, lyrics line) (e.g. [(19100, 'Up with the worry and down in a flurry'), ...])
 def parseSyncedLyricsJsonToTupelArray(synced_lyrics_json):
@@ -909,6 +764,9 @@ def parseSyncedLyricsJsonToTupelArray(synced_lyrics_json):
 ######## TIMESTAMP -> SOURCE CODE INSERTION ########
 # Main algorithm that inserts Musixmatch timestamps into the Ultimate Guitar source code
 def insertTimestampsToMainChordsBody(synced_lyrics_tupel_array, main_chords_body, track_length_ms):  
+    
+    # Removes all empty lyrics and music notes from Musixmatch lyrics, as they can't be matched anyways and cause errors in red and blue paths
+    synced_lyrics_tupel_array = [(timestamp, lyric) for timestamp, lyric in synced_lyrics_tupel_array if lyric not in ['', '♪']]
     
     # Array of all new lines in the source code  
     main_chords_body_line_array = main_chords_body.split("<br>")
@@ -931,12 +789,18 @@ def insertTimestampsToMainChordsBody(synced_lyrics_tupel_array, main_chords_body
     official_lyrics_line = 0
     max_unoffical_line_iteration = 0
     
+    amm_of_lines_to_sync = len(synced_lyrics_tupel_array)
+    green_path_ratio_COUNTER = 0
+    red_path_ratio_COUNTER = 0
+    red_path_ratio_2_COUNTER = 0
+    red_path_ratio_3_COUNTER = 0
+    blue_path_ratio_COUNTER = 0
+    blue_path_ratio_2_COUNTER = 0
+    blue_path_ratio_3_COUNTER = 0
+    
+    
     # Iterate through all Musixmatch lyrics lines
     while official_lyrics_line < len(synced_lyrics_tupel_array):
-        
-        if (synced_lyrics_tupel_array[official_lyrics_line][1] == "♪"):
-            official_lyrics_line += 1
-            continue
         
         # Only alway search - for every official lyrics line - the next five unofficial lyrics lines
         # Only if first match was found (insert_hit != 0) check next three unofficial lyrics lines
@@ -977,42 +841,67 @@ def insertTimestampsToMainChordsBody(synced_lyrics_tupel_array, main_chords_body
                         continue
                     red_path_ratio = fuzzy_onelineofficial_is_twolineunofficial
                     
-            # One official lyrics line fuzzy matches three consecutive unofficial lyrics lines (RED)
+            # One official lyrics line fuzzy matches three consecutive unofficial lyrics lines (RED 2)
             if unofficial_lyrics_line < len(main_chords_body_line_array_lyrics_with_index)-2:
                 fuzzy_onelineofficial_is_threelineunofficial = fuzz.ratio(synced_lyrics_tupel_array[official_lyrics_line][1].lower(), main_chords_body_line_array_lyrics_with_index[unofficial_lyrics_line][1].lower() + " " + main_chords_body_line_array_lyrics_with_index[unofficial_lyrics_line+1][1].lower() + " " + main_chords_body_line_array_lyrics_with_index[unofficial_lyrics_line+2][1].lower())
                 if fuzzy_onelineofficial_is_threelineunofficial >= 70:
-                    # Analog to previous Red Path
+                    
                     green_path_ratio_next_next = fuzz.ratio(synced_lyrics_tupel_array[official_lyrics_line][1].lower(), main_chords_body_line_array_lyrics_with_index[unofficial_lyrics_line+2][1].lower())
+                    fuzzy_onelineofficial_is_twolineunofficial_next = fuzz.ratio(synced_lyrics_tupel_array[official_lyrics_line][1].lower(), main_chords_body_line_array_lyrics_with_index[unofficial_lyrics_line+1][1].lower() + " " + main_chords_body_line_array_lyrics_with_index[unofficial_lyrics_line+2][1].lower())
+
                     if (green_path_ratio_next_next >= fuzzy_onelineofficial_is_threelineunofficial):
                         continue
+                    if (fuzzy_onelineofficial_is_twolineunofficial_next >= fuzzy_onelineofficial_is_threelineunofficial):
+                        continue
+                    
                     red_path_ratio_2 = fuzzy_onelineofficial_is_threelineunofficial
             
-            # One official lyrics line fuzzy matches four consecutive unofficial lyrics lines (RED)
+            # One official lyrics line fuzzy matches four consecutive unofficial lyrics lines (RED 3)
             if unofficial_lyrics_line < len(main_chords_body_line_array_lyrics_with_index)-3:
                 fuzzy_onelineofficial_is_fourlineunofficial = fuzz.ratio(synced_lyrics_tupel_array[official_lyrics_line][1].lower(), main_chords_body_line_array_lyrics_with_index[unofficial_lyrics_line][1].lower() + " " + main_chords_body_line_array_lyrics_with_index[unofficial_lyrics_line+1][1].lower() + " " + main_chords_body_line_array_lyrics_with_index[unofficial_lyrics_line+2][1].lower() + " " + main_chords_body_line_array_lyrics_with_index[unofficial_lyrics_line+3][1].lower())
                 if fuzzy_onelineofficial_is_fourlineunofficial >= 70:
-                    # Analog to previous Red Path
+                    
                     green_path_ratio_next_next_next = fuzz.ratio(synced_lyrics_tupel_array[official_lyrics_line][1].lower(), main_chords_body_line_array_lyrics_with_index[unofficial_lyrics_line+3][1].lower())
+                    fuzzy_onelineofficial_is_threelineunofficial_next = fuzz.ratio(synced_lyrics_tupel_array[official_lyrics_line][1].lower(), main_chords_body_line_array_lyrics_with_index[unofficial_lyrics_line+1][1].lower() + " " + main_chords_body_line_array_lyrics_with_index[unofficial_lyrics_line+2][1].lower() + " " + main_chords_body_line_array_lyrics_with_index[unofficial_lyrics_line+3][1].lower())
+
                     if (green_path_ratio_next_next_next >= fuzzy_onelineofficial_is_fourlineunofficial):
                         continue
+                    if (fuzzy_onelineofficial_is_threelineunofficial_next >= fuzzy_onelineofficial_is_fourlineunofficial):
+                        continue
+                    
                     red_path_ratio_3 = fuzzy_onelineofficial_is_fourlineunofficial
                     
             # Two consecutive official lyric lines fuzzy matches one unofficial lyric line (BLUE)
             if official_lyrics_line < len(synced_lyrics_tupel_array)-1:
                 fuzzy_twolineofficial_is_onelineunofficial = fuzz.ratio(synced_lyrics_tupel_array[official_lyrics_line][1].lower() + " " + synced_lyrics_tupel_array[official_lyrics_line+1][1].lower(), main_chords_body_line_array_lyrics_with_index[unofficial_lyrics_line][1].lower())
                 if fuzzy_twolineofficial_is_onelineunofficial >= 70:
+                    
+                    green_path_ratio_next = fuzz.ratio(synced_lyrics_tupel_array[official_lyrics_line+1][1].lower(), main_chords_body_line_array_lyrics_with_index[unofficial_lyrics_line][1].lower())
+                    if (green_path_ratio_next >= fuzzy_twolineofficial_is_onelineunofficial):
+                        continue
+                    
                     blue_path_ratio = fuzzy_twolineofficial_is_onelineunofficial
                     
-            # Three consecutive official lyric lines fuzzy matches one unofficial lyric line (BLUE)
+            # Three consecutive official lyric lines fuzzy matches one unofficial lyric line (BLUE 2)
             if official_lyrics_line < len(synced_lyrics_tupel_array)-2:
                 fuzzy_threelineofficial_is_onelineunofficial = fuzz.ratio(synced_lyrics_tupel_array[official_lyrics_line][1].lower() + " " + synced_lyrics_tupel_array[official_lyrics_line+1][1].lower() + " " + synced_lyrics_tupel_array[official_lyrics_line+2][1].lower(), main_chords_body_line_array_lyrics_with_index[unofficial_lyrics_line][1].lower())
                 if fuzzy_threelineofficial_is_onelineunofficial >= 70:
+                    
+                    green_path_ratio_next_next = fuzz.ratio(synced_lyrics_tupel_array[official_lyrics_line+2][1].lower(), main_chords_body_line_array_lyrics_with_index[unofficial_lyrics_line][1].lower())
+                    if (green_path_ratio_next_next >= fuzzy_threelineofficial_is_onelineunofficial):
+                        continue
+                    
                     blue_path_ratio_2 = fuzzy_threelineofficial_is_onelineunofficial
                     
-            # Four consecutive official lyric lines fuzzy matches one unofficial lyric line (BLUE)
+            # Four consecutive official lyric lines fuzzy matches one unofficial lyric line (BLUE 3)
             if official_lyrics_line < len(synced_lyrics_tupel_array)-3:
                 fuzzy_fourlineofficial_is_onelineunofficial = fuzz.ratio(synced_lyrics_tupel_array[official_lyrics_line][1].lower() + " " + synced_lyrics_tupel_array[official_lyrics_line+1][1].lower() + " " + synced_lyrics_tupel_array[official_lyrics_line+2][1].lower() + " " + synced_lyrics_tupel_array[official_lyrics_line+3][1].lower(), main_chords_body_line_array_lyrics_with_index[unofficial_lyrics_line][1].lower())
                 if fuzzy_fourlineofficial_is_onelineunofficial >= 70:
+                    
+                    green_path_ratio_next_next_next = fuzz.ratio(synced_lyrics_tupel_array[official_lyrics_line+3][1].lower(), main_chords_body_line_array_lyrics_with_index[unofficial_lyrics_line][1].lower())
+                    if (green_path_ratio_next_next_next >= fuzzy_fourlineofficial_is_onelineunofficial):
+                        continue
+                    
                     blue_path_ratio_3 = fuzzy_fourlineofficial_is_onelineunofficial
                     
             
@@ -1023,6 +912,7 @@ def insertTimestampsToMainChordsBody(synced_lyrics_tupel_array, main_chords_body
                 main_chords_body_line_array_lyrics_with_index_and_timestamp[unofficial_lyrics_line][0] = str(synced_lyrics_tupel_array[official_lyrics_line][0]) + "\" class='ONE_LINE_OFF_IS_ONE_UNOFF'"
                 amm_of_lines_succ_synced += 1
                 insert_hit = unofficial_lyrics_line + 1
+                green_path_ratio_COUNTER += 1
                 break
             
             # RED PATH
@@ -1038,6 +928,7 @@ def insertTimestampsToMainChordsBody(synced_lyrics_tupel_array, main_chords_body
                 
                 amm_of_lines_succ_synced += 1
                 insert_hit = unofficial_lyrics_line + 2
+                red_path_ratio_COUNTER += 1
                 break
             
             # RED PATH 2
@@ -1050,12 +941,13 @@ def insertTimestampsToMainChordsBody(synced_lyrics_tupel_array, main_chords_body
                     timestamp_for_second_line = 1500
                     timestamp_for_third_line = 3000
                 
-                main_chords_body_line_array_lyrics_with_index_and_timestamp[unofficial_lyrics_line][0] = str(synced_lyrics_tupel_array[official_lyrics_line][0]) + "\" class='ONE_LINE_OFF_IS_MORE_UNOFF'"
-                main_chords_body_line_array_lyrics_with_index_and_timestamp[unofficial_lyrics_line+1][0] = str(synced_lyrics_tupel_array[official_lyrics_line][0] + timestamp_for_second_line) + "\" class='ONE_LINE_OFF_IS_MORE_UNOFF'"
-                main_chords_body_line_array_lyrics_with_index_and_timestamp[unofficial_lyrics_line+2][0] = str(synced_lyrics_tupel_array[official_lyrics_line][0] + timestamp_for_third_line) + "\" class='ONE_LINE_OFF_IS_MORE_UNOFF'"
+                main_chords_body_line_array_lyrics_with_index_and_timestamp[unofficial_lyrics_line][0] = str(synced_lyrics_tupel_array[official_lyrics_line][0]) + "\" class='MORE_LINE_OFF_IS_ONE_UNOFF'"
+                main_chords_body_line_array_lyrics_with_index_and_timestamp[unofficial_lyrics_line+1][0] = str(synced_lyrics_tupel_array[official_lyrics_line][0] + timestamp_for_second_line) + "\" class='MORE_LINE_OFF_IS_ONE_UNOFF'"
+                main_chords_body_line_array_lyrics_with_index_and_timestamp[unofficial_lyrics_line+2][0] = str(synced_lyrics_tupel_array[official_lyrics_line][0] + timestamp_for_third_line) + "\" class='MORE_LINE_OFF_IS_ONE_UNOFF'"
                 
                 amm_of_lines_succ_synced += 1
                 insert_hit = unofficial_lyrics_line + 3
+                red_path_ratio_2_COUNTER += 1
                 break
             
             # RED PATH 3
@@ -1077,6 +969,7 @@ def insertTimestampsToMainChordsBody(synced_lyrics_tupel_array, main_chords_body
                 
                 amm_of_lines_succ_synced += 1
                 insert_hit = unofficial_lyrics_line + 4
+                red_path_ratio_3_COUNTER += 1
                 break
             
             # BLUE PATH
@@ -1086,6 +979,7 @@ def insertTimestampsToMainChordsBody(synced_lyrics_tupel_array, main_chords_body
                 insert_hit = unofficial_lyrics_line + 1
                 # Skip next official lyrics line
                 official_lyrics_line += 1
+                blue_path_ratio_COUNTER += 1
                 break  
             
             # BLUE PATH 2
@@ -1095,6 +989,7 @@ def insertTimestampsToMainChordsBody(synced_lyrics_tupel_array, main_chords_body
                 insert_hit = unofficial_lyrics_line + 1
                 # Skip next two official lyrics lines
                 official_lyrics_line += 2
+                blue_path_ratio_2_COUNTER += 1
                 break
             
             # BLUE PATH 3
@@ -1104,10 +999,25 @@ def insertTimestampsToMainChordsBody(synced_lyrics_tupel_array, main_chords_body
                 insert_hit = unofficial_lyrics_line + 1
                 # Skip next two official lyrics lines
                 official_lyrics_line += 3
+                blue_path_ratio_3_COUNTER += 1
                 break
              
-        official_lyrics_line += 1             
-       
+        official_lyrics_line += 1  
+        
+    if (dev_or_prod == "DEVELOPMENT"):
+            with open(log_file_path, 'a') as file:
+                file.write(f"AMMOUNT OF MUSIXMATCH LYRICS TO SYNC (without empty or note): {amm_of_lines_to_sync}\n")
+                file.write(f"AMMOUNT OF SUCCESSFULLY SYNCED MUSIXMATCH LYRICS: {amm_of_lines_succ_synced}\n")
+                file.write(f"GREEN PATH AMMOUNT: {green_path_ratio_COUNTER}\n")
+                file.write(f"RED PATH AMMOUNT: {red_path_ratio_COUNTER}\n")
+                file.write(f"RED PATH 2 AMMOUNT: {red_path_ratio_2_COUNTER}\n")
+                file.write(f"RED PATH 3 AMMOUNT: {red_path_ratio_3_COUNTER}\n")
+                file.write(f"BLUE PATH AMMOUNT: {blue_path_ratio_COUNTER}\n")
+                file.write(f"BLUE PATH 2 AMMOUNT: {blue_path_ratio_2_COUNTER}\n")
+                file.write(f"BLUE PATH 3 AMMOUNT: {blue_path_ratio_3_COUNTER}\n")
+                file.write(f"-----\n")           
+                
+                
     ### Interpolate timestamps for lyrics lines that couldn't be matched ###
     main_chords_body_line_array_lyrics_with_index_and_timestamp = lerpNOTSYNCEDWithin(main_chords_body_line_array_lyrics_with_index_and_timestamp)
     # Don't call last and first interpolation, as there might be just chords at end and beginning of song, call rather with merged array to consider those chords
