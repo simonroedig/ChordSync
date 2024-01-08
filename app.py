@@ -46,9 +46,9 @@ timestamp = datetime.datetime.now().strftime("%d_%m_%Y__%H_%M_%S")
 log_file_path = f'logs/log__{timestamp}.txt'
 song_in_log = 1
 if (dev_or_prod == "DEVELOPMENT"):
-            with open(log_file_path, 'a') as file:
-                file.write(f"Playlist: Legendary Guitar Solos\n")
-                file.write(f"-> Link: https://open.spotify.com/playlist/37i9dQZF1DWSlJG7YPUBHF\n")
+    with open(log_file_path, 'a') as file:
+        file.write(f"Playlist: Legendary Guitar Solos\n")
+        file.write(f"-> Link: https://open.spotify.com/playlist/37i9dQZF1DWSlJG7YPUBHF\n")
                 
                 
 ######## SELFMADE SPOTIFY LYRICS ########

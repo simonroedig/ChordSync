@@ -98,10 +98,11 @@
         }, 250);
 
         // For Logging:
-        if (dev_or_prod == "DEVELOPMENT"):
+        if (dev_or_prod == "DEVELOPMENT") {
             setInterval(() => {
                 socket.emit('nextSpotifyTrack');
             }, 10000);
+        }
 
         //////// Websocket response for parameters that DON'T change during the song ////////
         socket.on('trackStaticDataResponse', (track_static_data) => {

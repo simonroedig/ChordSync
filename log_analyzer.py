@@ -1,7 +1,7 @@
 import statistics
 
 
-log_file_path = "logs/log__08_01_2024__19_20_36.txt"
+log_file_path = "logs/log__08_01_2024__21_12_06.txt"
 with open(log_file_path, "r") as file:
     log = file.readlines()
 
@@ -109,7 +109,7 @@ def calculate_syncable_songs(log):
             is_found_chords_yes = True
         elif "FOUND LYRICS: YES" in line:
             is_found_lyrics_yes = True
-        elif "LYRICS IS LINE SYNCED: YES" in line:
+        elif "LYRICS ARE LINE SYNCED: YES" in line:
             is_lyrics_synced_yes = True
 
         if is_found_chords_yes and is_found_lyrics_yes and is_lyrics_synced_yes:
