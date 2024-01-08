@@ -591,22 +591,30 @@ def googleChords(track_name, artist_name):
                     
                     # Check if the found Ultimate Guitar link depicts the desired song
                     # The title on Ultimate Guitar may look something like this: <title>BREATHE CHORDS (ver 2) by Pink Floyd @ Ultimate-Guitar.Com</title>
-                    # Fuzzy check if this title contains the song name and artist name (remove "version", "Ultimate-Guitar.Com",...) for better fuyy matching
-                    title_text_no_ver = (re.sub(r'\(ver \d+\)', '', title_text)).replace("  ", " ")
-                    title_text_no_ue = title_text_no_ver.replace(" @ Ultimate-Guitar.Com", "")
-                    title_text_no_ue = title_text_no_ue.lower()
+                    title_text_no_ver = (re.sub(r'\(ver \d+\)', '', title_text)).replace("  ", " ") # e.g BREATHE CHORDS by Pink Floyd @ Ultimate-Guitar.Com
+                    title_text_no_ue = title_text_no_ver.replace(" @ Ultimate-Guitar.Com", "") # e.g BREATHE CHORDS by Pink Floyd 
+                    title_text_no_ue = title_text_no_ue.lower() # e.g. breathe chords by pink floyd
                     
-                    title_text_no_ue_chord_tab = title_text_no_ue.replace("chords", "").replace("chord", "").replace("tab", "").replace("tabs", "")
-                    track_name_on_ue = title_text_no_ue_chord_tab.replace(f"by {artist_name.lower()}")
-                    artist_name_on_ue = title_text_no_ue_chord_tab.replace(f"{track_name.lower()} by ")
-                    ic(track_name_on_ue)
-                    ic(artist_name_on_ue)
-                    #TODO
-                    if ((title_text_no_ue.find("chords") != -1) 
-                        and (fuzz.partial_ratio(title_text_no_ue.lower(), track_name.lower().replace('remastered', '').replace('remaster', '').replace('version', '')) >= 40) 
-                        and (fuzz.partial_ratio(title_text_no_ue.lower(), artist_name.lower()) >= 60)):
+                    # if "chords" exists in title
+                    if (title_text_no_ue.find("chords") != -1):
                         
-                        return source_code, link, 1, result_index
+                        ue_track_name = title_text_no_ue.split("chords by")[0].strip() # e.g. breathe
+                        ue_arist_name = title_text_no_ue.split("chords by")[1].strip() # e.g. pink floyd
+                        ic(ue_track_name)
+                        ic(ue_arist_name)
+                        
+                        spotify_track_name = (track_name.lower().replace('remastered', '').replace('remaster', '').replace('version', '')).strip() # e.g. Breathe - 2011 Remastered Version -> breathe - 2011
+                        spotify_artist_name = artist_name.lower().strip() # e.g. Pink Floyd
+                        ic(spotify_track_name)
+                        ic(spotify_artist_name)
+                        
+                        ic(fuzz.ratio(ue_track_name, spotify_track_name))
+                        ic(fuzz.ratio(ue_arist_name, spotify_artist_name))
+                        
+                        # Often titles on spotify include further things like (acoustic, version, remastered, unplugged), title are often the exact same, thus different ratio thresholds
+                        if (fuzz.ratio(ue_track_name, spotify_track_name) >= 40) and (fuzz.ratio(ue_arist_name, spotify_artist_name) >= 60):
+                            return source_code, link, 1, result_index
+    
                 
             ic("COULDN'T FIND ANY CHORDS FOR THAT SONG")
             return "Couldn't find chords for that song.", "https://www.google.de/search?q=" + query, 0, 0
@@ -694,7 +702,7 @@ def getSyncedLyricsJson(track_id):
     # MusixMatchs' free API doesn't include synced lyrics (i.e. timestamps) as well as just a part of the lyrics 
     # Akashrchandran (GitHub) provides a free API endpoint for the full synced lyrics
     # https://github.com/akashrchandran/spotify-lyrics-api
-    if (dev_or_prod == "PRODUCTION"):
+    if (dev_or_prod == "DEVELOPMENT"):
         url = "https://spotify-lyric-api-984e7b4face0.herokuapp.com/?trackid=" + str(track_id)    
         
         try:
@@ -731,7 +739,7 @@ def getSyncedLyricsJson(track_id):
     
     
     ### SELF-MADE SPOTIFY LYRICS APPROACH:
-    if (dev_or_prod == "DEVELOPMENT"):
+    if (dev_or_prod == "PRODUCTION"):
         try:
             original_json = selfmade_spotify_lyrics.getLyrics(track_id)
             response_json = {'lines': original_json['lyrics']['lines'], "syncType":  original_json['lyrics']['syncType']}
