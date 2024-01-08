@@ -45,7 +45,7 @@ lyrics_api_source = os.getenv("LYRICS_API_SOURCE") # either "REST" or "SELFMADE"
 
 
 ######## SELFMADE SPOTIFY LYRICS ########
-if (lyrics_api_source == "SEFLMADE"):
+if (lyrics_api_source == "SELFMADE"):
     from spotify_lyrics import SpotifyLyrics
     sp_dc_cookie = os.getenv("SP_DC_COOKIE")
     selfmade_spotify_lyrics = SpotifyLyrics(sp_dc_cookie)
