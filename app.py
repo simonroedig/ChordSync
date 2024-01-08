@@ -40,11 +40,12 @@ song_in_log = 1
 
 ######## .env ########
 load_dotenv()
-dev_or_prod = os.getenv("DEV_OR_PROD")
+dev_or_prod = os.getenv("DEV_OR_PROD") # either "DEVELOPMENT" or "PRODUCTION"
+lyrics_api_source = os.getenv("LYRICS_API_SOURCE") # either "REST" or "SELFMADE"
 
 
 ######## SELFMADE SPOTIFY LYRICS ########
-if (dev_or_prod == "PRODUCTION"):
+if (lyrics_api_source == "SEFLMADE"):
     from spotify_lyrics import SpotifyLyrics
     sp_dc_cookie = os.getenv("SP_DC_COOKIE")
     selfmade_spotify_lyrics = SpotifyLyrics(sp_dc_cookie)
@@ -702,7 +703,7 @@ def getSyncedLyricsJson(track_id):
     # MusixMatchs' free API doesn't include synced lyrics (i.e. timestamps) as well as just a part of the lyrics 
     # Akashrchandran (GitHub) provides a free API endpoint for the full synced lyrics
     # https://github.com/akashrchandran/spotify-lyrics-api
-    if (dev_or_prod == "DEVELOPMENT"):
+    if (lyrics_api_source == "REST"):
         url = "https://spotify-lyric-api-984e7b4face0.herokuapp.com/?trackid=" + str(track_id)    
         
         try:
@@ -739,7 +740,7 @@ def getSyncedLyricsJson(track_id):
     
     
     ### SELF-MADE SPOTIFY LYRICS APPROACH:
-    if (dev_or_prod == "PRODUCTION"):
+    if (lyrics_api_source == "SELFMADE"):
         try:
             original_json = selfmade_spotify_lyrics.getLyrics(track_id)
             response_json = {'lines': original_json['lyrics']['lines'], "syncType":  original_json['lyrics']['syncType']}
