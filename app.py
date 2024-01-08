@@ -44,7 +44,7 @@ dev_or_prod = os.getenv("DEV_OR_PROD")
 
 
 ######## SELFMADE SPOTIFY LYRICS ########
-if (dev_or_prod == "DEVELOPMENT"):
+if (dev_or_prod == "PRODUCTION"):
     from spotify_lyrics import SpotifyLyrics
     sp_dc_cookie = os.getenv("SP_DC_COOKIE")
     selfmade_spotify_lyrics = SpotifyLyrics(sp_dc_cookie)
