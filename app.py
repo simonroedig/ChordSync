@@ -14,6 +14,7 @@ Bachelor's Thesis (WS 2023/2024)
 
 ######## IMPORTS (DUH) ########
 import multiprocessing
+import sys
 from wsgiref.types import WSGIApplication
 from dotenv import load_dotenv
 import os
@@ -33,10 +34,6 @@ import atexit
 import datetime
 import html
 
-timestamp = datetime.datetime.now().strftime("%d_%m_%Y__%H_%M_%S")
-log_file_path = f'logs/log__{timestamp}.txt'
-song_in_log = 1
-
 
 ######## .env ########
 load_dotenv()
@@ -44,6 +41,16 @@ dev_or_prod = os.getenv("DEV_OR_PROD") # either "DEVELOPMENT" or "PRODUCTION"
 lyrics_api_source = os.getenv("LYRICS_API_SOURCE") # either "REST" or "SELFMADE"
 
 
+######## LOGGING ########
+timestamp = datetime.datetime.now().strftime("%d_%m_%Y__%H_%M_%S")
+log_file_path = f'logs/log__{timestamp}.txt'
+song_in_log = 1
+if (dev_or_prod == "DEVELOPMENT"):
+            with open(log_file_path, 'a') as file:
+                file.write(f"Playlist: Legendary Guitar Solos\n")
+                file.write(f"-> Link: https://open.spotify.com/playlist/37i9dQZF1DWSlJG7YPUBHF\n")
+                
+                
 ######## SELFMADE SPOTIFY LYRICS ########
 if (lyrics_api_source == "SELFMADE"):
     from spotify_lyrics import SpotifyLyrics
@@ -388,6 +395,7 @@ def getTrackStaticData():
         minutes, seconds = divmod(track_duration_ms / 1000, 60)
         album_cover_url = current_track['item']['album']['images'][0]['url']
         
+        
         if (dev_or_prod == "DEVELOPMENT"):
             with open(log_file_path, 'a') as file:
                 file.write(f"\n")
@@ -424,7 +432,7 @@ def getTrackStaticData():
             if dev_or_prod == "DEVELOPMENT":
                 with open(log_file_path, 'a') as file:
                     file.write(f"FOUND LYRICS: {'YES' if found_musixmatch_lyrics else 'NO'}\n")
-                    file.write(f"LYRICS IS LINE SYNCED: {'YES' if musixmatch_lyrics_is_linesynced else 'NO'}\n")
+                    file.write(f"LYRICS ARE LINE SYNCED: {'YES' if musixmatch_lyrics_is_linesynced else 'NO'}\n")
                     file.write(f"-----\n")
             
             # Happy Path: Chords and synced lyrics found
@@ -1032,7 +1040,7 @@ def insertTimestampsToMainChordsBody(synced_lyrics_tupel_array, main_chords_body
             with open(log_file_path, 'a') as file:
                 file.write(f"AMMOUNT OF MUSIXMATCH LYRICS TO SYNC (without empty or note): {amm_of_lines_to_sync}\n")
                 file.write(f"AMMOUNT OF SUCCESSFULLY SYNCED MUSIXMATCH LYRICS: {amm_of_lines_succ_synced}\n")
-                file.write(f"SYNC RATIO: {round((amm_of_lines_succ_synced/amm_of_lines_to_sync)*100, 2)}%\n")
+                file.write(f"SYNC RATIO: {(amm_of_lines_succ_synced/amm_of_lines_to_sync)*100}%\n")
                 file.write(f"GREEN PATH AMMOUNT: {green_path_ratio_COUNTER}\n")
                 file.write(f"RED PATH AMMOUNT: {red_path_ratio_COUNTER}\n")
                 file.write(f"RED PATH 2 AMMOUNT: {red_path_ratio_2_COUNTER}\n")
@@ -1040,6 +1048,7 @@ def insertTimestampsToMainChordsBody(synced_lyrics_tupel_array, main_chords_body
                 file.write(f"BLUE PATH AMMOUNT: {blue_path_ratio_COUNTER}\n")
                 file.write(f"BLUE PATH 2 AMMOUNT: {blue_path_ratio_2_COUNTER}\n")
                 file.write(f"BLUE PATH 3 AMMOUNT: {blue_path_ratio_3_COUNTER}\n")     
+                file.write(f"-----\n")
                 
     """
     ### Interpolate timestamps for lyrics lines that couldn't be matched ###
