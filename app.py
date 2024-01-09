@@ -1041,13 +1041,40 @@ def insertTimestampsToMainChordsBody(synced_lyrics_tupel_array, main_chords_body
                 file.write(f"AMMOUNT OF MUSIXMATCH LYRICS TO SYNC (without empty or note): {amm_of_lines_to_sync}\n")
                 file.write(f"AMMOUNT OF SUCCESSFULLY SYNCED MUSIXMATCH LYRICS: {amm_of_lines_succ_synced}\n")
                 file.write(f"SYNC RATIO: {(amm_of_lines_succ_synced/amm_of_lines_to_sync)*100}%\n")
+                
+                file.write(f"-----\n")
+                
                 file.write(f"GREEN PATH AMMOUNT: {green_path_ratio_COUNTER}\n")
+                file.write(f"GREEN PATH PERCENTAGE: {(green_path_ratio_COUNTER/amm_of_lines_succ_synced)*100}%\n")
+                
+                file.write(f"-\n")
+                
                 file.write(f"RED PATH AMMOUNT: {red_path_ratio_COUNTER}\n")
+                file.write(f"RED PATH PERCENTAGE: {(red_path_ratio_COUNTER/amm_of_lines_succ_synced)*100}%\n")
+                
                 file.write(f"RED PATH 2 AMMOUNT: {red_path_ratio_2_COUNTER}\n")
+                file.write(f"RED PATH 2 PERCENTAGE: {(red_path_ratio_2_COUNTER/amm_of_lines_succ_synced)*100}%\n")
+                
                 file.write(f"RED PATH 3 AMMOUNT: {red_path_ratio_3_COUNTER}\n")
+                file.write(f"RED PATH 3 PERCENTAGE: {(red_path_ratio_3_COUNTER/amm_of_lines_succ_synced)*100}%\n")
+                
+                file.write(f"SUM RED PATH'S AMMOUNT: {red_path_ratio_COUNTER+red_path_ratio_2_COUNTER+red_path_ratio_3_COUNTER}\n")
+                file.write(f"SUM RED PATH'S PERCENTAGE: {((red_path_ratio_COUNTER+red_path_ratio_2_COUNTER+red_path_ratio_3_COUNTER)/amm_of_lines_succ_synced)*100}%\n")
+                
+                file.write(f"-\n")
+                
                 file.write(f"BLUE PATH AMMOUNT: {blue_path_ratio_COUNTER}\n")
+                file.write(f"BLUE PATH PERCENTAGE (Ammount count *2): {((blue_path_ratio_COUNTER*2)/amm_of_lines_succ_synced)*100}%\n")
+                
                 file.write(f"BLUE PATH 2 AMMOUNT: {blue_path_ratio_2_COUNTER}\n")
+                file.write(f"BLUE PATH 2 PERCENTAGE (Ammount count *3): {((blue_path_ratio_2_COUNTER*3)/amm_of_lines_succ_synced)*100}%\n")
+                
                 file.write(f"BLUE PATH 3 AMMOUNT: {blue_path_ratio_3_COUNTER}\n")     
+                file.write(f"BLUE PATH 3 PERCENTAGE (Ammount count *4): {((blue_path_ratio_3_COUNTER*4)/amm_of_lines_succ_synced)*100}%\n")
+                
+                file.write(f"SUM BLUE PATH'S AMMOUNT: {blue_path_ratio_COUNTER+blue_path_ratio_2_COUNTER+blue_path_ratio_3_COUNTER}\n")     
+                file.write(f"SUM BLUE PATH'S PERCENTAGE: {(((blue_path_ratio_COUNTER*2)+(blue_path_ratio_2_COUNTER*3)+(blue_path_ratio_3_COUNTER*4))/amm_of_lines_succ_synced)*100}%\n")
+                
                 file.write(f"-----\n")
                 
     """

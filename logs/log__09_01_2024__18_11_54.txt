@@ -1,0 +1,150 @@
+Playlist: Legendary Guitar Solos
+-> Link: https://open.spotify.com/playlist/37i9dQZF1DWSlJG7YPUBHF
+
+-------------------------
+SONG: 1
+TRACK ID: 4zoQ3EqopTIGmK2c2rPV5t
+TRACK NAME: Cause We've Ended as Lovers
+ARTIST NAME: Jeff Beck
+-----
+FOUND ULTIMATE GUITAR CHORDS: NO
+ULTIMATE GUITAR URL: https://www.google.de/search?q=Jeff Beck cause we've ended as lovers chords Ultimate Guitar
+GOOGLE RESULT INDEX: 0
+-----
+FOUND LYRICS: NO
+LYRICS ARE LINE SYNCED: NO
+-----
+
+-------------------------
+SONG: 2
+TRACK ID: 2NrqjA3YUfNuZcmQzE2EJe
+TRACK NAME: Flying in a Blue Dream
+ARTIST NAME: Joe Satriani
+-----
+FOUND ULTIMATE GUITAR CHORDS: NO
+ULTIMATE GUITAR URL: https://www.google.de/search?q=Joe Satriani flying in a blue dream chords Ultimate Guitar
+GOOGLE RESULT INDEX: 0
+-----
+FOUND LYRICS: NO
+LYRICS ARE LINE SYNCED: NO
+-----
+
+-------------------------
+SONG: 3
+TRACK ID: 2tAeN2TKlQLOoSPXtARzBV
+TRACK NAME: Eruption - 2015 Remaster
+ARTIST NAME: Van Halen
+-----
+FOUND ULTIMATE GUITAR CHORDS: NO
+ULTIMATE GUITAR URL: https://www.google.de/search?q=Van Halen eruption - 2015  chords Ultimate Guitar
+GOOGLE RESULT INDEX: 0
+-----
+FOUND LYRICS: NO
+LYRICS ARE LINE SYNCED: NO
+-----
+
+-------------------------
+SONG: 4
+TRACK ID: 0KAaslGdPc5I6WxmKe3whe
+TRACK NAME: Hangar 18
+ARTIST NAME: Megadeth
+-----
+FOUND ULTIMATE GUITAR CHORDS: YES
+ULTIMATE GUITAR URL: https://tabs.ultimate-guitar.com/tab/megadeth/hangar-18-chords-1776116
+GOOGLE RESULT INDEX: 3
+-----
+FOUND LYRICS: YES
+LYRICS ARE LINE SYNCED: YES
+-----
+AMMOUNT OF MUSIXMATCH LYRICS TO SYNC (without empty or note): 16
+AMMOUNT OF SUCCESSFULLY SYNCED MUSIXMATCH LYRICS: 16
+SYNC RATIO: 100.0%
+-----
+GREEN PATH AMMOUNT: 16
+GREEN PATH PERCENTAGE: 100.0%
+-
+RED PATH AMMOUNT: 0
+RED PATH PERCENTAGE: 0.0%
+RED PATH 2 AMMOUNT: 0
+RED PATH 2 PERCENTAGE: 0.0%
+RED PATH 3 AMMOUNT: 0
+RED PATH 3 PERCENTAGE: 0.0%
+SUM RED PATH'S AMMOUNT: 0
+SUM RED PATH'S PERCENTAGE: 0.0%
+-
+BLUE PATH AMMOUNT: 0
+BLUE PATH PERCENTAGE (Ammount count *2): 0.0%
+BLUE PATH 2 AMMOUNT: 0
+BLUE PATH 2 PERCENTAGE (Ammount count *3): 0.0%
+BLUE PATH 3 AMMOUNT: 0
+BLUE PATH 3 PERCENTAGE (Ammount count *4): 0.0%
+SUM BLUE PATH'S AMMOUNT: 0
+SUM BLUE PATH'S PERCENTAGE: 0.0%
+-----
+
+-------------------------
+SONG: 5
+TRACK ID: 2bBAAVvOHsr7vxWFTuYxH8
+TRACK NAME: Under a Glass Moon
+ARTIST NAME: Dream Theater
+-----
+FOUND ULTIMATE GUITAR CHORDS: NO
+ULTIMATE GUITAR URL: https://www.google.de/search?q=Dream Theater under a glass moon chords Ultimate Guitar
+GOOGLE RESULT INDEX: 0
+-----
+FOUND LYRICS: YES
+LYRICS ARE LINE SYNCED: YES
+-----
+
+-------------------------
+SONG: 6
+TRACK ID: 4u7EnebtmKWzUH433cf5Qv
+TRACK NAME: Bohemian Rhapsody - Remastered 2011
+ARTIST NAME: Queen
+-----
+FOUND ULTIMATE GUITAR CHORDS: YES
+ULTIMATE GUITAR URL: https://tabs.ultimate-guitar.com/tab/queen/bohemian-rhapsody-chords-40606
+GOOGLE RESULT INDEX: 1
+-----
+FOUND LYRICS: YES
+LYRICS ARE LINE SYNCED: YES
+-----
+AMMOUNT OF MUSIXMATCH LYRICS TO SYNC (without empty or note): 50
+AMMOUNT OF SUCCESSFULLY SYNCED MUSIXMATCH LYRICS: 43
+SYNC RATIO: 86.0%
+-----
+GREEN PATH AMMOUNT: 21
+GREEN PATH PERCENTAGE: 48.837209302325576%
+-
+RED PATH AMMOUNT: 0
+RED PATH PERCENTAGE: 0.0%
+RED PATH 2 AMMOUNT: 0
+RED PATH 2 PERCENTAGE: 0.0%
+RED PATH 3 AMMOUNT: 0
+RED PATH 3 PERCENTAGE: 0.0%
+SUM RED PATH'S AMMOUNT: 0
+SUM RED PATH'S PERCENTAGE: 0.0%
+-
+BLUE PATH AMMOUNT: 8
+BLUE PATH PERCENTAGE (Ammount count *2): 37.2093023255814%
+BLUE PATH 2 AMMOUNT: 2
+BLUE PATH 2 PERCENTAGE (Ammount count *3): 13.953488372093023%
+BLUE PATH 3 AMMOUNT: 0
+BLUE PATH 3 PERCENTAGE (Ammount count *4): 0.0%
+SUM BLUE PATH'S AMMOUNT: 10
+SUM BLUE PATH'S PERCENTAGE: 51.162790697674424%
+-----
+
+-------------------------
+SONG: 7
+TRACK ID: 32dnKMni3I3gwUbWp4mi45
+TRACK NAME: Shine On You Crazy Diamond, Pts. 1-5 - 2011 Remaster
+ARTIST NAME: Pink Floyd
+-----
+FOUND ULTIMATE GUITAR CHORDS: NO
+ULTIMATE GUITAR URL: https://www.google.de/search?q=Pink Floyd shine on you crazy diamond, pts. 1-5 - 2011  chords Ultimate Guitar
+GOOGLE RESULT INDEX: 0
+-----
+FOUND LYRICS: YES
+LYRICS ARE LINE SYNCED: YES
+-----

@@ -1,10 +1,13 @@
 import statistics
 
-
-log_file_path = "logs/log__08_01_2024__21_12_06.txt"
+### LOG FILE SOURCE ###
+log_file_path = "logs/legendary_guitar_solos_playlist.txt"
 with open(log_file_path, "r") as file:
     log = file.readlines()
 
+
+
+### PLAYLIST INFO ###
 def extract_playlist_info(log):
     playlist_info = None
     playlist_link = None
@@ -26,6 +29,9 @@ def calculate_song_ammount(log):
 
     return songs_counter
 
+
+
+### CHORD SOURCE INFORMATION ###
 def calculate_found_chords(log):
     found_chords_yes = 0
     found_chords_no = 0
@@ -38,48 +44,19 @@ def calculate_found_chords(log):
 
     return found_chords_yes, found_chords_no
 
-
-def calculate_found_lyrics(log):
-    found_lyrics_yes = 0
-    found_lyrics_no = 0
-
-    for line in log:
-        if "FOUND LYRICS: YES" in line:
-            found_lyrics_yes += 1
-        elif "FOUND LYRICS: NO" in line:
-            found_lyrics_no += 1
-
-    return found_lyrics_yes, found_lyrics_no
-
-def calculate_found_synced_lyrics(log):
-    found_synced_lyrics_yes = 0
-    found_synced_lyrics_no = 0
-
-    for line in log:
-        if "LYRICS ARE LINE SYNCED: YES" in line:
-            found_synced_lyrics_yes += 1
-        elif "LYRICS ARE LINE SYNCED: NO" in line:
-            found_synced_lyrics_no += 1
-
-    return found_synced_lyrics_yes, found_synced_lyrics_no
-
-
-
 def calculate_mean_google_index(log):
-    total_google_index = 0
-    count_non_zero = 0
+    index_values = []
 
     for line in log:
         if "GOOGLE RESULT INDEX:" in line:
             index_value = int(line.split(":")[1].strip())
             if index_value != 0:
-                total_google_index += index_value
-                count_non_zero += 1
+                index_values.append(index_value)
 
-    if count_non_zero == 0:
+    if not index_values:
         return 0  # Avoid division by zero
-
-    average_google_index = total_google_index / count_non_zero
+    
+    average_google_index = sum(index_values) / len(index_values)
     return round(average_google_index, 2)
 
 def calculate_median_google_index(log):
@@ -93,10 +70,54 @@ def calculate_median_google_index(log):
 
     if not index_values:
         return 0  # Avoid division by zero
-
+    
     median_google_index = statistics.median(index_values)
     return round(median_google_index, 2)
 
+
+
+### LYRICS SOURCE INFORMATION ###
+def calculate_found_lyrics(log):
+    found_lyrics_yes = 0
+    found_lyrics_no = 0
+
+    for line in log:
+        if "FOUND LYRICS: YES" in line:
+            found_lyrics_yes += 1
+        elif "FOUND LYRICS: NO" in line:
+            found_lyrics_no += 1
+
+    return found_lyrics_yes, found_lyrics_no
+
+def calculate_lyrics_found_and_not_line_synced(log):
+    count_occurrences = 0
+
+    for i in range(len(log) - 1):
+        if log[i].strip() == 'FOUND LYRICS: YES' and log[i + 1].strip() == 'LYRICS ARE LINE SYNCED: NO':
+            count_occurrences += 1
+
+    return count_occurrences
+
+def calculate_lyrics_found_and_line_synced(log):
+    count_occurrences = 0
+
+    for i in range(len(log) - 1):
+        if log[i].strip() == 'FOUND LYRICS: YES' and log[i + 1].strip() == 'LYRICS ARE LINE SYNCED: YES':
+            count_occurrences += 1
+
+    return count_occurrences
+
+def calculate_lyrics_not_found_but_line_synced(log):
+    count_occurrences = 0
+
+    for i in range(len(log) - 1):
+        if log[i].strip() == 'FOUND LYRICS: NO' and log[i + 1].strip() == 'LYRICS ARE LINE SYNCED: YES':
+            count_occurrences += 1
+
+    return count_occurrences
+
+
+### SONGS THAT ARE SYNCABLE ###
 def calculate_syncable_songs(log):
     synced_songs_count = 0
 
@@ -120,7 +141,6 @@ def calculate_syncable_songs(log):
             is_lyrics_synced_yes = False
 
     return synced_songs_count
-
 
 def calculate_mean_sync_ratio(log):
     total_sync_ratio = 0
@@ -160,6 +180,8 @@ def calculate_median_sync_ratio(log):
     median_sync_ratio = statistics.median(sync_ratios)
     return round(median_sync_ratio, 2)
 
+
+
 #################### 
 
 playlist_info, playlist_link = extract_playlist_info(log)
@@ -185,18 +207,24 @@ print("-----")
 found_lyrics_yes, found_lyrics_no = calculate_found_lyrics(log)
 print("Found Lyrics: YES: {}, NO: {}".format(found_lyrics_yes, found_lyrics_no))
 
-found_synced_lyrics_yes, found_synced_lyrics_no = calculate_found_synced_lyrics(log)
-print("Found Line Synced Lyrics: YES: {}, NO: {}".format(found_synced_lyrics_yes, found_synced_lyrics_no))
+lyrics_found_and_line_synced = calculate_lyrics_found_and_line_synced(log)
+print("-> Found Lyrics AND Lyrics are Line Synced:", lyrics_found_and_line_synced)
+
+lyrics_found_and_not_line_synced = calculate_lyrics_found_and_not_line_synced(log)
+print("-> Found Lyrics but Lyrics are NOT Line Synced:", lyrics_found_and_not_line_synced)
+
+lyrics_not_found_but_line_synced = calculate_lyrics_not_found_but_line_synced(log)
+print("-> Found NO Lyrics but Lyrics are Line Synced (Should be 0):", lyrics_not_found_but_line_synced)
 
 print("-----")
 
 syncable_songs_count = calculate_syncable_songs(log)
-print("Songs that are syncable (i.e. FOUND CHORDS: YES, FOUND LYRICS: YES, LYRICS ARE LINE SYNCED: YES):", syncable_songs_count)
+print("Songs that are syncable (Found Chords and Line Synced Lyrics):", syncable_songs_count)
 
 mean_sync_ratio = calculate_mean_sync_ratio(log)
-print("Mean Sync Ratio: ", mean_sync_ratio, "%", sep="")
+print("-> Mean Sync Ratio: ", mean_sync_ratio, "%", sep="")
 
 median_sync_ratio = calculate_median_sync_ratio(log)
-print("Median Sync Ratio: ", median_sync_ratio, "%", sep="")
+print("-> Median Sync Ratio: ", median_sync_ratio, "%", sep="")
 
 
