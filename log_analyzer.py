@@ -1,7 +1,7 @@
 import statistics
 
 ### LOG FILE SOURCE ###
-log_file_path = "logs/legendary_guitar_solos_playlist.txt"
+log_file_path = "logs/test.txt"
 with open(log_file_path, "r") as file:
     log = file.readlines()
 
@@ -117,6 +117,7 @@ def calculate_lyrics_not_found_but_line_synced(log):
     return count_occurrences
 
 
+
 ### SONGS THAT ARE SYNCABLE ###
 def calculate_syncable_songs(log):
     synced_songs_count = 0
@@ -182,6 +183,47 @@ def calculate_median_sync_ratio(log):
 
 
 
+### PATHS ###
+def calculate_mean_path_percentage(log, striiing):
+    total_sync_ratio = 0
+    count_non_zero = 0
+
+    for line in log:
+        if striiing in line:
+            sync_ratio_str = line.split(":")[1].strip().replace('%', '')
+            try:
+                sync_ratio_value = float(sync_ratio_str)
+                total_sync_ratio += sync_ratio_value
+                count_non_zero += 1
+            except ValueError:
+                print(f"Error converting '{sync_ratio_str}' to float. Skipping this line.")
+
+    if count_non_zero == 0:
+        return 0  # Avoid division by zero
+
+    average_sync_ratio = total_sync_ratio / count_non_zero
+    return round(average_sync_ratio, 2)
+
+def calculate_median_path_percentage(log, striiing):
+    sync_ratios = []
+
+    for line in log:
+        if striiing in line:
+            sync_ratio_str = line.split(":")[1].strip().replace('%', '')
+            try:
+                sync_ratio_value = float(sync_ratio_str)
+                sync_ratios.append(sync_ratio_value)
+            except ValueError:
+                print(f"Error converting '{sync_ratio_str}' to float. Skipping this line.")
+
+    if not sync_ratios:
+        return 0  # Avoid division by zero
+
+    median_sync_ratio = statistics.median(sync_ratios)
+    return round(median_sync_ratio, 2)
+
+
+
 #################### 
 
 playlist_info, playlist_link = extract_playlist_info(log)
@@ -222,9 +264,74 @@ syncable_songs_count = calculate_syncable_songs(log)
 print("Songs that are syncable (Found Chords and Line Synced Lyrics):", syncable_songs_count)
 
 mean_sync_ratio = calculate_mean_sync_ratio(log)
-print("-> Mean Sync Ratio: ", mean_sync_ratio, "%", sep="")
+print("-> Mean Successfully Synced Lines Ratio: ", mean_sync_ratio, "%", sep="")
 
 median_sync_ratio = calculate_median_sync_ratio(log)
-print("-> Median Sync Ratio: ", median_sync_ratio, "%", sep="")
+print("-> Median Successfully Synced Lines Ratio: ", median_sync_ratio, "%", sep="")
+
+print("-----")
+
+print("The Paths' percentages are in regard to the successfully synced lines")
+print("---")
+
+mean_green_path_percentage = calculate_mean_path_percentage(log, "GREEN PATH PERCENTAGE:")
+print("-> Mean Green Path: ", mean_green_path_percentage, "%", sep="")
+
+median_green_path_percentage = calculate_median_path_percentage(log, "GREEN PATH PERCENTAGE:")
+print("-> Median Green Path: ", median_green_path_percentage, "%", sep="")
+
+print("---")
+
+mean_red_path_percentage = calculate_mean_path_percentage(log, "RED PATH PERCENTAGE:")
+print("Mean Red Path: ", mean_red_path_percentage, "%", sep="")
+
+median_red_path_percentage = calculate_median_path_percentage(log, "RED PATH PERCENTAGE:")
+print("Median Red Path: ", median_red_path_percentage, "%", sep="")
+
+mean_red_path_3_percentage = calculate_mean_path_percentage(log, "RED PATH 3 PERCENTAGE:")
+print("Mean Red 3 Path: ", mean_red_path_3_percentage, "%", sep="")
+
+median_red_path_3_percentage = calculate_median_path_percentage(log, "RED PATH 3 PERCENTAGE:")
+print("Median Red 3 Path: ", median_red_path_3_percentage, "%", sep="")
+
+mean_red_path_4_percentage = calculate_mean_path_percentage(log, "RED PATH 4 PERCENTAGE:")
+print("Mean Red 4 Path: ", mean_red_path_4_percentage, "%", sep="")
+
+median_red_path_4_percentage = calculate_median_path_percentage(log, "RED PATH 4 PERCENTAGE:")
+print("Median Red 4 Path: ", median_red_path_4_percentage, "%", sep="")
+
+mean_sum_red_path_percentage = calculate_mean_path_percentage(log, "SUM RED PATH'S PERCENTAGE:")
+print("-> Mean All Red Paths: ", mean_sum_red_path_percentage, "%", sep="")
+
+median_sum_red_path_percentage = calculate_median_path_percentage(log, "SUM RED PATH'S PERCENTAGE:")
+print("-> Median All Red Paths: ", median_sum_red_path_percentage, "%", sep="")
+
+print("---")
+
+mean_blue_path_percentage = calculate_mean_path_percentage(log, "BLUE PATH PERCENTAGE (Ammount count *2):")
+print("Mean Blue Path: ", mean_blue_path_percentage, "%", sep="")
+
+median_blue_path_percentage = calculate_median_path_percentage(log, "BLUE PATH PERCENTAGE (Ammount count *2):")
+print("Median Blue Path: ", median_blue_path_percentage, "%", sep="")
+
+mean_blue_path_3_percentage = calculate_mean_path_percentage(log, "BLUE PATH 3 PERCENTAGE (Ammount count *3):")
+print("Mean Blue 3 Path: ", mean_blue_path_3_percentage, "%", sep="")
+
+median_blue_path_3_percentage = calculate_median_path_percentage(log, "BLUE PATH 3 PERCENTAGE (Ammount count *3):")
+print("Median Blue 3 Path: ", median_blue_path_3_percentage, "%", sep="")
+
+mean_blue_path_4_percentage = calculate_mean_path_percentage(log, "BLUE PATH 4 PERCENTAGE (Ammount count *4):")
+print("Mean Blue 4 Path: ", mean_blue_path_4_percentage, "%", sep="")
+
+median_blue_path_4_percentage = calculate_median_path_percentage(log, "BLUE PATH 4 PERCENTAGE (Ammount count *4):")
+print("Median Blue 4 Path: ", median_blue_path_4_percentage, "%", sep="")
+
+mean_sum_blue_path_percentage = calculate_mean_path_percentage(log, "SUM BLUE PATH'S PERCENTAGE:")
+print("-> Mean All Blue Paths: ", mean_sum_blue_path_percentage, "%", sep="")
+
+median_sum_blue_path_percentage = calculate_median_path_percentage(log, "SUM BLUE PATH'S PERCENTAGE:")
+print("-> Median All Blue Paths: ", median_sum_blue_path_percentage, "%", sep="")
+
+
 
 
