@@ -1,7 +1,7 @@
 import statistics
 
 ### LOG FILE SOURCE ###
-log_file_path = "logs/test.txt"
+log_file_path = "logs/popular_guitar_songs.txt"
 with open(log_file_path, "r") as file:
     log = file.readlines()
 

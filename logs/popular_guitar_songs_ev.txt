@@ -1,0 +1,42 @@
+Playlist Name: Popular Guitar Songs
+Playlist Creator: Thomas Larcombe
+Playlist Likes: 1.850
+Playlist Timestamp: 10_01_2024__13_39_48
+-> Playlist Link: https://open.spotify.com/playlist/4oCpIPPOlpzT8sUEgErt3O?si=533f39edadec4f1c
+Playlist Songs: 93
+-----
+Found Chords: YES: 72, NO: 21
+Mean Google Chords Result Index (Applied to song with found chords): 1.07
+Median Google Chords Result Index (Applied to song with found chords): 1.0
+-----
+Found Lyrics: YES: 93, NO: 0
+-> Found Lyrics AND Lyrics are Line Synced: 92
+-> Found Lyrics but Lyrics are NOT Line Synced: 1
+-> Found NO Lyrics but Lyrics are Line Synced (Should be 0): 0
+-----
+Songs that are syncable (Found Chords and Line Synced Lyrics): 72
+-> Mean Successfully Synced Lines Ratio: 87.54%
+-> Median Successfully Synced Lines Ratio: 93.33%
+-----
+The Paths' percentages are in regard to the successfully synced lines
+---
+-> Mean Green Path: 75.26%
+-> Median Green Path: 86.27%
+---
+Mean Red Path: 5.16%
+Median Red Path: 0.0%
+Mean Red 3 Path: 0.31%
+Median Red 3 Path: 0.0%
+Mean Red 4 Path: 0.0%
+Median Red 4 Path: 0.0%
+-> Mean All Red Paths: 5.47%
+-> Median All Red Paths: 0.0%
+---
+Mean Blue Path: 15.27%
+Median Blue Path: 5.13%
+Mean Blue 3 Path: 3.64%
+Median Blue 3 Path: 0.0%
+Mean Blue 4 Path: 0.35%
+Median Blue 4 Path: 0.0%
+-> Mean All Blue Paths: 19.26%
+-> Median All Blue Paths: 6.9%
