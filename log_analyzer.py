@@ -10,15 +10,29 @@ with open(log_file_path, "r") as file:
 ### PLAYLIST INFO ###
 def extract_playlist_info(log):
     playlist_info = None
+    playlist_creator = None
+    playlist_likes = None
+    playlist_timestamp = None
     playlist_link = None
 
+
     for line in log:
-        if "Playlist:" in line:
-            playlist_info = line.split("Playlist:")[1].strip()
+        if "Playlist Name:" in line:
+            playlist_info = line.split("Playlist Name:")[1].strip()
+            
+        elif "Playlist Created by:" in line:
+            playlist_creator = line.split("Playlist Created by:")[1].strip()
+            
+        elif "Playlist Likes:" in line:
+            playlist_likes = line.split("Playlist Likes:")[1].strip()
+            
+        elif "Playlist Timestamp:" in line:
+            playlist_timestamp = line.split("Playlist Timestamp:")[1].strip()
+            
         elif "-> Link:" in line:
             playlist_link = line.split("-> Link:")[1].strip()
 
-    return playlist_info, playlist_link
+    return playlist_info, playlist_creator, playlist_likes, playlist_timestamp, playlist_link
 
 def calculate_song_ammount(log):
     songs_counter = 0
@@ -226,9 +240,12 @@ def calculate_median_path_percentage(log, striiing):
 
 #################### 
 
-playlist_info, playlist_link = extract_playlist_info(log)
+playlist_info, playlist_creator, playlist_likes, playlist_timestamp, playlist_link = extract_playlist_info(log)
 print("Playlist Name:", playlist_info)
-print("Playlist Link:", playlist_link)
+print("Playlist Creator:", playlist_creator)
+print("Playlist Likes:", playlist_likes)
+print("Playlist Timestamp:", playlist_timestamp)
+print("-> Playlist Link:", playlist_link)
 
 song_counter = calculate_song_ammount(log)
 print("Playlist Songs:", song_counter)

@@ -48,8 +48,11 @@ log_file_path = f'logs/log__{timestamp}.txt'
 song_in_log = 1
 if (dev_or_prod == "DEVELOPMENT" and log_on_off == "ON"):
     with open(log_file_path, 'a') as file:
-        file.write(f"Playlist: Legendary Guitar Solos\n")
-        file.write(f"-> Link: https://open.spotify.com/playlist/37i9dQZF1DWSlJG7YPUBHF\n")
+        file.write(f"Playlist Name: Popular Guitar Songs\n")
+        file.write(f"Playlist Created by: Thomas Larcombe\n")
+        file.write(f"Playlist Likes: 1.850")
+        file.write(f"Playlist Timestamp: {timestamp}\n")
+        file.write(f"-> Link: https://open.spotify.com/playlist/4oCpIPPOlpzT8sUEgErt3O?si=533f39edadec4f1c\n")
                 
                 
 ######## SELFMADE SPOTIFY LYRICS ########
