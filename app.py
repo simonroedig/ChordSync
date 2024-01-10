@@ -605,8 +605,10 @@ def googleChords(track_name, artist_name):
                     
                     # Check if the found Ultimate Guitar link depicts the desired song
                     # The title on Ultimate Guitar may look something like this: <title>BREATHE CHORDS (ver 2) by Pink Floyd @ Ultimate-Guitar.Com</title>
+                    # Or like this: ONE CHORDS by Metallica for guitar, ukulele, piano at Ultimate-Guitar
                     title_text_no_ver = (re.sub(r'\(ver \d+\)', '', title_text)).replace("  ", " ") # e.g BREATHE CHORDS by Pink Floyd @ Ultimate-Guitar.Com
                     title_text_no_ue = title_text_no_ver.replace(" @ Ultimate-Guitar.Com", "") # e.g BREATHE CHORDS by Pink Floyd 
+                    title_text_no_ue = title_text_no_ue.replace(" for guitar, ukulele, piano at Ultimate-Guitar", "") # e.g BREATHE CHORDS by Pink Floyd 
                     title_text_no_ue = title_text_no_ue.lower() # e.g. breathe chords by pink floyd
                     
                     # if "chords" exists in title
