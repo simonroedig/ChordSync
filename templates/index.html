@@ -75,6 +75,8 @@
 
         //////// WEB SOCKET ////////
         var dev_or_prod = "{{ dev_or_prod }}";
+        var log_on_off = "{{ log_on_off }}";
+
         if (dev_or_prod == "PRODUCTION") {
             console.log("In Production");
             var socket = io.connect('wss://chordsync.onrender.com');
@@ -98,7 +100,7 @@
         }, 250);
 
         // For Logging:
-        if (dev_or_prod == "DEVELOPMENT") {
+        if (dev_or_prod == "DEVELOPMENT" && log_on_off == "ON") {
             setInterval(() => {
                 socket.emit('nextSpotifyTrack');
             }, 10000);

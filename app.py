@@ -39,13 +39,14 @@ import html
 load_dotenv()
 dev_or_prod = os.getenv("DEV_OR_PROD") # either "DEVELOPMENT" or "PRODUCTION"
 lyrics_api_source = os.getenv("LYRICS_API_SOURCE") # either "REST" or "SELFMADE"
+log_on_off = os.getenv("LOG_ON_OFF") # either "ON" or "OFF"
 
 
 ######## LOGGING ########
 timestamp = datetime.datetime.now().strftime("%d_%m_%Y__%H_%M_%S")
 log_file_path = f'logs/log__{timestamp}.txt'
 song_in_log = 1
-if (dev_or_prod == "DEVELOPMENT"):
+if (dev_or_prod == "DEVELOPMENT" and log_on_off == "ON"):
     with open(log_file_path, 'a') as file:
         file.write(f"Playlist: Legendary Guitar Solos\n")
         file.write(f"-> Link: https://open.spotify.com/playlist/37i9dQZF1DWSlJG7YPUBHF\n")
@@ -138,7 +139,7 @@ def index():
 
     return render_template('index.html', album_cover_url="", track_name="Track", artist_name="Artist", minutes=0, seconds=00, 
                            guitar_tuning="E A D G B E", guitar_capo="0", main_chords_body="", complete_source_code_link='javascript:void(0)', 
-                           is_logged_in=is_logged_in, spotify_user_name=spotify_user_name, spotify_user_image=spotify_user_image, dev_or_prod=dev_or_prod)
+                           is_logged_in=is_logged_in, spotify_user_name=spotify_user_name, spotify_user_image=spotify_user_image, dev_or_prod=dev_or_prod, log_on_off=log_on_off)
 
 @app.route('/login')
 def login():
@@ -396,7 +397,7 @@ def getTrackStaticData():
         album_cover_url = current_track['item']['album']['images'][0]['url']
         
         
-        if (dev_or_prod == "DEVELOPMENT"):
+        if (dev_or_prod == "DEVELOPMENT" and log_on_off == "ON"):
             with open(log_file_path, 'a') as file:
                 file.write(f"\n")
                 file.write(f"-------------------------\n")
@@ -413,7 +414,7 @@ def getTrackStaticData():
         complete_source_code, complete_source_code_link, complete_source_code_found, result_index = googleChords(track_name, artist_name)
         main_chords_body = complete_source_code;
         
-        if dev_or_prod == "DEVELOPMENT":
+        if (dev_or_prod == "DEVELOPMENT" and log_on_off == "ON"):
             with open(log_file_path, 'a') as file:
                 file.write(f"FOUND ULTIMATE GUITAR CHORDS: {'YES' if complete_source_code_found else 'NO'}\n")
                 file.write(f"ULTIMATE GUITAR URL: {complete_source_code_link}\n")
@@ -429,7 +430,7 @@ def getTrackStaticData():
             
             synced_lyrics_json, found_musixmatch_lyrics, musixmatch_lyrics_is_linesynced = getSyncedLyricsJson(track_id)
             
-            if dev_or_prod == "DEVELOPMENT":
+            if (dev_or_prod == "DEVELOPMENT" and log_on_off == "ON"):
                 with open(log_file_path, 'a') as file:
                     file.write(f"FOUND LYRICS: {'YES' if found_musixmatch_lyrics else 'NO'}\n")
                     file.write(f"LYRICS ARE LINE SYNCED: {'YES' if musixmatch_lyrics_is_linesynced else 'NO'}\n")
@@ -479,7 +480,8 @@ def getTrackStaticData():
         # No chords found, also regard as no synced lyrics found    
         else:
             synced_lyrics_json, found_musixmatch_lyrics, musixmatch_lyrics_is_linesynced = getSyncedLyricsJson(track_id)
-            if dev_or_prod == "DEVELOPMENT":
+            
+            if (dev_or_prod == "DEVELOPMENT" and log_on_off == "ON"):
                 with open(log_file_path, 'a') as file:
                     file.write(f"FOUND LYRICS: {'YES' if found_musixmatch_lyrics else 'NO'}\n")
                     file.write(f"LYRICS ARE LINE SYNCED: {'YES' if musixmatch_lyrics_is_linesynced else 'NO'}\n")
@@ -1036,7 +1038,7 @@ def insertTimestampsToMainChordsBody(synced_lyrics_tupel_array, main_chords_body
              
         official_lyrics_line += 1  
         
-    if (dev_or_prod == "DEVELOPMENT"):
+    if (dev_or_prod == "DEVELOPMENT" and log_on_off == "ON"):
             with open(log_file_path, 'a') as file:
                 file.write(f"AMMOUNT OF MUSIXMATCH LYRICS TO SYNC (without empty or note): {amm_of_lines_to_sync}\n")
                 file.write(f"AMMOUNT OF SUCCESSFULLY SYNCED MUSIXMATCH LYRICS: {amm_of_lines_succ_synced}\n")
