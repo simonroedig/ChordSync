@@ -756,6 +756,12 @@ def getSyncedLyricsJson(track_id):
     
     ### SELF-MADE SPOTIFY LYRICS APPROACH:
     if (lyrics_api_source == "SELFMADE"):
+        # Make this song appear like it has no lyrics, for study
+        if (track_id == "1vxw6aYJls2oq3gW0DujAo"):
+            found_musixmatch_lyrics = 0
+            musixmatch_lyrics_is_linesynced = 0
+            ic(f'Crazy by Gnarls Barkley has no synced lyrics') 
+            return "COULDN'T FIND LYRICS, ERROR REQUESTING", found_musixmatch_lyrics, musixmatch_lyrics_is_linesynced
         try:
             original_json = selfmade_spotify_lyrics.getLyrics(track_id)
             response_json = {'lines': original_json['lyrics']['lines'], "syncType":  original_json['lyrics']['syncType']}
