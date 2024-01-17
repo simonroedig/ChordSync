@@ -1,0 +1,46 @@
+Playlist Name: Easy Songs to Learn on Guitar
+Playlist Creator: GuitarCatMatt
+Playlist Likes: 1.353
+Playlist Timestamp: 17_01_2024__10_57_44
+-> Playlist Link: https://open.spotify.com/playlist/5hrQcqeuQCVu3tWbl8T8Y9?si=f80e9e2d6cea41e4
+Playlist Songs: 498
+-----
+Found Chords: YES: 422, NO: 76
+Mean Google Chords Result Index (Applied to song with found chords): 1.31
+Median Google Chords Result Index (Applied to song with found chords): 1.0
+-----
+Found Lyrics: YES: 473, NO: 25
+-> Found Lyrics AND Lyrics are Line Synced: 453
+-> Found Lyrics but Lyrics are NOT Line Synced: 20
+-> Found NO Lyrics but Lyrics are Line Synced (Should be 0): 0
+-----
+Songs that are syncable (Found Chords and Line Synced Lyrics): 417
+-> Mean Successfully Synced Lines Ratio: 88.33%
+-> Median Successfully Synced Lines Ratio: 95.0%
+-> Mean Ammount of MusixMatch Lyrics Lines to sync (without Note symbol or empty string): 41.75
+-> Mean Ammount of successfully synced MusixMatch Lyrics Lines: 36.62
+-> Median Ammount of MusixMatch Lyrics Lines to sync (without Note symbol or empty string): 40
+-> Median Ammount of successfully synced MusixMatch Lyrics Lines: 36
+-----
+The Paths' percentages are in regard to the successfully synced lines
+---
+-> Mean Green Path: 71.16%
+-> Median Green Path: 80.0%
+---
+Mean Red Path: 5.98%
+Median Red Path: 0.0%
+Mean Red 3 Path: 0.33%
+Median Red 3 Path: 0.0%
+Mean Red 4 Path: 0.0%
+Median Red 4 Path: 0.0%
+-> Mean All Red Paths: 6.31%
+-> Median All Red Paths: 0.0%
+---
+Mean Blue Path: 19.73%
+Median Blue Path: 5.56%
+Mean Blue 3 Path: 2.2%
+Median Blue 3 Path: 0.0%
+Mean Blue 4 Path: 0.6%
+Median Blue 4 Path: 0.0%
+-> Mean All Blue Paths: 22.53%
+-> Median All Blue Paths: 6.51%

@@ -40,19 +40,28 @@ load_dotenv()
 dev_or_prod = os.getenv("DEV_OR_PROD") # either "DEVELOPMENT" or "PRODUCTION"
 lyrics_api_source = os.getenv("LYRICS_API_SOURCE") # either "REST" or "SELFMADE"
 log_on_off = os.getenv("LOG_ON_OFF") # either "ON" or "OFF"
+print(f"dev_or_prod: {dev_or_prod}")
+print(f"lyrics_api_source: {lyrics_api_source}")
+print(f"log_on_off: {log_on_off}")
 
 
 ######## LOGGING ########
 timestamp = datetime.datetime.now().strftime("%d_%m_%Y__%H_%M_%S")
 log_file_path = f'logs/log__{timestamp}.txt'
-song_in_log = 1
+song_in_log = 248
+
+wrote_block_1 = ""
+wrote_block_2 = ""
+wrote_block_3 = ""
+wrote_block_4 = ""
+
 if (dev_or_prod == "DEVELOPMENT" and log_on_off == "ON"):
     with open(log_file_path, 'a') as file:
-        file.write(f"Playlist Name: Popular Guitar Songs\n")
-        file.write(f"Playlist Created by: Thomas Larcombe\n")
-        file.write(f"Playlist Likes: 1.850\n")
+        file.write(f"Playlist Name: Easy Songs to Learn on Guitar\n")
+        file.write(f"Playlist Created by: GuitarCatMatt\n")
+        file.write(f"Playlist Likes: 1.353\n")
         file.write(f"Playlist Timestamp: {timestamp}\n")
-        file.write(f"-> Link: https://open.spotify.com/playlist/4oCpIPPOlpzT8sUEgErt3O?si=533f39edadec4f1c\n")
+        file.write(f"-> Link: https://open.spotify.com/playlist/5hrQcqeuQCVu3tWbl8T8Y9?si=f80e9e2d6cea41e4\n")
                 
                 
 ######## SELFMADE SPOTIFY LYRICS ########
@@ -352,6 +361,10 @@ def getTrackStaticData():
     
     global song_in_log
     
+    global wrote_block_1
+    global wrote_block_2
+    global wrote_block_3
+    
     token_info = refresh_token()
     if token_info == 0:
         complete_source_code_link = ""
@@ -400,8 +413,10 @@ def getTrackStaticData():
         album_cover_url = current_track['item']['album']['images'][0]['url']
         
         
-        if (dev_or_prod == "DEVELOPMENT" and log_on_off == "ON"):
+        if (dev_or_prod == "DEVELOPMENT" and log_on_off == "ON" and wrote_block_1 != track_id):
             with open(log_file_path, 'a') as file:
+                wrote_block_1 = track_id
+                
                 file.write(f"\n")
                 file.write(f"-------------------------\n")
                 file.write(f"SONG: {song_in_log}\n")
@@ -417,8 +432,10 @@ def getTrackStaticData():
         complete_source_code, complete_source_code_link, complete_source_code_found, result_index = googleChords(track_name, artist_name)
         main_chords_body = complete_source_code;
         
-        if (dev_or_prod == "DEVELOPMENT" and log_on_off == "ON"):
+        if (dev_or_prod == "DEVELOPMENT" and log_on_off == "ON" and wrote_block_2 != track_id):
             with open(log_file_path, 'a') as file:
+                wrote_block_2 = track_id
+                
                 file.write(f"FOUND ULTIMATE GUITAR CHORDS: {'YES' if complete_source_code_found else 'NO'}\n")
                 file.write(f"ULTIMATE GUITAR URL: {complete_source_code_link}\n")
                 file.write(f"GOOGLE RESULT INDEX: {result_index}\n")
@@ -433,8 +450,10 @@ def getTrackStaticData():
             
             synced_lyrics_json, found_musixmatch_lyrics, musixmatch_lyrics_is_linesynced = getSyncedLyricsJson(track_id)
             
-            if (dev_or_prod == "DEVELOPMENT" and log_on_off == "ON"):
+            if (dev_or_prod == "DEVELOPMENT" and log_on_off == "ON" and wrote_block_3 != track_id):
                 with open(log_file_path, 'a') as file:
+                    wrote_block_3 = track_id
+                    
                     file.write(f"FOUND LYRICS: {'YES' if found_musixmatch_lyrics else 'NO'}\n")
                     file.write(f"LYRICS ARE LINE SYNCED: {'YES' if musixmatch_lyrics_is_linesynced else 'NO'}\n")
                     file.write(f"-----\n")
@@ -444,7 +463,7 @@ def getTrackStaticData():
                 synced_lyrics_tupel_array = parseSyncedLyricsJsonToTupelArray(synced_lyrics_json)
 
                 ### Main Algorithm
-                main_chords_body = insertTimestampsToMainChordsBody(synced_lyrics_tupel_array, main_chords_body, track_duration_ms)
+                main_chords_body = insertTimestampsToMainChordsBody(synced_lyrics_tupel_array, main_chords_body, track_duration_ms, track_id)
                 
                 return {
                     'track_name': track_name,
@@ -484,8 +503,10 @@ def getTrackStaticData():
         else:
             synced_lyrics_json, found_musixmatch_lyrics, musixmatch_lyrics_is_linesynced = getSyncedLyricsJson(track_id)
             
-            if (dev_or_prod == "DEVELOPMENT" and log_on_off == "ON"):
+            if (dev_or_prod == "DEVELOPMENT" and log_on_off == "ON" and wrote_block_3 != track_id):
                 with open(log_file_path, 'a') as file:
+                    wrote_block_3 = track_id
+                    
                     file.write(f"FOUND LYRICS: {'YES' if found_musixmatch_lyrics else 'NO'}\n")
                     file.write(f"LYRICS ARE LINE SYNCED: {'YES' if musixmatch_lyrics_is_linesynced else 'NO'}\n")
                     file.write(f"-----\n")
@@ -628,7 +649,7 @@ def googleChords(track_name, artist_name):
                         ic(fuzz.ratio(ue_arist_name, spotify_artist_name))
                         
                         # Often titles on spotify include further things like (acoustic, version, remastered, unplugged), title are often the exact same, thus different ratio thresholds
-                        if (fuzz.ratio(ue_track_name, spotify_track_name) >= 40) and (fuzz.ratio(ue_arist_name, spotify_artist_name) >= 60):
+                        if (fuzz.ratio(ue_track_name, spotify_track_name) >= 40) and (fuzz.ratio(ue_arist_name, spotify_artist_name) >= 40):
                             return source_code, link, 1, result_index
     
                 
@@ -807,7 +828,8 @@ def parseSyncedLyricsJsonToTupelArray(synced_lyrics_json):
 
 ######## TIMESTAMP -> SOURCE CODE INSERTION ########
 # Main algorithm that inserts Musixmatch timestamps into the Ultimate Guitar source code
-def insertTimestampsToMainChordsBody(synced_lyrics_tupel_array, main_chords_body, track_length_ms):  
+def insertTimestampsToMainChordsBody(synced_lyrics_tupel_array, main_chords_body, track_length_ms, track_id):  
+    global wrote_block_4
     
     # Removes all empty lyrics and music notes from Musixmatch lyrics, as they can't be matched anyways and cause errors in red and blue paths
     synced_lyrics_tupel_array = [(timestamp, lyric) for timestamp, lyric in synced_lyrics_tupel_array if lyric not in ['', '♪']]
@@ -1049,8 +1071,10 @@ def insertTimestampsToMainChordsBody(synced_lyrics_tupel_array, main_chords_body
              
         official_lyrics_line += 1  
         
-    if (dev_or_prod == "DEVELOPMENT" and log_on_off == "ON"):
+    if (dev_or_prod == "DEVELOPMENT" and log_on_off == "ON" and wrote_block_4 != track_id):
             with open(log_file_path, 'a') as file:
+                wrote_block_4 = track_id
+                
                 file.write(f"AMMOUNT OF MUSIXMATCH LYRICS TO SYNC (without empty or note): {amm_of_lines_to_sync}\n")
                 file.write(f"AMMOUNT OF SUCCESSFULLY SYNCED MUSIXMATCH LYRICS: {amm_of_lines_succ_synced}\n")
                 file.write(f"SYNC RATIO: {(amm_of_lines_succ_synced/amm_of_lines_to_sync)*100}%\n")

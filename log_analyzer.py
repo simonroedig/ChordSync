@@ -1,7 +1,7 @@
 import statistics
 
 ### LOG FILE SOURCE ###
-log_file_path = "logs/popular_guitar_songs.txt"
+log_file_path = "logs/easy_songs_to_learn_on_guitar.txt"
 with open(log_file_path, "r") as file:
     log = file.readlines()
 
@@ -195,6 +195,63 @@ def calculate_median_sync_ratio(log):
     median_sync_ratio = statistics.median(sync_ratios)
     return round(median_sync_ratio, 2)
 
+def calculate_mean_amnt_of_lyrics(log):
+    amnt_of_lyrics_list = []
+    successfully_synced_lyrics_list = []
+
+    for line in log:
+        if "AMMOUNT OF MUSIXMATCH LYRICS TO SYNC (without empty or note):" in line:
+            amnt_of_lyrics_str = line.split(":")[1].strip()
+            try:
+                amnt_of_lyrics_value = int(amnt_of_lyrics_str)
+                amnt_of_lyrics_list.append(amnt_of_lyrics_value)
+            except ValueError:
+                print(f"Error converting '{amnt_of_lyrics_str}' to int. Skipping this line.")
+
+        elif "AMMOUNT OF SUCCESSFULLY SYNCED MUSIXMATCH LYRICS:" in line:
+            synced_lyrics_str = line.split(":")[1].strip()
+            try:
+                synced_lyrics_value = int(synced_lyrics_str)
+                successfully_synced_lyrics_list.append(synced_lyrics_value)
+            except ValueError:
+                print(f"Error converting '{synced_lyrics_str}' to int. Skipping this line.")
+
+    if not amnt_of_lyrics_list or not successfully_synced_lyrics_list:
+        return 0, 0  # Avoid division by zero
+
+    mean_amnt_of_lyrics = round(statistics.mean(amnt_of_lyrics_list), 2)
+    mean_successfully_synced_lyrics = round(statistics.mean(successfully_synced_lyrics_list), 2)
+
+    return mean_amnt_of_lyrics, mean_successfully_synced_lyrics
+
+def calculate_median_amnt_of_lyrics(log):
+    amnt_of_lyrics_list = []
+    successfully_synced_lyrics_list = []
+
+    for line in log:
+        if "AMMOUNT OF MUSIXMATCH LYRICS TO SYNC (without empty or note):" in line:
+            amnt_of_lyrics_str = line.split(":")[1].strip()
+            try:
+                amnt_of_lyrics_value = int(amnt_of_lyrics_str)
+                amnt_of_lyrics_list.append(amnt_of_lyrics_value)
+            except ValueError:
+                print(f"Error converting '{amnt_of_lyrics_str}' to int. Skipping this line.")
+
+        elif "AMMOUNT OF SUCCESSFULLY SYNCED MUSIXMATCH LYRICS:" in line:
+            synced_lyrics_str = line.split(":")[1].strip()
+            try:
+                synced_lyrics_value = int(synced_lyrics_str)
+                successfully_synced_lyrics_list.append(synced_lyrics_value)
+            except ValueError:
+                print(f"Error converting '{synced_lyrics_str}' to int. Skipping this line.")
+
+    if not amnt_of_lyrics_list or not successfully_synced_lyrics_list:
+        return 0, 0  # Avoid division by zero
+
+    median_amnt_of_lyrics = round(statistics.median(amnt_of_lyrics_list), 2)
+    median_successfully_synced_lyrics = round(statistics.median(successfully_synced_lyrics_list), 2)
+
+    return median_amnt_of_lyrics, median_successfully_synced_lyrics
 
 
 ### PATHS ###
@@ -285,6 +342,16 @@ print("-> Mean Successfully Synced Lines Ratio: ", mean_sync_ratio, "%", sep="")
 
 median_sync_ratio = calculate_median_sync_ratio(log)
 print("-> Median Successfully Synced Lines Ratio: ", median_sync_ratio, "%", sep="")
+
+mean_amnt_of_lyrics, mean_successfully_synced_lyrics = calculate_mean_amnt_of_lyrics(log)
+print(f"-> Mean Ammount of MusixMatch Lyrics Lines to sync (without Note symbol or empty string): {mean_amnt_of_lyrics}")
+print(f"-> Mean Ammount of successfully synced MusixMatch Lyrics Lines: {mean_successfully_synced_lyrics}")
+
+median_amnt_of_lyrics, median_successfully_synced_lyrics = calculate_median_amnt_of_lyrics(log)
+print(f"-> Median Ammount of MusixMatch Lyrics Lines to sync (without Note symbol or empty string): {median_amnt_of_lyrics}")
+print(f"-> Median Ammount of successfully synced MusixMatch Lyrics Lines: {median_successfully_synced_lyrics}")
+
+###########################################################################################################
 
 print("-----")
 
