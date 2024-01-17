@@ -1,0 +1,4 @@
+P2 searched up second song withing UG search box
+P4 searched up both songs withing UG search box, and opened plain UG beforehand
+
+P2 and P6 added the second song into the queue in spotify

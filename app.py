@@ -13,20 +13,16 @@ Bachelor's Thesis (WS 2023/2024)
 
 
 ######## IMPORTS (DUH) ########
-import multiprocessing
-import sys
-from wsgiref.types import WSGIApplication
 from dotenv import load_dotenv
 import os
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 from spotipy.exceptions import SpotifyException
 import requests
-from flask import Flask, render_template, jsonify, request, send_from_directory, redirect, session, url_for
+from flask import Flask, render_template, request, send_from_directory, redirect, session
 from bs4 import BeautifulSoup
 import re
-from markupsafe import escape, Markup
-from fuzzywuzzy import fuzz, process
+from fuzzywuzzy import fuzz
 import json
 from icecream import ic
 from flask_socketio import SocketIO, emit
