@@ -12,7 +12,7 @@ capo_minus_button.addEventListener("click", () => {
     }
     current_capo_value = document.getElementById("IDguitarCapo");
     current_capo_value_int = parseInt(current_capo_value.innerHTML);
-    if (current_capo_value_int > 0) {
+    if (current_capo_value_int > -12) {
         current_capo_value_int -= 1;
         current_capo_value.innerHTML = current_capo_value_int;
         capo_minus_button.style.opacity = "1";
@@ -29,7 +29,7 @@ capo_minus_button.addEventListener("click", () => {
         main_chords_body = parsed_body.body.innerHTML;
     }
 
-    if (current_capo_value_int == 0) {
+    if (current_capo_value_int == -12) {
         capo_minus_button.style.opacity = "0.5";
         capo_plus_button.style.opacity = "1";
     } 
@@ -77,6 +77,79 @@ capo_minus_button.addEventListener("click", () => {
 
     lines_hover_and_clickable();
 });
+
+function capoMinusFunc() {
+    if (spotify_error == 1) {
+        // Make button unclickable if Spotify is not available
+        return;
+    }
+    current_capo_value = document.getElementById("IDguitarCapo");
+    current_capo_value_int = parseInt(current_capo_value.innerHTML);
+    if (current_capo_value_int > -12) {
+        current_capo_value_int -= 1;
+        current_capo_value.innerHTML = current_capo_value_int;
+        capo_minus_button.style.opacity = "1";
+        capo_plus_button.style.opacity = "1";
+        
+        // Apply chord transpose (minus 1 capo) for main_chords_body
+        var parser = new DOMParser();
+        var parsed_body = parser.parseFromString(document.getElementById('IDdivMainChords').innerHTML, "text/html");
+        var all_chords = parsed_body.getElementsByClassName("chord_span");
+        for (let i = 0; i < all_chords.length; i++) {
+            all_chords[i].innerHTML = sharOrFlatTranposer(transposeChord(all_chords[i].innerHTML.toString(), 1), current_flat_or_sharp);
+        }
+        document.getElementById('IDdivMainChords').innerHTML = parsed_body.body.innerHTML;
+        main_chords_body = parsed_body.body.innerHTML;
+    }
+
+    if (current_capo_value_int == -12) {
+        capo_minus_button.style.opacity = "0.5";
+        capo_plus_button.style.opacity = "1";
+    } 
+    if (initial_capo_value == current_capo_value_int) {
+        current_capo_value.style.fontWeight = "bold";
+        current_capo_value.style.color = "#1DB954";
+    } else {
+        current_capo_value.style.fontWeight = "normal";
+        current_capo_value.style.color = "#1DB954";
+    }
+
+    // Check current_flat_or_sharp after capo change
+    var parser3 = new DOMParser();
+    var parsed_body_3 = parser3.parseFromString(document.getElementById('IDdivMainChords').innerHTML, "text/html");
+    var all_chords_3 = parsed_body_3.getElementsByClassName("chord_span");
+    amount_of_flats = 0;
+    amount_of_sharps = 0;
+    for (let i = 0; i < all_chords_3.length; i++) {
+        amount_of_flats += (all_chords_3[i].innerHTML.match(/b/g) || []).length;
+    }
+    for (let i = 0; i < all_chords_3.length; i++) {
+        amount_of_sharps += (all_chords_3[i].innerHTML.match(/#/g) || []).length;
+    }
+    if (amount_of_sharps > amount_of_flats) {
+        document.getElementById("IDsharpSymbol").style.fontWeight = "bold";
+        document.getElementById("IDsharpSymbol").style.color = "#1DB954";
+        document.getElementById("IDsharpSymbol").style.filter = "drop-shadow(0 0 8px #1DB954)";
+        current_flat_or_sharp = "#";
+    }
+    if (amount_of_flats > amount_of_sharps) {
+        document.getElementById("IDflatSymbol").style.fontWeight = "bold";
+        document.getElementById("IDflatSymbol").style.color = "#1DB954";
+        document.getElementById("IDflatSymbol").style.filter = "drop-shadow(0 0 8px #1DB954)";
+        current_flat_or_sharp = "b";
+    }
+    if (amount_of_sharps == amount_of_flats) {
+        document.getElementById("IDsharpSymbol").style.fontWeight = "normal";
+        document.getElementById("IDsharpSymbol").style.color = "white";
+        document.getElementById("IDsharpSymbol").style.filter = "";
+        document.getElementById("IDflatSymbol").style.fontWeight = "normal";
+        document.getElementById("IDflatSymbol").style.color = "white";
+        document.getElementById("IDflatSymbol").style.filter = "";
+        // Do not reasign current_flat_or_sharp to persist the previous value when changing capo afterwards again
+    }
+
+    lines_hover_and_clickable();
+}
 
 // Capo plus -> transpose chords -1
 capo_plus_button.addEventListener("click", () => {
@@ -151,6 +224,79 @@ capo_plus_button.addEventListener("click", () => {
 
     lines_hover_and_clickable();
 });
+
+function capoPlusFunc() {
+    if (spotify_error == 1) {
+        // Make button unclickable if Spotify is not available
+        return;
+    }
+    current_capo_value = document.getElementById("IDguitarCapo");
+    current_capo_value_int = parseInt(current_capo_value.innerHTML);
+    if (current_capo_value_int < 12) {
+        current_capo_value_int += 1;
+        current_capo_value.innerHTML = current_capo_value_int;
+        capo_plus_button.style.opacity = "1";
+        capo_minus_button.style.opacity = "1";
+
+        // Apply chord transpose (plus 1 capo) for main_chords_body
+        var parser = new DOMParser();
+        var parsed_body = parser.parseFromString(document.getElementById('IDdivMainChords').innerHTML, "text/html");
+        var all_chords = parsed_body.getElementsByClassName("chord_span");
+        for (let i = 0; i < all_chords.length; i++) {
+            all_chords[i].innerHTML = sharOrFlatTranposer(transposeChord(all_chords[i].innerHTML.toString(), -1), current_flat_or_sharp);
+        }
+        document.getElementById('IDdivMainChords').innerHTML = parsed_body.body.innerHTML;
+        main_chords_body = parsed_body.body.innerHTML;
+    }
+
+    if (current_capo_value_int == 12) {
+        capo_plus_button.style.opacity = "0.5";
+        capo_minus_button.style.opacity = "1";
+    }
+    if (initial_capo_value == current_capo_value_int) {
+        current_capo_value.style.fontWeight = "bold";
+        current_capo_value.style.color = "#1DB954";
+    } else {
+        current_capo_value.style.fontWeight = "normal";
+        current_capo_value.style.color = "#1DB954";
+    }
+
+    // Check current_flat_or_sharp after capo change
+    var parser3 = new DOMParser();
+    var parsed_body_3 = parser3.parseFromString(document.getElementById('IDdivMainChords').innerHTML, "text/html");
+    var all_chords_3 = parsed_body_3.getElementsByClassName("chord_span");
+    amount_of_flats = 0;
+    amount_of_sharps = 0;
+    for (let i = 0; i < all_chords_3.length; i++) {
+        amount_of_flats += (all_chords_3[i].innerHTML.match(/b/g) || []).length;
+    }
+    for (let i = 0; i < all_chords_3.length; i++) {
+        amount_of_sharps += (all_chords_3[i].innerHTML.match(/#/g) || []).length;
+    }
+    if (amount_of_sharps > amount_of_flats) {
+        document.getElementById("IDsharpSymbol").style.fontWeight = "bold";
+        document.getElementById("IDsharpSymbol").style.color = "#1DB954";
+        document.getElementById("IDsharpSymbol").style.filter = "drop-shadow(0 0 8px #1DB954)";
+        current_flat_or_sharp = "#";
+    }
+    if (amount_of_flats > amount_of_sharps) {
+        document.getElementById("IDflatSymbol").style.fontWeight = "bold";
+        document.getElementById("IDflatSymbol").style.color = "#1DB954";
+        document.getElementById("IDflatSymbol").style.filter = "drop-shadow(0 0 8px #1DB954)";
+        current_flat_or_sharp = "b";
+    }
+    if (amount_of_sharps == amount_of_flats) {
+        document.getElementById("IDsharpSymbol").style.fontWeight = "normal";
+        document.getElementById("IDsharpSymbol").style.color = "white";
+        document.getElementById("IDsharpSymbol").style.filter = "";
+        document.getElementById("IDflatSymbol").style.fontWeight = "normal";
+        document.getElementById("IDflatSymbol").style.color = "white";
+        document.getElementById("IDflatSymbol").style.filter = "";
+        // Do not reasign current_flat_or_sharp to persist the previous value when changing capo afterwards again
+    }
+
+    lines_hover_and_clickable();
+}
 
 
 //////// CHORD TRANPOSE FUNCTIONALITY ////////
@@ -261,6 +407,55 @@ flat_or_sharp_button.addEventListener("click", () => {
     lines_hover_and_clickable();
 });
 
+function flatOrSharpPersistSetting() {
+    // Not the same as event click
+    if (spotify_error == 1) {
+        // Make button unclickable if Spotify is not available
+        return;
+    }
+    sharp_symobl = document.getElementById("IDsharpSymbol");
+    flat_symbol = document.getElementById("IDflatSymbol");
+    if ((sharp_symobl.style.color == "white") && (flat_symbol.style.color == "white")) {
+        return;
+    }
+    if (current_flat_or_sharp == "b") {
+
+        var parser = new DOMParser();
+        var parsed_body = parser.parseFromString(document.getElementById('IDdivMainChords').innerHTML, "text/html");
+        var all_chords = parsed_body.getElementsByClassName("chord_span");
+        for (let i = 0; i < all_chords.length; i++) {
+            all_chords[i].innerHTML = sharOrFlatTranposer(transposeChord(all_chords[i].innerHTML.toString(), 0), current_flat_or_sharp);
+        }
+        document.getElementById('IDdivMainChords').innerHTML = parsed_body.body.innerHTML;
+        main_chords_body = parsed_body.body.innerHTML;
+
+        document.getElementById("IDsharpSymbol").style.fontWeight = "normal";
+        document.getElementById("IDsharpSymbol").style.color = "white";    
+        document.getElementById("IDsharpSymbol").style.filter = "";
+        document.getElementById("IDflatSymbol").style.fontWeight = "bold";
+        document.getElementById("IDflatSymbol").style.color = "#1DB954";
+        document.getElementById("IDflatSymbol").style.filter = "drop-shadow(0 0 8px #1DB954)";
+        
+    } else if (current_flat_or_sharp == "#") {
+
+        var parser = new DOMParser();
+        var parsed_body = parser.parseFromString(document.getElementById('IDdivMainChords').innerHTML, "text/html");
+        var all_chords = parsed_body.getElementsByClassName("chord_span");
+        for (let i = 0; i < all_chords.length; i++) {
+            all_chords[i].innerHTML = sharOrFlatTranposer(transposeChord(all_chords[i].innerHTML.toString(), 0), current_flat_or_sharp);
+        }
+        document.getElementById('IDdivMainChords').innerHTML = parsed_body.body.innerHTML;
+        main_chords_body = parsed_body.body.innerHTML;
+
+        document.getElementById("IDsharpSymbol").style.fontWeight = "bold";
+        document.getElementById("IDsharpSymbol").style.color = "#1DB954";    
+        document.getElementById("IDsharpSymbol").style.filter = "drop-shadow(0 0 8px #1DB954)";
+        document.getElementById("IDflatSymbol").style.fontWeight = "normal";
+        document.getElementById("IDflatSymbol").style.color = "white";
+        document.getElementById("IDflatSymbol").style.filter = "";
+    }
+    lines_hover_and_clickable();
+}
 
 //////// SPOTIFY MUSIC CONTROL BUTTONS ////////
 // Next Song
@@ -510,5 +705,94 @@ sync_skip_toggle.addEventListener('click', () =>  {
         document.getElementById("IDbackButton").src = "static/img/music_control/back_button.png";
         document.getElementById("IDbackButton").title = "Previous Song";
         document.getElementById("IDbackButton").style.filter = "";
+    }
+});
+
+
+//////// SETTINGS OVERLAY ////////
+var settings_button = document.getElementById("IDsettingsButton");
+var settings_overlay = document.getElementById("IDsettingsOverlay");
+var settings_close_button = document.getElementById("IDcloseSettings");
+settings_button.addEventListener("click", () => {
+    settings_overlay.style.left = "0vw";
+});
+
+settings_close_button.addEventListener("click", () => {
+    settings_overlay.style.left = "100vw";
+});
+
+// Capo Settings
+var capo_settings = document.getElementById("IDcapoSettings");
+var capo_settings_checkbox = document.getElementById("IDcapoSettingsCheckbox");
+
+var grayRGB = "rgb(174, 174, 174)";
+var greenRGB = "rgb(29, 185, 84)";
+
+capo_settings.addEventListener("click", () => {
+    if (window.getComputedStyle(capo_settings_checkbox).backgroundColor == grayRGB) {
+        capo_settings_checkbox.style.backgroundColor = greenRGB;
+        setting_persist_capo_value = true;
+
+    } else if (window.getComputedStyle(capo_settings_checkbox).backgroundColor == greenRGB) {
+        capo_settings_checkbox.style.backgroundColor = grayRGB;
+        setting_persist_capo_value = false;
+    }
+});
+
+// Flat/Sharp Settings
+var flat_sharp_settings = document.getElementById("IDflatSharpSettings");
+var flat_sharp_settings_checkbox = document.getElementById("IDflatSharpSettingsCheckbox");
+
+flat_sharp_settings.addEventListener("click", () => {
+    if (window.getComputedStyle(flat_sharp_settings_checkbox).backgroundColor == grayRGB) {
+        flat_sharp_settings_checkbox.style.backgroundColor = greenRGB;
+        setting_persist_flat_or_sharp = true;
+
+    } else if (window.getComputedStyle(flat_sharp_settings_checkbox).backgroundColor == greenRGB) {
+        flat_sharp_settings_checkbox.style.backgroundColor = grayRGB;
+        setting_persist_flat_or_sharp = false;
+    }
+});
+
+
+// Align Settings
+var left_align_settings = document.getElementById("IDalignSettingsCheckbox");
+var middle_align_settings = document.getElementById("IDalignSettingsCheckbox2");
+
+left_align_settings.addEventListener("click", () => {
+    if (window.getComputedStyle(left_align_settings).backgroundColor == greenRGB) {
+        // pass
+    } else if (window.getComputedStyle(left_align_settings).backgroundColor == grayRGB) {
+        left_align_settings.style.backgroundColor = greenRGB;
+        middle_align_settings.style.backgroundColor = grayRGB;
+        settings_align = "left";
+
+        align_capo_persister = true;
+        align_flat_or_sharp_persister = true;
+
+        document.getElementById("IDdivMainChords").style.textAlign = "left";
+
+        // request new static data from backend with parameter "left" as then spaces get insertet to fit UG layout
+        socket.emit('trackStaticDataRequest', "left");
+        // margins have to be fixed, which is done withing the handling of trackStaticDataResponse
+    }
+});
+
+middle_align_settings.addEventListener("click", () => {
+    if (window.getComputedStyle(middle_align_settings).backgroundColor == greenRGB) {
+        // pass
+    } else if (window.getComputedStyle(middle_align_settings).backgroundColor == grayRGB) {
+        middle_align_settings.style.backgroundColor = greenRGB;
+        left_align_settings.style.backgroundColor = grayRGB;
+        settings_align = "middle";
+
+        align_capo_persister = true;
+        align_flat_or_sharp_persister = true;
+
+        document.getElementById("IDdivMainChords").style.textAlign = "center";
+
+        // request new static data from backend with parameter "middle" as then spaces don't get insertet to enable simple middle align
+        socket.emit('trackStaticDataRequest', "middle");
+        // margins have to be fixed, which is done withn the handling of trackStaticDataResponse
     }
 });

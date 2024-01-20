@@ -211,8 +211,8 @@ def handleDynamicDataRequest():
     emit('trackDynamicDataResponse', getTrackDynamicData())
     
 @socketio.on('trackStaticDataRequest')
-def handleStaticDataRequest():
-    emit('trackStaticDataResponse', getTrackStaticData())
+def handleStaticDataRequest(align="left"):
+    emit('trackStaticDataResponse', getTrackStaticData(align))
     
 
 @socketio.on('nextSpotifyTrack')
@@ -340,7 +340,7 @@ def getTrackDynamicData():
         }
 
 # Called by Websocket - returns object with parameters that DON'T change during the song 
-def getTrackStaticData():        
+def getTrackStaticData(align):        
     global complete_source_code 
     global complete_source_code_link
     global complete_source_code_found
@@ -442,7 +442,7 @@ def getTrackStaticData():
             guitar_tuning = extractTuning(complete_source_code)
             guitar_capo = extractCapo(complete_source_code)
         
-            main_chords_body = extractMainChordsBody(complete_source_code)
+            main_chords_body = extractMainChordsBody(complete_source_code, align)
             
             synced_lyrics_json, found_musixmatch_lyrics, musixmatch_lyrics_is_linesynced = getSyncedLyricsJson(track_id)
             
@@ -689,7 +689,7 @@ def extractCapo(complete_source_code):
         return "0"
 
 # Returns the main chords/lyrics content of the source code (modified with <br> and <span> tags for chords)
-def extractMainChordsBody(complete_source_code):
+def extractMainChordsBody(complete_source_code, align):
     start_string = "{&quot;content&quot;:&quot;"
     end_string = "&quot;,&quot;revision_id&quot;"
 
@@ -698,8 +698,9 @@ def extractMainChordsBody(complete_source_code):
 
     if match:
         result = match.group(1)
-        # Modify source code to include line breaks and span tags for chords
-        result = replace_spaces_within_chords(result)
+        if align != "middle":
+            # Modify source code to include line breaks and span tags for chords (don't do if client requests middle align)
+            result = replace_spaces_within_chords(result)
         return result.replace("\\r\\n", "<br>").replace("[ch]", '<span class="chord_span">').replace("[/ch]", "</span>").replace("[tab]", "").replace("[/tab]", "")
     else:
         return "Failed to find main chords/lyrics content of the source code"
@@ -773,8 +774,8 @@ def getSyncedLyricsJson(track_id):
     
     ### SELF-MADE SPOTIFY LYRICS APPROACH:
     if (lyrics_api_source == "SELFMADE"):
-        # Make this song appear like it has no lyrics, for study
-        if (track_id == "1vxw6aYJls2oq3gW0DujAo"):
+        # Make this song appear like it has no lyrics, for study: 1vxw6aYJls2oq3gW0DujAo
+        if (track_id == "ignoreAAA"):
             found_musixmatch_lyrics = 0
             musixmatch_lyrics_is_linesynced = 0
             ic(f'Crazy by Gnarls Barkley has no synced lyrics') 

@@ -1,0 +1,22 @@
+- Settings button statt by Simon R
+- Oerlays whole screen, shows settings:
+- Kepp set capo value
+- Align vertical or left
+- Maybe inform that user can zoom with ctrl + mousewheel
+
+
+merge icon
+blend icon
+overlapping waveform icon
+autoscroll  icon <- also vlt doch so wie davor
+
+new UC for studies!!!!
+- Frage ob # oder b bevorzugt (antwort meisten #)
+- Frage ob #/b auch persestieren soll 
+
+
+What to change on ChordSync, based on study results:
+- Sync Icon(s)
+- Capo Icon
+- Allowed negativ capo values
+- Align middle or left
