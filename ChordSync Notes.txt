@@ -13,7 +13,8 @@ autoscroll  icon <- also vlt doch so wie davor
 new UC for studies!!!!
 - Frage ob # oder b bevorzugt (antwort meisten #)
 - Frage ob #/b auch persestieren soll 
-
+- someone wanna know how good song is synced
+- Prefer Sharp or Flat? (s. Auch chrome estension die existiert)
 
 What to change on ChordSync, based on study results:
 - Sync Icon(s)
