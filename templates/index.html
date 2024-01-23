@@ -29,7 +29,7 @@
         // Recommended, intital capo value for new track
         var initial_capo_value = 0;
         var previous_capo_value = 0;
-        var current_capo_value = 0;
+        var current_capo_value_int = 0;
 
         // Musixmatch lyrics
         var musixmatch_lyrics_is_linesynced = 0; 
@@ -71,11 +71,28 @@
 
         // Settings variables
         var setting_persist_capo_value = false;
-        var setting_persist_flat_or_sharp = false;
+        var setting_persist_flat_or_sharp = true;
 
         var settings_align = "left";
         var align_capo_persister = false;
-        var align_flat_or_sharp_persister = false;
+        var align_flat_or_sharp_persister = true;
+
+        // Local Storage
+        localStorage.getItem("key_local_storage_settings_align") == null ? localStorage.setItem("key_local_storage_settings_align", settings_align) : settings_align = localStorage.getItem("key_local_storage_settings_align");
+
+        localStorage.getItem("key_local_storage_setting_persist_capo_value") == null ? localStorage.setItem("key_local_storage_setting_persist_capo_value", setting_persist_capo_value) : setting_persist_capo_value = localStorage.getItem("key_local_storage_setting_persist_capo_value");
+        if (setting_persist_capo_value == "true") {
+            localStorage.getItem("key_local_storage_previous_capo_value") == null ? localStorage.setItem("key_local_storage_previous_capo_value", current_capo_value_int) : current_capo_value_int = localStorage.getItem("key_local_storage_previous_capo_value");
+        } else {
+            localStorage.setItem("key_local_storage_previous_capo_value", "0");
+        }
+
+        localStorage.getItem("key_local_storage_setting_persist_flat_or_sharp") == null ? localStorage.setItem("key_local_storage_setting_persist_flat_or_sharp", setting_persist_flat_or_sharp) : setting_persist_flat_or_sharp = localStorage.getItem("key_local_storage_setting_persist_flat_or_sharp");
+        if (setting_persist_flat_or_sharp == "true") {
+            localStorage.getItem("key_local_storage_previous_flat_or_sharp") == null ? localStorage.setItem("key_local_storage_previous_flat_or_sharp", current_flat_or_sharp) : current_flat_or_sharp = localStorage.getItem("key_local_storage_previous_flat_or_sharp");
+        } else {
+            localStorage.setItem("key_local_storage_previous_flat_or_sharp", "0");
+        }
         
 
         //////// SLEEP/DELAY ////////
@@ -119,7 +136,8 @@
 
         //////// Websocket response for parameters that DON'T change during the song ////////
         socket.on('trackStaticDataResponse', (track_static_data) => {
-            previous_capo_value = current_capo_value;
+            previous_capo_value = current_capo_value_int;
+            localStorage.setItem("key_local_storage_previous_capo_value", previous_capo_value);
 
             sync_button = document.getElementById("IDsyncButton");
             bottom_hr = document.getElementById("IDbottomHR");
@@ -141,9 +159,13 @@
             if (spotify_error == 1) {
                 document.getElementById("IDsourceCodeLink").style.opacity = "0.5";
                 document.getElementById('IDdivMainChordsWrapper').style.justifyContent = "center";
+                document.getElementById("IDsyncAvailableIMG").style.display = "none";
+                document.getElementById("IDsyncAvailableIMG").style.visibility = "hidden";
             } else {
                 document.getElementById("IDsourceCodeLink").style.opacity = "1";
                 document.getElementById('IDdivMainChordsWrapper').style.justifyContent = "flex-start";
+                document.getElementById("IDsyncAvailableIMG").style.display = "block";
+                document.getElementById("IDsyncAvailableIMG").style.visibility = "visible";
             }
 
             // Scroll to top of page when new track is loaded
@@ -307,8 +329,11 @@
                 document.getElementById("IDsharpSymbol").style.fontWeight = "bold";
                 document.getElementById("IDsharpSymbol").style.color = "#1DB954";
                 document.getElementById("IDsharpSymbol").style.filter = "drop-shadow(0 0 8px #1DB954)";
+                document.getElementById("IDflatSymbol").style.fontWeight = "normal";
+                document.getElementById("IDflatSymbol").style.color = "white";
+                document.getElementById("IDflatSymbol").style.filter = "";
                 current_flat_or_sharp = "#";
-                if ((setting_persist_flat_or_sharp || align_flat_or_sharp_persister) && previous_flat_or_sharp == "b") {
+                if ((setting_persist_flat_or_sharp || align_flat_or_sharp_persister || setting_persist_flat_or_sharp == "true") && previous_flat_or_sharp == "b") {
                     current_flat_or_sharp = "b";
                     flatOrSharpPersistSetting();
                 }
@@ -318,8 +343,11 @@
                 document.getElementById("IDflatSymbol").style.fontWeight = "bold";
                 document.getElementById("IDflatSymbol").style.color = "#1DB954";
                 document.getElementById("IDflatSymbol").style.filter = "drop-shadow(0 0 8px #1DB954)";
+                document.getElementById("IDsharpSymbol").style.fontWeight = "normal";
+                document.getElementById("IDsharpSymbol").style.color = "white";
+                document.getElementById("IDsharpSymbol").style.filter = "";
                 current_flat_or_sharp = "b";
-                if ((setting_persist_flat_or_sharp || align_flat_or_sharp_persister) && previous_flat_or_sharp == "#") {
+                if ((setting_persist_flat_or_sharp || align_flat_or_sharp_persister || setting_persist_flat_or_sharp == "true") && previous_flat_or_sharp == "#") {
                     current_flat_or_sharp = "#";
                     flatOrSharpPersistSetting();
                 }
@@ -332,11 +360,15 @@
                 document.getElementById("IDflatSymbol").style.fontWeight = "normal";
                 document.getElementById("IDflatSymbol").style.color = "white";
                 document.getElementById("IDflatSymbol").style.filter = "";
-                if (!setting_persist_flat_or_sharp || !align_flat_or_sharp_persister) {
+                if (!setting_persist_flat_or_sharp || !align_flat_or_sharp_persister || setting_persist_flat_or_sharp == "false") {
+                    console.log(setting_persist_flat_or_sharp)
+                    console.log(align_flat_or_sharp_persister)
+
+                    console.log("AHHHHHHHHHHHHHHHHHW TF")
                     current_flat_or_sharp = "0";
                 }
             }
-            align_flat_or_sharp_persister = false;
+            align_flat_or_sharp_persister = true;
 
             //////// USEFUL LOGS ////////
             console.log('%cArtist Name: ' + track_static_data.artist_name, 'color: #1DB954; font-weight: bold;');
@@ -345,6 +377,7 @@
             console.log('%cInitial Guitar Capo: ' + track_static_data.guitar_capo, 'color: #1DB954; font-weight: bold;');
             console.log('%cFound Chords for Song (0/1): ' + complete_source_code_found, 'color: #1DB954; font-weight: bold;');
             console.log('%cFound Synced Lyrics (0/1): ' + musixmatch_lyrics_is_linesynced, 'color: #1DB954; font-weight: bold;');
+            console.log('%cSpotify Error (0/1): ' + track_static_data.spotify_error, 'color: #1DB954; font-weight: bold;');
 
             // if alignment changed in settings, new static data is requested as spaces are added/removed between chords
             // also fix margins depending on alignment
@@ -488,9 +521,6 @@
                 document.getElementById('IDdivMainChordsWrapper').style.justifyContent = "center";
             }
 
-            // For capo setting
-            current_capo_value = parseInt(document.getElementById("IDguitarCapo").innerHTML);
-
         }); 
 
     </script>
@@ -506,11 +536,11 @@
                 <div id="IDmainSettings">
                     <div class="individualSettings" id="IDcapoSettings">
                         <h1 class="settingsTexts" id="IDcapoSettingsText">Persist Capo Value Between Songs:</h1>
-                        <div class="customSettingsCheckbox" id="IDcapoSettingsCheckbox"></div>
+                        <div class="customSettingsCheckbox" id="IDcapoSettingsCheckbox">&nbsp;</div>
                     </div>
                     <div class="individualSettings" id="IDflatSharpSettings">
                         <h1 class="settingsTexts" id="IDflatSharpSettingsText">Persist #/b Preference Between Songs:</h1>
-                        <div class="customSettingsCheckbox" id="IDflatSharpSettingsCheckbox"></div>
+                        <div class="customSettingsCheckbox" id="IDflatSharpSettingsCheckbox">&nbsp;</div>
                     </div>
                     <div class="individualSettings" id="IDalignContentSettings">
                         <h1 class="settingsTexts" id="IDalignSettingsText">Align Chords and Lyrics:</h1>

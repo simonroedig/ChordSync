@@ -119,14 +119,6 @@ body {
         letter-spacing: 10px;
         transition: 0.2s ease-in-out;
     }
-    #IDsettingsButton:hover {
-        letter-spacing: 2px;
-        transition: 0.2s ease-in-out;
-    }
-    #IDcloseSettings:hover {
-        letter-spacing: 2px;
-        transition: 0.2s ease-in-out;
-    }
 }
 
 #IDtopHR {
@@ -445,7 +437,7 @@ body {
 }
 
 #IDsyncButton {
-    width: 30px;
+    width: 35px;
     transition: transform 0.15s ease-in-out; 
     cursor: pointer;
     transform: rotate(0deg);
@@ -484,6 +476,8 @@ body {
     border: solid 1px #ffffff;
     border-top-right-radius: 50px;
     border-bottom-right-radius: 50px;
+    border-top-left-radius: 50px;
+    border-bottom-left-radius: 50px;
     overflow: hidden;
     cursor: pointer;
     opacity: 1;
@@ -499,7 +493,7 @@ body {
     height: 16px;
     background-image: url('/static/img/music_control/forward_button.png');
     background-size: cover;
-    left: -2px;
+    left: 0px;
     top: -3px;
     transition: all cubic-bezier(0.3, 1.5, 0.7, 1) 0.3s;
 }
@@ -627,7 +621,27 @@ body {
     width: 20px;
     height: 20px;
     margin-left: 20px;
-    border-radius: 5px;
+    border-radius: 4px;
+    text-align: center;
+}
+
+@media (hover: hover) {
+    #IDsettingsButton:hover {
+        letter-spacing: 2px;
+        transition: 0.2s ease-in-out;
+    }
+    #IDcloseSettings:hover {
+        letter-spacing: 2px;
+        transition: 0.2s ease-in-out;
+    }
+    .individualSettings:hover {
+        letter-spacing: 0.5px;
+        transition: 0.2s ease-in-out;
+    }
+    .individualSettings:hover .customSettingsCheckbox{
+        rotate: 20deg;
+        transition: 0.2s ease-in-out;
+    }
 }
 
 #IDcapoSettingsCheckbox {
@@ -639,7 +653,7 @@ body {
 }
 
 #IDflatSharpSettingsCheckbox {
-    background-color: rgb(174, 174, 174);
+    background-color: rgb(29, 185, 84);
 }
 
 #IDalignSettingsCheckbox {

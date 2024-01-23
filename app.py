@@ -13,6 +13,7 @@ Bachelor's Thesis (WS 2023/2024)
 
 
 ######## IMPORTS (DUH) ########
+import math
 from dotenv import load_dotenv
 import os
 import spotipy
@@ -701,7 +702,8 @@ def extractMainChordsBody(complete_source_code, align):
         if align != "middle":
             # Modify source code to include line breaks and span tags for chords (don't do if client requests middle align)
             result = replace_spaces_within_chords(result)
-        return result.replace("\\r\\n", "<br>").replace("[ch]", '<span class="chord_span">').replace("[/ch]", "</span>").replace("[tab]", "").replace("[/tab]", "")
+        print(result.replace("\\r\\n", "<br>").replace("[ch]", '<span class="chord_span">').replace("[/ch]", "</span>").replace("[tab]", "").replace("[/tab]", "").replace('\\"', '"'))
+        return result.replace("\\r\\n", "<br>").replace("[ch]", '<span class="chord_span">').replace("[/ch]", "</span>").replace("[tab]", "").replace("[/tab]", "").replace('\&quot;', '"')
     else:
         return "Failed to find main chords/lyrics content of the source code"
 
@@ -842,8 +844,7 @@ def insertTimestampsToMainChordsBody(synced_lyrics_tupel_array, main_chords_body
     
     # Add "NOTSYNCED" to each line which will then be replaced with the timestamp
     main_chords_body_line_array_lyrics_with_index_and_timestamp = [["NOTSYNCED", t[0], html.unescape(t[1])] for t in main_chords_body_line_array_lyrics_with_index]
-    
-    # ic(main_chords_body_line_array_lyrics_with_index_and_timestamp)
+    print(main_chords_body_line_array_lyrics_with_index_and_timestamp)
     
     # Inserts timestamps into main_chords_body_line_array_lyrics_with_index_and_timestamp by fuzzy lyrics matching
     # official_lyrics_line = Lyrics Line from MusixMatch API
@@ -852,6 +853,8 @@ def insertTimestampsToMainChordsBody(synced_lyrics_tupel_array, main_chords_body
     insert_hit = 0         
     official_lyrics_line = 0
     max_unoffical_line_iteration = 0
+    # Defines that maximum ammount of next lines to check on UG when trying to match MusixMatch (mean and 1/6 of it, and round up) (was about 5 hardcoded before)
+    unofficial_line_iteration_check_range = math.ceil(((len(main_chords_body_line_array_lyrics_with_index) + len(synced_lyrics_tupel_array)) / 2) / 6)
     
     amm_of_lines_to_sync = len(synced_lyrics_tupel_array)
     green_path_ratio_COUNTER = 0
@@ -872,7 +875,7 @@ def insertTimestampsToMainChordsBody(synced_lyrics_tupel_array, main_chords_body
         if (insert_hit == 0):
             max_unoffical_line_iteration = len(main_chords_body_line_array_lyrics_with_index)
         else:
-            max_unoffical_line_iteration = insert_hit + 5
+            max_unoffical_line_iteration = insert_hit + unofficial_line_iteration_check_range
             if max_unoffical_line_iteration >= len(main_chords_body_line_array_lyrics_with_index):
                 max_unoffical_line_iteration = len(main_chords_body_line_array_lyrics_with_index)
                 
@@ -1067,13 +1070,19 @@ def insertTimestampsToMainChordsBody(synced_lyrics_tupel_array, main_chords_body
                 break
              
         official_lyrics_line += 1  
-        
+       
+    print(f"AMMOUNT OF MUSIXMATCH LYRICS TO SYNC (without empty or note): {amm_of_lines_to_sync}\n")
+    print(f"AMMOUNT OF SUCCESSFULLY SYNCED MUSIXMATCH LYRICS: {amm_of_lines_succ_synced}\n")
+    print(f"AMMOUNT OF LYRICS (AND PERHAPS OTHER TEXT) LINES ON UG: {len(main_chords_body_line_array_lyrics_with_index_and_timestamp)}\n")
+    print(f"SYNC RATIO: {(amm_of_lines_succ_synced/amm_of_lines_to_sync)*100}%\n")
+                
     if (dev_or_prod == "DEVELOPMENT" and log_on_off == "ON" and wrote_block_4 != track_id):
             with open(log_file_path, 'a') as file:
                 wrote_block_4 = track_id
                 
                 file.write(f"AMMOUNT OF MUSIXMATCH LYRICS TO SYNC (without empty or note): {amm_of_lines_to_sync}\n")
                 file.write(f"AMMOUNT OF SUCCESSFULLY SYNCED MUSIXMATCH LYRICS: {amm_of_lines_succ_synced}\n")
+                # file.write(f"AMMOUNT OF LYRICS (AND PERHAPS OTHER TEXT) LINES ON UG: {len(main_chords_body_line_array_lyrics_with_index_and_timestamp)}\n")
                 file.write(f"SYNC RATIO: {(amm_of_lines_succ_synced/amm_of_lines_to_sync)*100}%\n")
                 
                 file.write(f"-----\n")

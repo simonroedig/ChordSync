@@ -74,6 +74,7 @@ capo_minus_button.addEventListener("click", () => {
         document.getElementById("IDflatSymbol").style.filter = "";
         // Do not reasign current_flat_or_sharp to persist the previous value when changing capo afterwards again
     }
+    localStorage.setItem("key_local_storage_previous_capo_value", current_capo_value_int);
 
     lines_hover_and_clickable();
 });
@@ -147,6 +148,7 @@ function capoMinusFunc() {
         document.getElementById("IDflatSymbol").style.filter = "";
         // Do not reasign current_flat_or_sharp to persist the previous value when changing capo afterwards again
     }
+    localStorage.setItem("key_local_storage_previous_capo_value", current_capo_value_int);
 
     lines_hover_and_clickable();
 }
@@ -221,6 +223,7 @@ capo_plus_button.addEventListener("click", () => {
         document.getElementById("IDflatSymbol").style.filter = "";
         // Do not reasign current_flat_or_sharp to persist the previous value when changing capo afterwards again
     }
+    localStorage.setItem("key_local_storage_previous_capo_value", current_capo_value_int);
 
     lines_hover_and_clickable();
 });
@@ -294,6 +297,8 @@ function capoPlusFunc() {
         document.getElementById("IDflatSymbol").style.filter = "";
         // Do not reasign current_flat_or_sharp to persist the previous value when changing capo afterwards again
     }
+
+    localStorage.setItem("key_local_storage_previous_capo_value", current_capo_value_int);
 
     lines_hover_and_clickable();
 }
@@ -404,11 +409,13 @@ flat_or_sharp_button.addEventListener("click", () => {
         document.getElementById("IDflatSymbol").style.color = "white";
         document.getElementById("IDflatSymbol").style.filter = "";
     }
+    localStorage.setItem("key_local_storage_previous_flat_or_sharp", current_flat_or_sharp);
+
     lines_hover_and_clickable();
 });
 
 function flatOrSharpPersistSetting() {
-    // Not the same as event click
+    // Not the same as event click, because doesn't reassign current_flat_or_sharp
     if (spotify_error == 1) {
         // Make button unclickable if Spotify is not available
         return;
@@ -728,71 +735,126 @@ var capo_settings_checkbox = document.getElementById("IDcapoSettingsCheckbox");
 var grayRGB = "rgb(174, 174, 174)";
 var greenRGB = "rgb(29, 185, 84)";
 
+function capoPersistOn() {
+    capo_settings_checkbox.style.backgroundColor = greenRGB;
+    setting_persist_capo_value = true;
+    localStorage.setItem("key_local_storage_setting_persist_capo_value", setting_persist_capo_value);
+}
+
+function capoPersistOff() { 
+    capo_settings_checkbox.style.backgroundColor = grayRGB;
+    setting_persist_capo_value = false;
+    localStorage.setItem("key_local_storage_setting_persist_capo_value", setting_persist_capo_value);
+}
+
 capo_settings.addEventListener("click", () => {
     if (window.getComputedStyle(capo_settings_checkbox).backgroundColor == grayRGB) {
-        capo_settings_checkbox.style.backgroundColor = greenRGB;
-        setting_persist_capo_value = true;
-
+        capoPersistOn();
     } else if (window.getComputedStyle(capo_settings_checkbox).backgroundColor == greenRGB) {
-        capo_settings_checkbox.style.backgroundColor = grayRGB;
-        setting_persist_capo_value = false;
+       capoPersistOff();
     }
 });
+
+setting_persist_capo_value == "true" && capoPersistOn();
+setting_persist_capo_value == "false" && capoPersistOff();
+
 
 // Flat/Sharp Settings
 var flat_sharp_settings = document.getElementById("IDflatSharpSettings");
 var flat_sharp_settings_checkbox = document.getElementById("IDflatSharpSettingsCheckbox");
 
+function flatSharpPersistOn() {
+    console.log("flatSharpPersistOn");
+    flat_sharp_settings_checkbox.style.backgroundColor = greenRGB;
+    setting_persist_flat_or_sharp = true;
+    localStorage.setItem("key_local_storage_setting_persist_flat_or_sharp", setting_persist_flat_or_sharp);
+    localStorage.setItem("key_local_storage_previous_flat_or_sharp", current_flat_or_sharp);
+}
+
+function flatSharpPersistOff() {
+    console.log("flatSharpPersistOff");
+    flat_sharp_settings_checkbox.style.backgroundColor = grayRGB;
+    setting_persist_flat_or_sharp = false;
+    localStorage.setItem("key_local_storage_setting_persist_flat_or_sharp", setting_persist_flat_or_sharp);
+    localStorage.setItem("key_local_storage_previous_flat_or_sharp", current_flat_or_sharp);
+}
+
 flat_sharp_settings.addEventListener("click", () => {
     if (window.getComputedStyle(flat_sharp_settings_checkbox).backgroundColor == grayRGB) {
-        flat_sharp_settings_checkbox.style.backgroundColor = greenRGB;
-        setting_persist_flat_or_sharp = true;
+        flatSharpPersistOn();
 
     } else if (window.getComputedStyle(flat_sharp_settings_checkbox).backgroundColor == greenRGB) {
-        flat_sharp_settings_checkbox.style.backgroundColor = grayRGB;
-        setting_persist_flat_or_sharp = false;
+        flatSharpPersistOff();
     }
 });
+
+console.log(setting_persist_flat_or_sharp);
+console.log(current_flat_or_sharp);
+
+setting_persist_flat_or_sharp == "true" && flatSharpPersistOn();
+setting_persist_flat_or_sharp == "false" && flatSharpPersistOff();
+console.log(setting_persist_flat_or_sharp);
+
 
 
 // Align Settings
 var left_align_settings = document.getElementById("IDalignSettingsCheckbox");
 var middle_align_settings = document.getElementById("IDalignSettingsCheckbox2");
 
+function alignLeft() {
+    left_align_settings.style.backgroundColor = greenRGB;
+    left_align_settings.style.filter = "drop-shadow(0 0 8px #1DB954)";
+    middle_align_settings.style.backgroundColor = grayRGB;
+    middle_align_settings.style.filter = "";
+    settings_align = "left";
+
+    localStorage.setItem("key_local_storage_settings_align", settings_align);
+
+    align_capo_persister = true;
+    align_flat_or_sharp_persister = true;
+
+    document.getElementById("IDdivMainChords").style.textAlign = "left";
+
+    // request new static data from backend with parameter "left" as then spaces get insertet to fit UG layout
+    socket.emit('trackStaticDataRequest', "left");
+    // margins have to be fixed, which is done withing the handling of trackStaticDataResponse
+}
+
+
 left_align_settings.addEventListener("click", () => {
     if (window.getComputedStyle(left_align_settings).backgroundColor == greenRGB) {
         // pass
     } else if (window.getComputedStyle(left_align_settings).backgroundColor == grayRGB) {
-        left_align_settings.style.backgroundColor = greenRGB;
-        middle_align_settings.style.backgroundColor = grayRGB;
-        settings_align = "left";
-
-        align_capo_persister = true;
-        align_flat_or_sharp_persister = true;
-
-        document.getElementById("IDdivMainChords").style.textAlign = "left";
-
-        // request new static data from backend with parameter "left" as then spaces get insertet to fit UG layout
-        socket.emit('trackStaticDataRequest', "left");
-        // margins have to be fixed, which is done withing the handling of trackStaticDataResponse
+        alignLeft();
     }
 });
+
+function alignMiddle() {
+    middle_align_settings.style.backgroundColor = greenRGB;
+    middle_align_settings.style.filter = "drop-shadow(0 0 8px #1DB954)";
+    left_align_settings.style.backgroundColor = grayRGB;
+    left_align_settings.style.filter = "";
+    settings_align = "middle";
+
+    localStorage.setItem("key_local_storage_settings_align", settings_align);
+
+    align_capo_persister = true;
+    align_flat_or_sharp_persister = true;
+
+    document.getElementById("IDdivMainChords").style.textAlign = "center";
+
+    // request new static data from backend with parameter "middle" as then spaces don't get insertet to enable simple middle align
+    socket.emit('trackStaticDataRequest', "middle");
+    // margins have to be fixed, which is done withn the handling of trackStaticDataResponse
+}
 
 middle_align_settings.addEventListener("click", () => {
     if (window.getComputedStyle(middle_align_settings).backgroundColor == greenRGB) {
         // pass
     } else if (window.getComputedStyle(middle_align_settings).backgroundColor == grayRGB) {
-        middle_align_settings.style.backgroundColor = greenRGB;
-        left_align_settings.style.backgroundColor = grayRGB;
-        settings_align = "middle";
-
-        align_capo_persister = true;
-        align_flat_or_sharp_persister = true;
-
-        document.getElementById("IDdivMainChords").style.textAlign = "center";
-
-        // request new static data from backend with parameter "middle" as then spaces don't get insertet to enable simple middle align
-        socket.emit('trackStaticDataRequest', "middle");
-        // margins have to be fixed, which is done withn the handling of trackStaticDataResponse
+        alignMiddle();
     }
 });
+
+settings_align == "left" && alignLeft();
+settings_align == "middle" && alignMiddle();
