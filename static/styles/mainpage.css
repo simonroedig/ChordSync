@@ -536,12 +536,20 @@ body {
 }
 
 #IDtuningIcon {
+    width: 30px;
+    height: 30px;
+    margin-right: 15px;
+    display: block;
+    transition: 0.15s ease-in-out;
+}
+
+#IDcapoIcon {
     width: 25px;
     height: 25px;
     margin-right: 15px;
 }
 
-#IDcapoIcon {
+#IDkeyIcon {
     width: 25px;
     height: 25px;
     margin-right: 15px;
@@ -570,9 +578,9 @@ body {
 #IDsettingsOverlay {
     position: fixed;
     top: 0;
-    left: 100vw;
-    width: 100%;
-    height: 100vh;
+    left: 0%;
+    width: 100svw;
+    height: 100svh;
     background-color: rgba(0,0,0,0.95);
     backdrop-filter: blur(20px);
     background-repeat: no-repeat;
@@ -582,15 +590,20 @@ body {
     background-clip: content-box;
     z-index: 100;
     display: visible;
-    transition: 1s ease-in-out;
-}
-
-#IDsettingsOverlayHeader {
+    transition: 0.75s ease-in-out;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
-    margin-top: 5vh;
+    opacity: 0;
+    visibility: hidden;
+}
+
+#IDsettingsOverlayContent {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }
 
 #IDcloseSettings {
@@ -598,10 +611,11 @@ body {
     font-family: 'The Expressions', sans-serif;                                            
     color: #ffffff;
     font-size: 2rem;
-    margin-top: 10%;
     padding: 0;
     overflow-wrap: break-word;
     cursor: pointer;
+    margin-bottom: 10vh;
+    margin-top: -12vh;
 }
 
 .individualSettings {
@@ -646,10 +660,6 @@ body {
 
 #IDcapoSettingsCheckbox {
     background-color: rgb(174, 174, 174);
-}
-
-#IDcapoSettings {
-    margin-top: 5vh;
 }
 
 #IDflatSharpSettingsCheckbox {

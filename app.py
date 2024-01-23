@@ -120,6 +120,11 @@ is_logged_in = False
 
 spotify_user_name = ""
 
+track_bpm = 0
+track_key = 0
+
+sync_ratio_percentage = "0%"
+
 
 ######## HTTP ROUTES ########
 @app.route('/favicon.ico')
@@ -356,6 +361,11 @@ def getTrackStaticData(align):
     
     global spotify_error
     
+    global track_bpm
+    global track_key
+    
+    global sync_ratio_percentage
+    
     global song_in_log
     
     global wrote_block_1
@@ -375,6 +385,11 @@ def getTrackStaticData(align):
         found_musixmatch_lyrics = 0
         musixmatch_lyrics_is_linesynced = 0
         
+        track_bpm = 0
+        track_key = 0
+        
+        sync_ratio_percentage = "0%"
+        
         spotify_error = 1
         
         return {
@@ -390,7 +405,10 @@ def getTrackStaticData(align):
             'complete_source_code_found': complete_source_code_found,
             'musixmatch_lyrics_is_linesynced': musixmatch_lyrics_is_linesynced,
             'found_musixmatch_lyrics': found_musixmatch_lyrics,
-            'spotify_error': spotify_error
+            'spotify_error': spotify_error,
+            'track_bpm': track_bpm,
+            'sync_ratio_percentage': sync_ratio_percentage,
+            'track_key': track_key
         }
         
     spotify = spotipy.Spotify(auth=token_info['access_token'])
@@ -408,6 +426,29 @@ def getTrackStaticData(align):
         track_duration_ms = current_track["item"]["duration_ms"]
         minutes, seconds = divmod(track_duration_ms / 1000, 60)
         album_cover_url = current_track['item']['album']['images'][0]['url']
+        
+        ####
+        # Get audio features for the current track
+        try:
+            audio_features = spotify.audio_features([track_id])
+            if audio_features:
+                track_bpm = round(audio_features[0]['tempo'])
+                
+                track_key_value = audio_features[0]['key'] # Range: -1 - 11: https://en.wikipedia.org/wiki/Pitch_class
+                
+                key_number_array = [-1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+                key_tonal_array = ["0", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
+                key_tonal = key_tonal_array[key_number_array.index(track_key_value)]
+                
+                track_key_major_or_minor_value = audio_features[0]['mode'] # Major is represented by 1 and minor is 0
+                track_key_major_or_minor = "" if track_key_major_or_minor_value == 1 else "m"
+                
+                track_key = f"{key_tonal}{track_key_major_or_minor}"
+            else:
+                ic('Audio features not available for this track.')
+        except SpotifyException as e:
+            ic(f'Error fetching audio features: {e}')
+        ###
         
         
         if (dev_or_prod == "DEVELOPMENT" and log_on_off == "ON" and wrote_block_1 != track_id):
@@ -475,11 +516,15 @@ def getTrackStaticData(align):
                     'complete_source_code_found': complete_source_code_found,
                     'musixmatch_lyrics_is_linesynced': musixmatch_lyrics_is_linesynced,
                     'found_musixmatch_lyrics': found_musixmatch_lyrics,
-                    'spotify_error': spotify_error
+                    'spotify_error': spotify_error,
+                    'track_bpm': track_bpm,
+                    'sync_ratio_percentage': sync_ratio_percentage,
+                    'track_key': track_key
                 }
             
             # Found chords but no synced lyrics
             else:
+                sync_ratio_percentage = "0%"
                 return {
                     'track_name': track_name,
                     'artist_name': artist_name,
@@ -493,7 +538,10 @@ def getTrackStaticData(align):
                     'complete_source_code_found': complete_source_code_found,
                     'musixmatch_lyrics_is_linesynced': musixmatch_lyrics_is_linesynced,
                     'found_musixmatch_lyrics': found_musixmatch_lyrics,
-                    'spotify_error': spotify_error
+                    'spotify_error': spotify_error,
+                    'track_bpm': track_bpm,
+                    'sync_ratio_percentage': sync_ratio_percentage,
+                    'track_key': track_key
                 }
                 
         # No chords found, also regard as no synced lyrics found    
@@ -518,6 +566,8 @@ def getTrackStaticData(align):
             found_musixmatch_lyrics = 0
             musixmatch_lyrics_is_linesynced = 0
             
+            sync_ratio_percentage = "0%"
+            
             return {
                 'track_name': track_name,
                 'artist_name': artist_name,
@@ -531,7 +581,10 @@ def getTrackStaticData(align):
                 'complete_source_code_found': complete_source_code_found,
                 'musixmatch_lyrics_is_linesynced': musixmatch_lyrics_is_linesynced,
                 'found_musixmatch_lyrics': found_musixmatch_lyrics,
-                'spotify_error': spotify_error
+                'spotify_error': spotify_error,
+                'track_bpm': track_bpm,
+                'sync_ratio_percentage': sync_ratio_percentage,
+                'track_key': track_key
             }
     
     # Can't request Spotify (user might need to start Spotify and select song first)
@@ -546,6 +599,11 @@ def getTrackStaticData(align):
         
         found_musixmatch_lyrics = 0
         musixmatch_lyrics_is_linesynced = 0
+        
+        track_bpm = 0
+        track_key = 0
+        
+        sync_ratio_percentage = "0%"
         
         spotify_error = 1
         
@@ -562,7 +620,10 @@ def getTrackStaticData(align):
             'complete_source_code_found': complete_source_code_found,
             'musixmatch_lyrics_is_linesynced': musixmatch_lyrics_is_linesynced,
             'found_musixmatch_lyrics': found_musixmatch_lyrics,
-            'spotify_error': spotify_error
+            'spotify_error': spotify_error,
+            'track_bpm': track_bpm,
+            'sync_ratio_percentage': sync_ratio_percentage,
+            'track_key': track_key
         }
 
 
@@ -702,7 +763,6 @@ def extractMainChordsBody(complete_source_code, align):
         if align != "middle":
             # Modify source code to include line breaks and span tags for chords (don't do if client requests middle align)
             result = replace_spaces_within_chords(result)
-        print(result.replace("\\r\\n", "<br>").replace("[ch]", '<span class="chord_span">').replace("[/ch]", "</span>").replace("[tab]", "").replace("[/tab]", "").replace('\\"', '"'))
         return result.replace("\\r\\n", "<br>").replace("[ch]", '<span class="chord_span">').replace("[/ch]", "</span>").replace("[tab]", "").replace("[/tab]", "").replace('\&quot;', '"')
     else:
         return "Failed to find main chords/lyrics content of the source code"
@@ -829,6 +889,7 @@ def parseSyncedLyricsJsonToTupelArray(synced_lyrics_json):
 # Main algorithm that inserts Musixmatch timestamps into the Ultimate Guitar source code
 def insertTimestampsToMainChordsBody(synced_lyrics_tupel_array, main_chords_body, track_length_ms, track_id):  
     global wrote_block_4
+    global sync_ratio_percentage
     
     # Removes all empty lyrics and music notes from Musixmatch lyrics, as they can't be matched anyways and cause errors in red and blue paths
     synced_lyrics_tupel_array = [(timestamp, lyric) for timestamp, lyric in synced_lyrics_tupel_array if lyric not in ['', '♪']]
@@ -1075,6 +1136,8 @@ def insertTimestampsToMainChordsBody(synced_lyrics_tupel_array, main_chords_body
     print(f"AMMOUNT OF SUCCESSFULLY SYNCED MUSIXMATCH LYRICS: {amm_of_lines_succ_synced}\n")
     print(f"AMMOUNT OF LYRICS (AND PERHAPS OTHER TEXT) LINES ON UG: {len(main_chords_body_line_array_lyrics_with_index_and_timestamp)}\n")
     print(f"SYNC RATIO: {(amm_of_lines_succ_synced/amm_of_lines_to_sync)*100}%\n")
+    
+    sync_ratio_percentage = f"{round((amm_of_lines_succ_synced/amm_of_lines_to_sync)*100)}%"
                 
     if (dev_or_prod == "DEVELOPMENT" and log_on_off == "ON" and wrote_block_4 != track_id):
             with open(log_file_path, 'a') as file:

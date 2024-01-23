@@ -383,6 +383,9 @@ flat_or_sharp_button.addEventListener("click", () => {
         document.getElementById('IDdivMainChords').innerHTML = parsed_body.body.innerHTML;
         main_chords_body = parsed_body.body.innerHTML;
 
+        track_key = sharOrFlatTranposer(transposeChord(track_key, 0), current_flat_or_sharp);
+        document.getElementById("IDtrackKeyValue").textContent = track_key;
+
         document.getElementById("IDsharpSymbol").style.fontWeight = "normal";
         document.getElementById("IDsharpSymbol").style.color = "white";    
         document.getElementById("IDsharpSymbol").style.filter = "";
@@ -401,6 +404,9 @@ flat_or_sharp_button.addEventListener("click", () => {
         }
         document.getElementById('IDdivMainChords').innerHTML = parsed_body.body.innerHTML;
         main_chords_body = parsed_body.body.innerHTML;
+
+        track_key = sharOrFlatTranposer(transposeChord(track_key, 0), current_flat_or_sharp);
+        document.getElementById("IDtrackKeyValue").textContent = track_key;
 
         document.getElementById("IDsharpSymbol").style.fontWeight = "bold";
         document.getElementById("IDsharpSymbol").style.color = "#1DB954";    
@@ -436,6 +442,9 @@ function flatOrSharpPersistSetting() {
         document.getElementById('IDdivMainChords').innerHTML = parsed_body.body.innerHTML;
         main_chords_body = parsed_body.body.innerHTML;
 
+        track_key = sharOrFlatTranposer(transposeChord(track_key, 0), current_flat_or_sharp);
+        document.getElementById("IDtrackKeyValue").textContent = track_key;
+
         document.getElementById("IDsharpSymbol").style.fontWeight = "normal";
         document.getElementById("IDsharpSymbol").style.color = "white";    
         document.getElementById("IDsharpSymbol").style.filter = "";
@@ -453,6 +462,9 @@ function flatOrSharpPersistSetting() {
         }
         document.getElementById('IDdivMainChords').innerHTML = parsed_body.body.innerHTML;
         main_chords_body = parsed_body.body.innerHTML;
+        
+        track_key = sharOrFlatTranposer(transposeChord(track_key, 0), current_flat_or_sharp);
+        document.getElementById("IDtrackKeyValue").textContent = track_key;
 
         document.getElementById("IDsharpSymbol").style.fontWeight = "bold";
         document.getElementById("IDsharpSymbol").style.color = "#1DB954";    
@@ -721,11 +733,13 @@ var settings_button = document.getElementById("IDsettingsButton");
 var settings_overlay = document.getElementById("IDsettingsOverlay");
 var settings_close_button = document.getElementById("IDcloseSettings");
 settings_button.addEventListener("click", () => {
-    settings_overlay.style.left = "0vw";
+    settings_overlay.style.opacity = "1";
+    settings_overlay.style.visibility = "visible";
 });
 
 settings_close_button.addEventListener("click", () => {
-    settings_overlay.style.left = "100vw";
+    settings_overlay.style.opacity = "0";
+    settings_overlay.style.visibility = "hidden";
 });
 
 // Capo Settings
@@ -764,7 +778,6 @@ var flat_sharp_settings = document.getElementById("IDflatSharpSettings");
 var flat_sharp_settings_checkbox = document.getElementById("IDflatSharpSettingsCheckbox");
 
 function flatSharpPersistOn() {
-    console.log("flatSharpPersistOn");
     flat_sharp_settings_checkbox.style.backgroundColor = greenRGB;
     setting_persist_flat_or_sharp = true;
     localStorage.setItem("key_local_storage_setting_persist_flat_or_sharp", setting_persist_flat_or_sharp);
@@ -772,7 +785,6 @@ function flatSharpPersistOn() {
 }
 
 function flatSharpPersistOff() {
-    console.log("flatSharpPersistOff");
     flat_sharp_settings_checkbox.style.backgroundColor = grayRGB;
     setting_persist_flat_or_sharp = false;
     localStorage.setItem("key_local_storage_setting_persist_flat_or_sharp", setting_persist_flat_or_sharp);
@@ -788,13 +800,8 @@ flat_sharp_settings.addEventListener("click", () => {
     }
 });
 
-console.log(setting_persist_flat_or_sharp);
-console.log(current_flat_or_sharp);
-
 setting_persist_flat_or_sharp == "true" && flatSharpPersistOn();
 setting_persist_flat_or_sharp == "false" && flatSharpPersistOff();
-console.log(setting_persist_flat_or_sharp);
-
 
 
 // Align Settings
@@ -858,3 +865,16 @@ middle_align_settings.addEventListener("click", () => {
 
 settings_align == "left" && alignLeft();
 settings_align == "middle" && alignMiddle();
+
+
+// Tuning Icon
+var tuning_icon = document.getElementById("IDtuningIcon");
+tuning_icon.addEventListener("mouseover", () => {
+    if (!is_on_touch_device) {
+        tuning_icon.src = "static/img/tuning_icon_hover.png";
+    }
+});
+tuning_icon.addEventListener("mouseout", () => {
+    tuning_icon.src = "static/img/tuning_icon.png";
+});
+

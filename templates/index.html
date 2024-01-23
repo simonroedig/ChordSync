@@ -58,6 +58,11 @@
 
         var spotify_error = 0;
 
+        var track_bpm = 0;
+        var track_key = 0;
+
+        var sync_ratio_percentage = "0%"
+
         var lines_hover_and_clickable = "";
 
         var sync_skip_on = 0;
@@ -136,6 +141,24 @@
 
         //////// Websocket response for parameters that DON'T change during the song ////////
         socket.on('trackStaticDataResponse', (track_static_data) => {
+            if (spotify_error == 0) {
+                try {
+                    track_key = sharOrFlatTranposer(transposeChord(track_static_data.track_key, 0), current_flat_or_sharp);
+                    if (track_key == "0") {
+                        track_key = "C";
+                    }
+                    document.getElementById("IDtrackKeyValue").textContent = track_key;
+                } catch {
+                    console.log('%cNo track key available', 'color: yellow; font-weight: bold;');
+                }
+            }
+
+            sync_ratio_percentage = track_static_data.sync_ratio_percentage;
+            sync_ratio_percentage_string = "Sync Available ( " + sync_ratio_percentage + " )";
+
+            track_bpm = track_static_data.track_bpm;
+            document.getElementById("IDtrackBPMvalue").textContent = track_bpm;
+
             previous_capo_value = current_capo_value_int;
             localStorage.setItem("key_local_storage_previous_capo_value", previous_capo_value);
 
@@ -159,8 +182,14 @@
             if (spotify_error == 1) {
                 document.getElementById("IDsourceCodeLink").style.opacity = "0.5";
                 document.getElementById('IDdivMainChordsWrapper').style.justifyContent = "center";
-                document.getElementById("IDsyncAvailableIMG").style.display = "none";
-                document.getElementById("IDsyncAvailableIMG").style.visibility = "hidden";
+
+                if (track_static_data.main_chords_body == "Couldn't find chords for that song.") {
+                    document.getElementById("IDsyncAvailableIMG").style.display = "block";
+                    document.getElementById("IDsyncAvailableIMG").style.visibility = "visible";
+                } else {
+                    document.getElementById("IDsyncAvailableIMG").style.display = "none";
+                    document.getElementById("IDsyncAvailableIMG").style.visibility = "hidden";
+                }
             } else {
                 document.getElementById("IDsourceCodeLink").style.opacity = "1";
                 document.getElementById('IDdivMainChordsWrapper').style.justifyContent = "flex-start";
@@ -204,7 +233,7 @@
 
                 document.getElementById('IDsyncAvailableIMG').src = "{{ url_for('static', filename='/img/sync_available_check.png') }}";
                 document.getElementById('IDsyncAvailableIMG').style.filter = " drop-shadow(0 0 8px #62dbfb)";
-                document.getElementById('IDsyncAvailableIMG').title = "Sync Available";
+                document.getElementById('IDsyncAvailableIMG').title = sync_ratio_percentage_string;
             }
 
             // Main source 
@@ -273,6 +302,10 @@
             } else if (complete_source_code_found == 0) {
                 document.getElementById('IDsourceCodeLink').querySelector('img').src = "{{ url_for('static', filename='/img/search_icon.png') }}";
                 document.getElementById('IDdivMainChordsWrapper').style.justifyContent = "center";
+
+                document.getElementById('IDsyncAvailableIMG').src = "{{ url_for('static', filename='/img/sync_not_available_check.png') }}";
+                document.getElementById('IDsyncAvailableIMG').style.filter = " drop-shadow(0 0 8px #fb6262)";
+                document.getElementById('IDsyncAvailableIMG').title = "Sync Not Available";
             }
 
 
@@ -325,7 +358,7 @@
                 amount_of_sharps += (all_chords[i].innerHTML.match(/#/g) || []).length;
             }
             if (amount_of_sharps > amount_of_flats) {
-                console.log("Hit sharps bigger flat");
+                // console.log("Hit sharps bigger flat");
                 document.getElementById("IDsharpSymbol").style.fontWeight = "bold";
                 document.getElementById("IDsharpSymbol").style.color = "#1DB954";
                 document.getElementById("IDsharpSymbol").style.filter = "drop-shadow(0 0 8px #1DB954)";
@@ -339,7 +372,7 @@
                 }
             }
             if (amount_of_flats > amount_of_sharps) {
-                console.log("Hit flats bigger sharp");
+                // console.log("Hit flats bigger sharp");
                 document.getElementById("IDflatSymbol").style.fontWeight = "bold";
                 document.getElementById("IDflatSymbol").style.color = "#1DB954";
                 document.getElementById("IDflatSymbol").style.filter = "drop-shadow(0 0 8px #1DB954)";
@@ -353,7 +386,7 @@
                 }
             }
             if (amount_of_sharps == amount_of_flats) {
-                console.log("Hit sharps equal flat");
+                // console.log("Hit sharps equal flat");
                 document.getElementById("IDsharpSymbol").style.fontWeight = "normal";
                 document.getElementById("IDsharpSymbol").style.color = "white";
                 document.getElementById("IDsharpSymbol").style.filter = "";
@@ -361,10 +394,6 @@
                 document.getElementById("IDflatSymbol").style.color = "white";
                 document.getElementById("IDflatSymbol").style.filter = "";
                 if (!setting_persist_flat_or_sharp || !align_flat_or_sharp_persister || setting_persist_flat_or_sharp == "false") {
-                    console.log(setting_persist_flat_or_sharp)
-                    console.log(align_flat_or_sharp_persister)
-
-                    console.log("AHHHHHHHHHHHHHHHHHW TF")
                     current_flat_or_sharp = "0";
                 }
             }
@@ -399,7 +428,6 @@
 
         //////// Websocket response for parameters that change during the song ////////
         socket.on('trackDynamicDataResponse', (track_dynamic_data) => {
-            console.log(current_flat_or_sharp);
             // New track -> Request new static Websocket data
             if (track_dynamic_data.track_id != previous_track_id) {
                 document.getElementById('IDdivMainChordsWrapper').style.justifyContent = "center";
@@ -533,13 +561,13 @@
             <div id="IDsettingsOverlayContent">
                 <h1 id="IDcloseSettings">Close</h1>
 
-                <div id="IDmainSettings">
+                <div id="IDmainSettings" onmousedown="return false" onselectstart="return false">
                     <div class="individualSettings" id="IDcapoSettings">
-                        <h1 class="settingsTexts" id="IDcapoSettingsText">Persist Capo Value Between Songs:</h1>
+                        <h1 class="settingsTexts" id="IDcapoSettingsText">Persist Capo Value:</h1>
                         <div class="customSettingsCheckbox" id="IDcapoSettingsCheckbox">&nbsp;</div>
                     </div>
                     <div class="individualSettings" id="IDflatSharpSettings">
-                        <h1 class="settingsTexts" id="IDflatSharpSettingsText">Persist #/b Preference Between Songs:</h1>
+                        <h1 class="settingsTexts" id="IDflatSharpSettingsText">Persist #/b Preference:</h1>
                         <div class="customSettingsCheckbox" id="IDflatSharpSettingsCheckbox">&nbsp;</div>
                     </div>
                     <div class="individualSettings" id="IDalignContentSettings">
@@ -586,7 +614,7 @@
             <div id="IDdivTrackAndTime">
                 <div id="IDdivTrackAndArtist">
                     <div id="IDdivCheckAndTitle">
-                        <img id="IDsyncAvailableIMG" src="static/img/sync_available_check.png" title="Sync Available"> 
+                        <img id="IDsyncAvailableIMG" src="static/img/sync_available_check.png"> 
                         <span id="IDtrackName">{{ track_name }}</span>
                     </div>
                     <span id="IDartistName">{{ artist_name }}</span>
@@ -630,8 +658,8 @@
             <hr id="IDmiddleHR1">
             
             <div id="IDdivTuningAndCapo">
-                <!--<p>Tuning: <span id="IDguitarTuning">{{ guitar_tuning }}</span></p>-->
-                <img id="IDtuningIcon" src="static/img/tuning_icon.png"></img><span id="IDguitarTuning">{{ guitar_tuning }}</span>
+                <!--https://github.com/qiuxiang/tuner?tab=readme-ov-file-->
+                <a href="https://qiuxiang.github.io/tuner/app/" target="_blank"><img id="IDtuningIcon" src="static/img/tuning_icon.png"></img></a><span id="IDguitarTuning">{{ guitar_tuning }}</span>
 
 
                 <p id="IDverticalDelimeter1">&nbsp;&nbsp;|&nbsp;&nbsp;</p>
@@ -645,6 +673,15 @@
                 <p id="IDverticalDelimeter1">&nbsp;&nbsp;|&nbsp;&nbsp;</p>
 
                 <p id="IDflatOrSharp" title="Toggle Between Sharp- and Flat Chords" onmousedown="return false" onselectstart="return false"><span id="IDsharpSymbol">#</span>/<span id="IDflatSymbol">b</span>&nbsp;</p>
+
+                <p id="IDverticalDelimeter1">&nbsp;&nbsp;|&nbsp;&nbsp;</p>
+
+                <p id="IDtrackBPMtext"><span id="IDtrackBPMvalue">0</span> BPM</p>
+
+                <p id="IDverticalDelimeter1">&nbsp;&nbsp;|&nbsp;&nbsp;</p>
+
+                <img id="IDkeyIcon" src="static/img/key_icon.png"></img>
+                <p id="IDtrackKeyText"><span id="IDtrackKeyValue">C</span></p>
 
             </div>
             

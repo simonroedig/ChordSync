@@ -18,6 +18,12 @@ new UC for studies!!!!
 
 What to change on ChordSync, based on study results:
 - Sync Icon(s)
+- Sync Ratio on Hover
 - Capo Icon
 - Allowed negativ capo values
-- Align middle or left
+- Settings: Align middle or left
+- Settings: Capo persisting
+- Settings: Flat/Sharp persisting
+- Mute Button: (Seeings Lyrics in middle is enough to keep rythm, vorgeschlagen bei einer probandin, und getestet mit ihr)
+- Tuner: https://github.com/qiuxiang/tuner?tab=readme-ov-file
+- Key
