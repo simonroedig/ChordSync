@@ -133,7 +133,7 @@ def calculate_lyrics_not_found_but_line_synced(log):
 
 
 ### SONGS THAT ARE SYNCABLE ###
-def calculate_syncable_songs(log):
+def calculate_syncable_songs_old_wrong(log):
     synced_songs_count = 0
 
     is_found_chords_yes = False
@@ -156,6 +156,21 @@ def calculate_syncable_songs(log):
             is_lyrics_synced_yes = False
 
     return synced_songs_count
+
+def calculate_syncable_songs_new(log):
+    sync_ratio_count = 0
+    for line in log:
+        if "SYNC RATIO:" in line:
+            sync_ratio_count += 1
+    return sync_ratio_count
+
+def calculate_syncable_songs_new2(log):
+    condition_count = 0
+
+    for i in range(len(log)):
+        if "FOUND ULTIMATE GUITAR CHORDS: YES" in log[i] and "FOUND LYRICS: YES" in log[i + 4] and "LYRICS ARE LINE SYNCED: YES" in log[i + 5]:
+            condition_count += 1
+    return condition_count
 
 def calculate_mean_sync_ratio(log):
     total_sync_ratio = 0
@@ -334,7 +349,7 @@ print("-> Found NO Lyrics but Lyrics are Line Synced (Should be 0):", lyrics_not
 
 print("-----")
 
-syncable_songs_count = calculate_syncable_songs(log)
+syncable_songs_count = calculate_syncable_songs_new(log)
 print("Songs that are syncable (Found Chords and Line Synced Lyrics):", syncable_songs_count)
 
 mean_sync_ratio = calculate_mean_sync_ratio(log)
