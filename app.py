@@ -734,7 +734,7 @@ def googleChords(track_name, artist_name):
                     # Or like this: ONE CHORDS by Metallica for guitar, ukulele, piano at Ultimate-Guitar
                     title_text_no_ver = (re.sub(r'\(ver \d+\)', '', title_text)).replace("  ", " ") # e.g BREATHE CHORDS by Pink Floyd @ Ultimate-Guitar.Com
                     title_text_no_ue = title_text_no_ver.replace(" @ Ultimate-Guitar.Com", "") # e.g BREATHE CHORDS by Pink Floyd 
-                    title_text_no_ue = title_text_no_ue.replace(" for guitar, ukulele, piano at Ultimate-Guitar", "") # e.g BREATHE CHORDS by Pink Floyd 
+                    title_text_no_ue = title_text_no_ue.replace(" for guitar, ukulele, piano at Ultimate-Guitar", "") # e.g BREATHE CHORDS by Pink Floyd
                     title_text_no_ue = title_text_no_ue.lower() # e.g. breathe chords by pink floyd
                     
                     # if "chords" exists in title
@@ -746,6 +746,9 @@ def googleChords(track_name, artist_name):
                         ic(ue_arist_name)
                         
                         spotify_track_name = (track_name.lower().replace('remastered', '').replace('remaster', '').replace('version', '')).strip() # e.g. Breathe - 2011 Remastered Version -> breathe - 2011
+                        spotify_track_name = re.sub(r'\s- \s\d{4}', '', spotify_track_name) # both replace year
+                        spotify_track_name = re.sub(r'\s-\s\d{4}', '', spotify_track_name)
+
                         spotify_artist_name = artist_name.lower().strip() # e.g. Pink Floyd
                         ic(spotify_track_name)
                         ic(spotify_artist_name)
