@@ -306,6 +306,54 @@ def jumpInsideTrack(ms):
         print(f'Error: {e}')
         return redirect('/')
 
+@socketio.on('/songBackwards')
+def seek(progress_ms, wind_lenght_ms):
+    try:
+        token_info = refresh_token()
+        if token_info == 0:
+            return redirect('/')
+
+        print("SONG BACKWARDS")
+        new_progress_ms = int(progress_ms) - int(wind_lenght_ms)
+        if new_progress_ms < 0:
+            new_progress_ms = 0
+        spotify = spotipy.Spotify(auth=token_info['access_token'])
+        spotify.seek_track(new_progress_ms)
+        return redirect('/')
+    
+    except SpotifyException as e:
+        if e.http_status == 403 and "PREMIUM_REQUIRED" in str(e):
+            emit('error_message', {'message': 'Error: Spotify Premium required for this action.'})
+        else:
+            print(f'Error: {e}')
+    except Exception as e:
+        print(f'Error: {e}')
+        return redirect('/')
+    
+@socketio.on('/songForwards')
+def seek(progress_ms, track_duration_ms, wind_lenght_ms):
+    try:
+        token_info = refresh_token()
+        if token_info == 0:
+            return redirect('/')
+
+        print("SONG BACKWARDS")
+        new_progress_ms = int(progress_ms) + int(wind_lenght_ms)
+        if new_progress_ms > track_duration_ms:
+            new_progress_ms = progress_ms
+        spotify = spotipy.Spotify(auth=token_info['access_token'])
+        spotify.seek_track(new_progress_ms)
+        return redirect('/')
+    
+    except SpotifyException as e:
+        if e.http_status == 403 and "PREMIUM_REQUIRED" in str(e):
+            emit('error_message', {'message': 'Error: Spotify Premium required for this action.'})
+        else:
+            print(f'Error: {e}')
+    except Exception as e:
+        print(f'Error: {e}')
+        return redirect('/')
+
 
 # Called by WebSocket - returns object with parameters that change during the song 
 def getTrackDynamicData():    

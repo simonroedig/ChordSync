@@ -878,3 +878,48 @@ tuning_icon.addEventListener("mouseout", () => {
     tuning_icon.src = "static/img/tuning_icon.png";
 });
 
+
+// Arrow Keys
+var lastEmitTime = 0;
+var emitInterval = 1000; // 1 second in milliseconds
+
+var currentdate = new Date();
+var current_second = currentdate.getSeconds();
+var leftCounter = 0;
+
+document.addEventListener('keydown', function(event) {
+    var wind_length_ms = 5000;
+
+    // Check if the pressed key is the left arrow key
+    if (event.key === 'ArrowLeft') {
+        console.log("Backwards");
+
+        // Check the time difference since the last emit
+        var currentTime = new Date().getTime();
+        if (currentTime - lastEmitTime >= emitInterval) {
+            leftCounter += 1;
+            // Call your JavaScript function here
+            if (leftCounter >= 4) {
+                socket.emit('/songBackwards', progress_ms, wind_length_ms*2);
+            }
+            socket.emit('/songBackwards', progress_ms, wind_length_ms);
+
+            // Update the last emit time
+            lastEmitTime = currentTime;
+        }
+    }
+
+    if (event.key === 'ArrowRight') {
+        console.log("Forwards");
+
+        // Check the time difference since the last emit
+        var currentTime = new Date().getTime();
+        if (currentTime - lastEmitTime >= emitInterval) {
+            // Call your JavaScript function here
+            socket.emit('/songForwards', progress_ms, track_duration_ms, wind_length_ms);
+
+            // Update the last emit time
+            lastEmitTime = currentTime;
+        }
+    }
+});

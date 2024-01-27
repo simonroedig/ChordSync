@@ -18,6 +18,7 @@
 
         // Flags to check for new track
         var previous_track_id = -1;
+        var current_track_id = -1;
 
         // flat and sharp
         var amount_of_flats = 0;
@@ -429,6 +430,7 @@
         //////// Websocket response for parameters that change during the song ////////
         socket.on('trackDynamicDataResponse', (track_dynamic_data) => {
             // New track -> Request new static Websocket data
+            current_track_id = track_dynamic_data.track_id;
             if (track_dynamic_data.track_id != previous_track_id) {
                 document.getElementById('IDdivMainChordsWrapper').style.justifyContent = "center";
 
