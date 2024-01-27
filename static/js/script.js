@@ -881,11 +881,11 @@ tuning_icon.addEventListener("mouseout", () => {
 
 // Arrow Keys
 var lastEmitTime = 0;
-var emitInterval = 1000; // 1 second in milliseconds
+var emitInterval = 200; 
+var resetInterval = 3000;
 
-var currentdate = new Date();
-var current_second = currentdate.getSeconds();
 var leftCounter = 0;
+var rightCounter = 0;
 
 document.addEventListener('keydown', function(event) {
     var wind_length_ms = 5000;
@@ -897,8 +897,11 @@ document.addEventListener('keydown', function(event) {
         // Check the time difference since the last emit
         var currentTime = new Date().getTime();
         if (currentTime - lastEmitTime >= emitInterval) {
+            if (currentTime - lastEmitTime >= resetInterval) {
+                leftCounter = 0;
+                rightCounter = 0;
+            }
             leftCounter += 1;
-            // Call your JavaScript function here
             if (leftCounter >= 4) {
                 socket.emit('/songBackwards', progress_ms, wind_length_ms*2);
             }
@@ -915,7 +918,14 @@ document.addEventListener('keydown', function(event) {
         // Check the time difference since the last emit
         var currentTime = new Date().getTime();
         if (currentTime - lastEmitTime >= emitInterval) {
-            // Call your JavaScript function here
+            if (currentTime - lastEmitTime >= resetInterval) {
+                leftCounter = 0;
+                rightCounter = 0;
+            }
+            rightCounter += 1;
+            if (rightCounter >= 4) {
+                socket.emit('/songForwards', progress_ms, track_duration_ms, wind_length_ms*2);
+            }
             socket.emit('/songForwards', progress_ms, track_duration_ms, wind_length_ms);
 
             // Update the last emit time
@@ -923,3 +933,55 @@ document.addEventListener('keydown', function(event) {
         }
     }
 });
+
+
+
+//////// REPEAT SECTION BUTTON ////////
+var repeat_section_button = document.getElementById("IDrepeatSectionToggle");
+clicked_counter_repeat_section = 0;
+repeat_section_on = false;
+
+repeat_section_button.addEventListener("click", () => {
+    if (spotify_error == 1) {
+        // Make button unclickable if Spotify is not available
+        return;
+    }
+    clicked_counter_repeat_section = 1;
+    repeat_section_on = !repeat_section_on;
+
+    if (repeat_section_on) {
+        repeat_section_button.checked = true;
+        first_line_time = -1;
+        last_line_time = -1;
+        var style = document.createElement('style');
+        style.type = 'text/css';
+        style.innerHTML = `
+            #IDrepeatSectionToggle:checked:before {
+                background-image:url('/static/img/repeat_section_button_2.png');
+                background-size: cover;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    if (!repeat_section_on) {
+        repeat_section_button.checked = false;
+        first_line_time = -1;
+        last_line_time = -1;
+        var style = document.createElement('style');
+        style.type = 'text/css';
+        style.innerHTML = `
+            #IDrepeatSectionToggle:checked:before {
+                background-image:url('/static/img/repeat_section_button_1.png');
+                background-size: cover;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
+});
+
+function resetRepeatSectionFlag() {
+    already_in_section_request_first_line = false;
+}
+

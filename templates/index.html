@@ -83,6 +83,15 @@
         var align_capo_persister = false;
         var align_flat_or_sharp_persister = true;
 
+        // Repeat Section
+        var clicked_counter_repeat_section = 0;
+        var repeat_section_on = false;
+        var first_line_time = -1;
+        var last_line_time = -1;
+        var already_in_section_request_first_line = false;
+        var resetRepeatSectionFunc = () => {};
+
+
         // Local Storage
         localStorage.getItem("key_local_storage_settings_align") == null ? localStorage.setItem("key_local_storage_settings_align", settings_align) : settings_align = localStorage.getItem("key_local_storage_settings_align");
 
@@ -142,17 +151,17 @@
 
         //////// Websocket response for parameters that DON'T change during the song ////////
         socket.on('trackStaticDataResponse', (track_static_data) => {
-            if (spotify_error == 0) {
-                try {
-                    track_key = sharOrFlatTranposer(transposeChord(track_static_data.track_key, 0), current_flat_or_sharp);
-                    if (track_key == "0") {
-                        track_key = "C";
-                    }
-                    document.getElementById("IDtrackKeyValue").textContent = track_key;
-                } catch {
-                    console.log('%cNo track key available', 'color: yellow; font-weight: bold;');
+ 
+            try {
+                track_key = sharOrFlatTranposer(transposeChord(track_static_data.track_key, 0), current_flat_or_sharp);
+                if (track_key == "0") {
+                    track_key = "C";
                 }
+                document.getElementById("IDtrackKeyValue").textContent = track_key;
+            } catch {
+                console.log('%cNo track key available', 'color: yellow; font-weight: bold;');
             }
+            
 
             sync_ratio_percentage = track_static_data.sync_ratio_percentage;
             sync_ratio_percentage_string = "Sync Available (" + sync_ratio_percentage + ")";
@@ -181,6 +190,8 @@
 
             spotify_error = track_static_data.spotify_error;
             if (spotify_error == 1) {
+                document.getElementById("IDrepeatSectionToggle").style.pointerEvents = 'none';
+
                 document.getElementById("IDsourceCodeLink").style.opacity = "0.5";
                 document.getElementById('IDdivMainChordsWrapper').style.justifyContent = "center";
 
@@ -192,6 +203,8 @@
                     document.getElementById("IDsyncAvailableIMG").style.visibility = "hidden";
                 }
             } else {
+                document.getElementById("IDrepeatSectionToggle").style.pointerEvents = 'auto';
+
                 document.getElementById("IDsourceCodeLink").style.opacity = "1";
                 document.getElementById('IDdivMainChordsWrapper').style.justifyContent = "flex-start";
                 document.getElementById("IDsyncAvailableIMG").style.display = "block";
@@ -255,7 +268,73 @@
                         let match = syncedLineID.match(/^IS_SYNCED_AT:(.+)/);
                         if (match) {
                             let lineTimestamp = match[1];
-                            socket.emit('jumpInsideTrack', parseInt(lineTimestamp));
+
+                            // Repeat Section Logic
+                            if (clicked_counter_repeat_section == 2 && repeat_section_on == true) {
+
+                                // Make second line only clickable if difference to first line is bigger than 1 second
+                                if (Math.abs(parseInt(first_line_time) - parseInt(lineTimestamp)) <= 1000) {
+                                    resetRepeatSectionFunc();
+                                }
+
+                                // Make the next next line the end timestamp (so that the ranges really covers the last line)
+                                var next_line_timestamp = -1;
+                                clickable_synced_lines_timestamp_array.forEach((line, index) => {
+                                    if (line == lineTimestamp) {
+                                        if (index < clickable_synced_lines_timestamp_array.length - 1) {
+                                            next_line_timestamp = clickable_synced_lines_timestamp_array[index + 1];
+                                        }
+                                    }
+                                })
+                                // Is 0, when clicked the very last line
+                                if (next_line_timestamp == 0) {
+                                    next_line_timestamp = track_duration_ms - 2000;
+                                }
+                                last_line_time = next_line_timestamp + 2000;
+                                console.log("Last Line Time: " + last_line_time)
+
+                                var style = document.createElement('style');
+                                style.type = 'text/css';
+                                style.innerHTML = `
+                                    @keyframes blinkAnimation {
+                                        0% { opacity: 1; }
+                                        50% { opacity: 0.5; }
+                                        100% { opacity: 1; }
+                                    }
+
+                                    #IDrepeatSectionToggle:checked:before {
+                                        background-image: url('/static/img/repeat_section_button_4.png');
+                                        background-size: cover;
+                                        animation: blinkAnimation 2s infinite; /* 2s for a complete blink, adjust as needed */
+                                    }
+                                `;
+                                document.head.appendChild(style);
+
+                                clicked_counter_repeat_section = 3;
+
+                                socket.emit('jumpInsideTrack', parseInt(first_line_time));
+
+                            } else if (clicked_counter_repeat_section == 1 && repeat_section_on == true) {
+                                first_line_time = lineTimestamp;
+                                console.log("First Line Time: " + first_line_time)
+
+                                var style = document.createElement('style');
+                                style.type = 'text/css';
+                                style.innerHTML = `
+                                    #IDrepeatSectionToggle:checked:before {
+                                        background-image:url('/static/img/repeat_section_button_3.png');
+                                        background-size: cover;
+                                    }
+                                `;
+                                document.head.appendChild(style);
+
+                                clicked_counter_repeat_section = 2;
+                                socket.emit('jumpInsideTrack', parseInt(lineTimestamp));
+                            } else {
+                                // End Repeat Section Logic
+                                socket.emit('jumpInsideTrack', parseInt(lineTimestamp));
+                                resetRepeatSectionFunc();
+                            }  
                         }
 
                         // Scroll line instantly to center of screen
@@ -276,8 +355,15 @@
 
                     line.addEventListener('mouseover', (event) => {
                         if (!is_on_touch_device) {
-                            line.style.color = "#34df70";
-                            line.style.filter = "drop-shadow(0 0 15px #34df70)";
+                            if (repeat_section_on == true) {
+                                line_color = "#f362fb";
+                                drop_shadow = "drop-shadow(0 0 15px #f362fb)";
+                            } else {
+                                line_color = "#34df70";
+                                drop_shadow = "drop-shadow(0 0 15px #34df70)";
+                            }
+                            line.style.color = line_color;
+                            line.style.filter = drop_shadow;
                         }
                     });
 
@@ -432,6 +518,28 @@
             // New track -> Request new static Websocket data
             current_track_id = track_dynamic_data.track_id;
             if (track_dynamic_data.track_id != previous_track_id) {
+                // Reset repeat Section
+                resetRepeatSectionFunc = () => {
+                    first_line_time = -1;
+                    last_line_time = -1;
+                    clicked_counter_repeat_section = 0;
+                    repeat_section_on = false;
+
+                    var style = document.createElement('style');
+                    style.type = 'text/css';
+                    style.innerHTML = `
+                        #IDrepeatSectionToggle:checked:before {
+                            background-image:url('/static/img/repeat_section_button_1.png');
+                            background-size: cover;
+                        }
+                    `;
+                    document.head.appendChild(style);
+                    var repeatSectionToggle = document.getElementById('IDrepeatSectionToggle');
+                    repeatSectionToggle.checked = false;
+                } 
+                resetRepeatSectionFunc();
+                // End Reset repeat Section
+
                 document.getElementById('IDdivMainChordsWrapper').style.justifyContent = "center";
 
                 in_track_change = true;
@@ -449,6 +557,7 @@
                 document.getElementById("IDdivMainChordsWrapper").scrollTo(0, 0);
                 socket.emit('trackStaticDataRequest', settings_align);
             }
+
             // Update Play/Pause button dynamically
             if (track_dynamic_data.play_or_pause == "True") {
                 document.getElementById('IDplayAndPauseButton').src = "static/img/music_control/play_button.png";
@@ -486,6 +595,17 @@
             function calcDynamicScrolling(min_scroll_value, max_scroll_value, track_duration_ms, progress_ms, clickable_synced_lines_timestamp_array) {
 
                 clickable_synced_lines_timestamp_array.forEach((timestamp) => {
+                    // Repeat Section Logic
+                    if (clicked_counter_repeat_section == 3 && repeat_section_on == true && first_line_time != -1 && last_line_time != -1) {
+                        if (Math.abs(progress_ms - parseInt(last_line_time)) <= 500) {
+                            if (already_in_section_request_first_line == false) {
+                                already_in_section_request_first_line = true;
+                                socket.emit('jumpInsideTrack', parseInt(first_line_time));
+                                setTimeout(resetRepeatSectionFlag, 2000);
+                            }   
+                        }
+                    }
+                    // End Repeat Section Logic
 
                     if (Math.abs(progress_ms - timestamp) <= 200) {
                         current_synced_line = document.getElementById("IS_SYNCED_AT:" + timestamp);
@@ -638,14 +758,16 @@
                     </div>
 
                     <div id="IDdivCurrentTime">
-                        <p><span id="IDcurrentTime">{{ minutes }}:{{ "%02d"|format(seconds) }}</span></p>
+
+                        <div id="IDdivRepeatButtonAndCurrentTime">
+                            <p><span id="IDcurrentTime">{{ minutes }}:{{ "%02d"|format(seconds) }}</span></p>
+                            <input id="IDrepeatSectionToggle" type="checkbox"/ title="todo">
+                        </div>
+
 
                         <div id="IDdivSyncButtonAndTime">
-                            
                             <input id="IDsyncSkipToggle" type="checkbox"/ title="Turn On/Off: Show Only Syncable Songs">
-
                             <p><span id="IDtrackDuration">{{ minutes }}:{{ "%02d"|format(seconds) }}</span></p>
-
                         </div>
 
                     </div>

@@ -461,6 +461,11 @@ body {
     flex-direction: row;
 }
 
+#IDdivRepeatButtonAndCurrentTime {
+    display: flex;
+    flex-direction: row;
+}
+
 #IDsyncSkipToggle {
     margin: 0;
     margin-top: 3px;
@@ -679,4 +684,55 @@ body {
     margin-left: 10px;
     text-align: center;
     color: black;
+}
+
+/* Repeat Section Toogle */
+#IDrepeatSectionToggle {
+    margin: 0;
+    margin-top: 3px;
+    margin-left: 10px;
+    margin-right: 10px;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    width: 40px;
+    height: 16px;
+    display: inline-block;
+    position: relative;
+    border: solid 1px #ffffff;
+    border-top-right-radius: 50px;
+    border-bottom-right-radius: 50px;
+    border-top-left-radius: 50px;
+    border-bottom-left-radius: 50px;
+    overflow: hidden;
+    cursor: pointer;
+    opacity: 1;
+    transition: background-color ease 0.3s;
+}
+
+#IDrepeatSectionToggle:before {
+    content: "";
+    display: block;
+    position: absolute;
+    z-index: 2;
+    width: 20px;
+    height: 16px;
+    background-image: url('/static/img/repeat_section_button_1.png');
+    background-size: cover;
+    left: 0px;
+    top: -3px;
+    transition: all cubic-bezier(0.3, 1.5, 0.7, 1) 0.3s;
+}
+  
+#IDrepeatSectionToggle:checked {
+    border: solid 1px #f362fb;
+    border-radius: 50px;
+    filter: drop-shadow(0 0 10px #f362fb);
+
+}
+  
+#IDrepeatSectionToggle:checked:before {
+    left: 19px;
+    background-image: url('/static/img/repeat_section_button_2.png');
+    background-size: cover;
 }

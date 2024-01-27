@@ -337,7 +337,6 @@ def seek(progress_ms, track_duration_ms, wind_lenght_ms):
         if token_info == 0:
             return redirect('/')
 
-        print("SONG BACKWARDS")
         new_progress_ms = int(progress_ms) + int(wind_lenght_ms)
         if new_progress_ms > track_duration_ms:
             new_progress_ms = progress_ms
