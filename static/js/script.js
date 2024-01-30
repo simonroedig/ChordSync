@@ -932,6 +932,31 @@ document.addEventListener('keydown', function(event) {
             lastEmitTime = currentTime;
         }
     }
+
+    if (event.key === ' ') {
+        console.log("Pause");
+        socket.emit('playPauseSpotifyTrack');
+    }
+
+    if (event.key === 'ArrowUp') {
+        console.log("Volume Increase");
+
+        var currentTime = new Date().getTime();
+        if (currentTime - lastEmitTime >= emitInterval) {
+            socket.emit('increaseVolumeSpotify');
+            lastEmitTime = currentTime;
+        }
+    }
+
+    if (event.key === 'ArrowDown') {
+        console.log("Volume Decrease");
+
+        var currentTime = new Date().getTime();
+        if (currentTime - lastEmitTime >= emitInterval) {
+            socket.emit('decreaseVolumeSpotify');
+            lastEmitTime = currentTime;
+        }
+    }
 });
 
 
@@ -984,4 +1009,43 @@ repeat_section_button.addEventListener("click", () => {
 function resetRepeatSectionFlag() {
     already_in_section_request_first_line = false;
 }
+
+
+//////// MUTE SONG ////////
+document.getElementById("IDAlbum").addEventListener("click", () => {
+    if (spotify_error == 1) {
+        // Make button unclickable if Spotify is not available
+        return;
+    }
+    socket.emit('muteSpotifyTrack');
+});
+
+
+//////// SHUFFLE ////////
+var shuffle_button = document.getElementById("IDshuffleButton");
+shuffle_button.addEventListener("click", () => {
+    socket.emit('toggleShuffleState');
+});
+shuffle_button.addEventListener("mouseover", () => {
+    if (!is_on_touch_device) {
+        shuffle_button.style.scale = "1.1";
+    }
+});
+shuffle_button.addEventListener("mouseout", () => {
+    shuffle_button.style.scale = "1";
+});
+
+//////// REPEAT SPOTIFY ////////
+var spotify_repeat_button = document.getElementById("IDrepeatSpotifyButton");
+spotify_repeat_button.addEventListener("click", () => {
+    socket.emit('toggleRepeatState');
+});
+spotify_repeat_button.addEventListener("mouseover", () => {
+    if (!is_on_touch_device) {
+        spotify_repeat_button.style.scale = "1.1";
+    }
+});
+spotify_repeat_button.addEventListener("mouseout", () => {
+    spotify_repeat_button.style.scale = "1";
+});
 

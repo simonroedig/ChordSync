@@ -146,6 +146,11 @@ body {
     filter: drop-shadow(0 0 5px #62dbfb) !important;
 }
 
+.classHRsyncOnWithRepeat {
+    background-color: #f362fb !important;
+    filter: drop-shadow(0 0 5px #f362fb) !important;
+}
+
 @keyframes onloadHR{
     0% {
         max-width: 0;
@@ -156,16 +161,13 @@ body {
 }
 
 #IDsettingsButton {
-    font-weight: lighter;
-    font-family: 'The Expressions', sans-serif;                                            
-    color: #ffffff;
-    font-size: 1.3rem;
     margin: 0;
     padding: 0;
-    overflow-wrap: break-word;
     float: right;
-    margin: 0 0 0 15px;
+    margin: -10px 0 0 15px;
     cursor: pointer;
+    width: 40px;
+    transition: 0.15s ease-in-out;
 }
 
 #IDdivAlbumAndTrackAndTime {
@@ -227,6 +229,9 @@ body {
     height: 175px;
     object-fit: cover;
     border-radius: 10px;
+    cursor: pointer;
+    transition: 0.15s ease-in-out;
+    opacity: 1;
 }
 
 /* Music Control */
@@ -234,7 +239,7 @@ body {
     width: 100%;
     display: flex;
     flex-direction: row;
-    justify-content: center;
+    justify-content: space-around;
     align-items: center;
 }
 
@@ -245,10 +250,24 @@ body {
     transition: 0.15s ease-in-out;
 }
 
+#IDshuffleButton {
+    width: 35px;
+    height: 45px;
+    cursor: pointer;
+    opacity: 1;
+    transition: 0.15s ease-in-out;
+}
+
+#IDrepeatSpotifyButton {
+    width: 45px;
+    height: 45px;
+    cursor: pointer;
+    opacity: 1;
+    transition: 0.15s ease-in-out;
+}
+
 #IDplayAndPauseButton {
     width: 50px;
-    margin-left: 15%;
-    margin-right: 15%;
     cursor: pointer;
     scale: 1.0;
     transition: 0.15s ease-in-out;
@@ -526,7 +545,14 @@ body {
     #IDbackButton {
         width: 50px;
     }
-    
+    #IDshuffleButton {
+        width: 40px;
+        height: 50px;
+    }
+    #IDrepeatSpotifyButton {
+        width: 50px;
+        height: 50px;
+    }
     #IDplayAndPauseButton {
         width: 60px;
     }
@@ -612,15 +638,11 @@ body {
 }
 
 #IDcloseSettings {
-    font-weight: lighter;
-    font-family: 'The Expressions', sans-serif;                                            
-    color: #ffffff;
-    font-size: 2rem;
-    padding: 0;
-    overflow-wrap: break-word;
-    cursor: pointer;
     margin-bottom: 10vh;
     margin-top: -12vh;
+    cursor: pointer;
+    width: 40px;
+    transition: 0.15s ease-in-out;
 }
 
 .individualSettings {
@@ -646,12 +668,12 @@ body {
 
 @media (hover: hover) {
     #IDsettingsButton:hover {
-        letter-spacing: 2px;
-        transition: 0.2s ease-in-out;
+        width: 35px;
+        margin: -8px 0 0 15px;
+        transform: rotate(90deg);
     }
     #IDcloseSettings:hover {
-        letter-spacing: 2px;
-        transition: 0.2s ease-in-out;
+        transform: rotate(90deg);
     }
     .individualSettings:hover {
         letter-spacing: 0.5px;

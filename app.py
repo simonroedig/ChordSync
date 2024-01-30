@@ -125,6 +125,8 @@ track_key = 0
 
 sync_ratio_percentage = "0%"
 
+previous_spotify_volume = 0
+
 
 ######## HTTP ROUTES ########
 @app.route('/favicon.ico')
@@ -286,6 +288,149 @@ def playPauseSpotifyTrack():
         print(f'Error: {e}')
         return redirect('/')
 
+@socketio.on('increaseVolumeSpotify')
+def increaseVolumeSpotify():
+    try:
+        token_info = refresh_token()
+        if token_info == 0:
+            return redirect('/')
+
+        spotify = spotipy.Spotify(auth=token_info['access_token'])
+        current_track = spotify.current_playback()
+        current_volume = current_track['device']['volume_percent']
+
+        # Increase the volume by 10% (you can adjust this value)
+        new_volume = min(current_volume + 10, 100)
+
+        spotify.volume(volume_percent=new_volume)
+        return redirect('/')
+    
+    except SpotifyException as e:
+        if e.http_status == 403 and "PREMIUM_REQUIRED" in str(e):
+            emit('error_message', {'message': 'Error: Spotify Premium required for this action.'})
+        else:
+            print(f'Error: {e}')
+    except Exception as e:
+        print(f'Error: {e}')
+        return redirect('/')
+
+@socketio.on('decreaseVolumeSpotify')
+def decreaseVolumeSpotify():
+    try:
+        token_info = refresh_token()
+        if token_info == 0:
+            return redirect('/')
+
+        spotify = spotipy.Spotify(auth=token_info['access_token'])
+        current_track = spotify.current_playback()
+        current_volume = current_track['device']['volume_percent']
+
+        # Decrease the volume by 10% (you can adjust this value)
+        new_volume = max(current_volume - 10, 0)
+
+        spotify.volume(volume_percent=new_volume)
+        return redirect('/')
+    
+    except SpotifyException as e:
+        if e.http_status == 403 and "PREMIUM_REQUIRED" in str(e):
+            emit('error_message', {'message': 'Error: Spotify Premium required for this action.'})
+        else:
+            print(f'Error: {e}')
+    except Exception as e:
+        print(f'Error: {e}')
+        return redirect('/')
+
+@socketio.on('muteSpotifyTrack')
+def muteSpotifyTrack():
+    global previous_spotify_volume
+    try:
+        token_info = refresh_token()
+        if token_info == 0:
+            return redirect('/')
+
+        spotify = spotipy.Spotify(auth=token_info['access_token'])
+        current_track = spotify.current_playback()
+        current_volume = current_track['device']['volume_percent']
+        
+        if (current_volume != 0):
+            previous_spotify_volume = current_volume
+            
+        elif (current_volume == 0):
+            spotify.volume(volume_percent=previous_spotify_volume)
+            return redirect('/')
+
+        # Decrease the volume by 10% (you can adjust this value)
+        new_volume = max(current_volume - current_volume, 0)
+
+        spotify.volume(volume_percent=new_volume)
+        return redirect('/')
+    
+    except SpotifyException as e:
+        if e.http_status == 403 and "PREMIUM_REQUIRED" in str(e):
+            emit('error_message', {'message': 'Error: Spotify Premium required for this action.'})
+        else:
+            print(f'Error: {e}')
+    except Exception as e:
+        print(f'Error: {e}')
+        return redirect('/')
+   
+@socketio.on('toggleShuffleState')
+def toggleShuffleState():
+    try:
+        token_info = refresh_token()
+        if token_info == 0:
+            return redirect('/')
+
+        spotify = spotipy.Spotify(auth=token_info['access_token'])
+        current_playback = spotify.current_playback()
+        current_shuffle_state = current_playback['shuffle_state']
+
+        # Toggle the shuffle state
+        new_shuffle_state = not current_shuffle_state
+
+        spotify.shuffle(state=new_shuffle_state)
+        return redirect('/')
+
+    except SpotifyException as e:
+        if e.http_status == 403 and "PREMIUM_REQUIRED" in str(e):
+            emit('error_message', {'message': 'Error: Spotify Premium required for this action.'})
+        else:
+            print(f'Error: {e}')
+    except Exception as e:
+        print(f'Error: {e}')
+        return redirect('/')
+
+@socketio.on('toggleRepeatState')
+def toggleRepeatState():
+    try:
+        token_info = refresh_token()
+        if token_info == 0:
+            return redirect('/')
+
+        spotify = spotipy.Spotify(auth=token_info['access_token'])
+        current_playback = spotify.current_playback()
+        current_repeat_state = current_playback['repeat_state']
+
+        # Toggle the repeat state
+        if current_repeat_state == 'off':
+            new_repeat_state = 'track'  # Repeat current track
+        elif current_repeat_state == 'track':
+            new_repeat_state = 'context'  # Repeat current context (playlist or album)
+        else:
+            new_repeat_state = 'off'  # Turn off repeat
+
+        spotify.repeat(state=new_repeat_state)
+        return redirect('/')
+
+    except SpotifyException as e:
+        if e.http_status == 403 and "PREMIUM_REQUIRED" in str(e):
+            emit('error_message', {'message': 'Error: Spotify Premium required for this action.'})
+        else:
+            print(f'Error: {e}')
+    except Exception as e:
+        print(f'Error: {e}')
+        return redirect('/')
+    
 @socketio.on('jumpInsideTrack')
 def jumpInsideTrack(ms):
     try:
@@ -362,7 +507,10 @@ def getTrackDynamicData():
             'track_id': "0",
             'progress_ms': 0,
             'current_time': "0:00",
-            'play_or_pause': "False"
+            'play_or_pause': "False",
+            'current_volume': 0,
+            'current_shuffle_state': "False",
+            'current_repeat_state': 'off'
         }
     spotify = spotipy.Spotify(auth=token_info['access_token'])
     
@@ -377,19 +525,28 @@ def getTrackDynamicData():
             'track_id': "0",
             'progress_ms': 0,
             'current_time': "0:00",
-            'play_or_pause': "False"
+            'play_or_pause': "False",
+            'current_volume': 0,
+            'current_shuffle_state': "False",
+            'current_repeat_state': 'off'
         }
     
     track_id = current_track['item']['id']
     progress_ms = current_track['progress_ms']
     minutes, seconds = divmod(progress_ms / 1000, 60)
     is_playing = str(current_track['is_playing'])
+    current_volume = current_track['device']['volume_percent']
+    current_shuffle_state = current_track['shuffle_state']
+    current_repeat_state = current_track['repeat_state']
     
     return {
             'track_id': track_id,
             'progress_ms': progress_ms,
             'current_time': f"{int(minutes)}:{int(seconds):02d}",
-            'play_or_pause': is_playing
+            'play_or_pause': is_playing,
+            'current_volume': current_volume,
+            'current_shuffle_state': current_shuffle_state,
+            'current_repeat_state': current_repeat_state
         }
 
 # Called by Websocket - returns object with parameters that DON'T change during the song 
@@ -548,7 +705,32 @@ def getTrackStaticData(align):
                 synced_lyrics_tupel_array = parseSyncedLyricsJsonToTupelArray(synced_lyrics_json)
 
                 ### Main Algorithm
-                main_chords_body = insertTimestampsToMainChordsBody(synced_lyrics_tupel_array, main_chords_body, track_duration_ms, track_id)
+                main_chords_body, error_syncing = insertTimestampsToMainChordsBody(synced_lyrics_tupel_array, main_chords_body, track_duration_ms, track_id)
+                
+                # If sync below treshold, regard as unsyncable (like no lyrics found)
+                if error_syncing:
+                    print(error_syncing)
+                    sync_ratio_percentage = "0"
+                    found_musixmatch_lyrics = 0
+                    musixmatch_lyrics_is_linesynced = 0
+                    return {
+                        'track_name': track_name,
+                        'artist_name': artist_name,
+                        'track_duration_ms': track_duration_ms,
+                        'track_duration_m_and_s': f"{int(minutes)}:{int(seconds):02d}",
+                        'album_cover_url': album_cover_url,
+                        'guitar_tuning': guitar_tuning,
+                        'guitar_capo': guitar_capo,
+                        'main_chords_body': main_chords_body,
+                        'complete_source_code_link': complete_source_code_link,
+                        'complete_source_code_found': complete_source_code_found,
+                        'musixmatch_lyrics_is_linesynced': musixmatch_lyrics_is_linesynced,
+                        'found_musixmatch_lyrics': found_musixmatch_lyrics,
+                        'spotify_error': spotify_error,
+                        'track_bpm': track_bpm,
+                        'sync_ratio_percentage': sync_ratio_percentage,
+                        'track_key': track_key
+                    }
                 
                 return {
                     'track_name': track_name,
@@ -571,7 +753,7 @@ def getTrackStaticData(align):
             
             # Found chords but no synced lyrics
             else:
-                sync_ratio_percentage = "0%"
+                sync_ratio_percentage = "0"
                 return {
                     'track_name': track_name,
                     'artist_name': artist_name,
@@ -955,7 +1137,6 @@ def insertTimestampsToMainChordsBody(synced_lyrics_tupel_array, main_chords_body
     
     # Add "NOTSYNCED" to each line which will then be replaced with the timestamp
     main_chords_body_line_array_lyrics_with_index_and_timestamp = [["NOTSYNCED", t[0], html.unescape(t[1])] for t in main_chords_body_line_array_lyrics_with_index]
-    print(main_chords_body_line_array_lyrics_with_index_and_timestamp)
     
     # Inserts timestamps into main_chords_body_line_array_lyrics_with_index_and_timestamp by fuzzy lyrics matching
     # official_lyrics_line = Lyrics Line from MusixMatch API
@@ -1184,10 +1365,11 @@ def insertTimestampsToMainChordsBody(synced_lyrics_tupel_array, main_chords_body
        
     print(f"AMMOUNT OF MUSIXMATCH LYRICS TO SYNC (without empty or note): {amm_of_lines_to_sync}\n")
     print(f"AMMOUNT OF SUCCESSFULLY SYNCED MUSIXMATCH LYRICS: {amm_of_lines_succ_synced}\n")
-    print(f"AMMOUNT OF LYRICS (AND PERHAPS OTHER TEXT) LINES ON UG: {len(main_chords_body_line_array_lyrics_with_index_and_timestamp)}\n")
     print(f"SYNC RATIO: {(amm_of_lines_succ_synced/amm_of_lines_to_sync)*100}%\n")
-    
-    sync_ratio_percentage = f"{round((amm_of_lines_succ_synced/amm_of_lines_to_sync)*100)}%"
+    sync_ratio_percentage = round((amm_of_lines_succ_synced/amm_of_lines_to_sync)*100)
+    # If the Sync Ratio is below 60% return the original source code without any timestamps and regard as not synced
+    if (sync_ratio_percentage < 60):
+        return main_chords_body, True
                 
     if (dev_or_prod == "DEVELOPMENT" and log_on_off == "ON" and wrote_block_4 != track_id):
             with open(log_file_path, 'a') as file:
@@ -1252,14 +1434,16 @@ def insertTimestampsToMainChordsBody(synced_lyrics_tupel_array, main_chords_body
     main_chords_body_line_array_residual_with_index_and_timestamp = [["NOTSYNCED", t[0], t[1]] for t in main_chords_body_line_array_residual_with_index]
     
     # Array of all synced and interpolated lyrics lines merged with unsynced residual lines
-    merged_array = mergeSyncedLyricsAndResidual(main_chords_body_line_array_residual_with_index_and_timestamp, main_chords_body_line_array_lyrics_with_index_and_timestamp)
+    merged_array, error_merging = mergeSyncedLyricsAndResidual(main_chords_body_line_array_residual_with_index_and_timestamp, main_chords_body_line_array_lyrics_with_index_and_timestamp)
     
     # Interpolate timestamps for residual lines with regard to synced lyrics lines timestamps    
-    merged_array = lerpNOTSYNCEDWithin(merged_array)
-    merged_array = lerpNOTSYNCEDLastLines(merged_array, track_length_ms)
-    merged_array = lerpNOTSYNCEDFirstLines(merged_array)
+    merged_array, error_lerping_1 = lerpNOTSYNCEDWithin(merged_array)
+    merged_array, error_lerping_2 = lerpNOTSYNCEDLastLines(merged_array, track_length_ms)
+    merged_array, error_lerping_3 = lerpNOTSYNCEDFirstLines(merged_array)
     
-    # ic(merged_array)
+    # If error occured in merging or lerping return original source code without any timestamps and regard as not synced
+    if (error_merging or error_lerping_1 or error_lerping_2 or error_lerping_3):
+        return main_chords_body, True
     
     ############################################
     
@@ -1267,7 +1451,7 @@ def insertTimestampsToMainChordsBody(synced_lyrics_tupel_array, main_chords_body
     for i in range (0, len(merged_array)):
         main_chords_body_line_array[merged_array[i][1]] = f'<span id="IS_SYNCED_AT:{merged_array[i][0]}">{main_chords_body_line_array[merged_array[i][1]]}</span>'
             
-    return "<br>".join(main_chords_body_line_array)
+    return "<br>".join(main_chords_body_line_array), False
     
 # Replace NOTSCYNCED timestamps by interpolating with timestamps that exist in surrounding lines
 def lerpNOTSYNCEDWithin(array_with_timestamps_to_be_lerped):       
@@ -1312,10 +1496,11 @@ def lerpNOTSYNCEDWithin(array_with_timestamps_to_be_lerped):
                 for add_timestamp in range (1, amm_of_cons_notsynced_lines):
                     array_with_timestamps_to_be_lerped[timstamp + add_timestamp-1][0] = str(int(sorrounding_timestamp_before + (timestamp_adder * add_timestamp))) + "\" class='LERP_LINE'"
         
-        return array_with_timestamps_to_be_lerped  
+        return array_with_timestamps_to_be_lerped, False
     
     except:
         ic("lerpNOTSYNCEDWithin failed")
+        return array_with_timestamps_to_be_lerped, True
 
 # Replace NOTSCYNCED timestamps by interpolating timestamps between the last synced timestamp and the end of the track
 def lerpNOTSYNCEDLastLines(array_with_timestamps_to_be_lerped, track_length_ms):        
@@ -1343,10 +1528,11 @@ def lerpNOTSYNCEDLastLines(array_with_timestamps_to_be_lerped, track_length_ms):
             for add_timestamp in range (1, amm_of_cons_notsynced_lines):
                 array_with_timestamps_to_be_lerped[timestamp_before_index+1 + add_timestamp-1][0] = str(int(sorrounding_timestamp_before + (timestamp_adder * add_timestamp))) + "\" class='LERP_LINE'"
         
-        return array_with_timestamps_to_be_lerped
+        return array_with_timestamps_to_be_lerped, False
     
     except:
-        print("lerpNOTSYNCEDLastLines failed")     
+        print("lerpNOTSYNCEDLastLines failed")    
+        return array_with_timestamps_to_be_lerped, True 
 
 # Replace NOTSCYNCED timestamps by interpolating timestamps between the beginning of the track and the first synced timestamp 
 def lerpNOTSYNCEDFirstLines(array_with_timestamps_to_be_lerped):    
@@ -1370,10 +1556,12 @@ def lerpNOTSYNCEDFirstLines(array_with_timestamps_to_be_lerped):
             for add_timestamp in range (1, amm_of_cons_notsynced_lines):
                 array_with_timestamps_to_be_lerped[1 + add_timestamp-1][0] = str(int(sorrounding_timestamp_before + (timestamp_adder * add_timestamp))) + "\" class='LERP_LINE'"
         
-        return array_with_timestamps_to_be_lerped
+        return array_with_timestamps_to_be_lerped, False
     
     except:
         print("lerpNOTSYNCEDFirstLines failed")
+        return array_with_timestamps_to_be_lerped, True
+        
 
 # Merge the synced lyrics array and the residual array        
 def mergeSyncedLyricsAndResidual(main_chords_body_line_array_residual_with_index_and_timestamp, main_chords_body_line_array_lyrics_with_index_and_timestamp):        
@@ -1398,10 +1586,12 @@ def mergeSyncedLyricsAndResidual(main_chords_body_line_array_residual_with_index
         merged_array.extend(main_chords_body_line_array_residual_with_index_and_timestamp[residual_index:])
         merged_array.extend(main_chords_body_line_array_lyrics_with_index_and_timestamp[lyrics_index:])
 
-        return merged_array
+        return merged_array, False
     
     except:
         print("mergeSyncedLyricsAndResidual failed")    
+        return main_chords_body_line_array_residual_with_index_and_timestamp, True
+        
 
 
 # Delete Spotify cash when program stops (to achieve same functionality as /logout)

@@ -164,7 +164,7 @@
             
 
             sync_ratio_percentage = track_static_data.sync_ratio_percentage;
-            sync_ratio_percentage_string = "Sync Available (" + sync_ratio_percentage + ")";
+            sync_ratio_percentage_string = "Sync Available (" + sync_ratio_percentage + "%)";
 
             track_bpm = track_static_data.track_bpm;
             document.getElementById("IDtrackBPMvalue").textContent = track_bpm;
@@ -309,7 +309,7 @@
                                     }
                                 `;
                                 document.head.appendChild(style);
-
+                                dynamic_scroll = true;
                                 clicked_counter_repeat_section = 3;
 
                                 socket.emit('jumpInsideTrack', parseInt(first_line_time));
@@ -558,6 +558,29 @@
                 socket.emit('trackStaticDataRequest', settings_align);
             }
 
+
+            if (track_dynamic_data.current_repeat_state == "off") {
+                document.getElementById('IDrepeatSpotifyButton').src = "static/img/music_control/repeat_spotify_off.png";
+            } else if (track_dynamic_data.current_repeat_state == "track") {
+                document.getElementById('IDrepeatSpotifyButton').src = "static/img/music_control/repeat_spotify_song.png";
+            } else if (track_dynamic_data.current_repeat_state == "context") {
+                document.getElementById('IDrepeatSpotifyButton').src = "static/img/music_control/repeat_spotify_context.png";
+            }
+
+            if (track_dynamic_data.current_shuffle_state == true) {
+                document.getElementById('IDshuffleButton').src = "static/img/music_control/shuffle_on.png";
+            } else if (track_dynamic_data.current_shuffle_state == false) {
+                document.getElementById('IDshuffleButton').src = "static/img/music_control/shuffle_off.png";
+            }
+
+            if (track_dynamic_data.current_volume != 0) {
+                document.getElementById('IDAlbum').style.opacity = "1";
+                document.getElementById('IDAlbum').style.borderRadius = "10px";
+            } else {
+                document.getElementById('IDAlbum').style.opacity = "0.5";
+                document.getElementById('IDAlbum').style.borderRadius = "50%";
+            }
+
             // Update Play/Pause button dynamically
             if (track_dynamic_data.play_or_pause == "True") {
                 document.getElementById('IDplayAndPauseButton').src = "static/img/music_control/play_button.png";
@@ -633,14 +656,29 @@
                 bottom_hr.classList.remove("classHRsyncOn");
                 top_hr.classList.remove("classHRsyncOn");
 
+                bottom_hr.classList.remove("classHRsyncOnWithRepeat");
+                top_hr.classList.remove("classHRsyncOnWithRepeat");
+                if (repeat_section_on == true && clicked_counter_repeat_section == 3) {
+                    resetRepeatSectionFunc();
+                }
             }
+
             if (dynamic_scroll && musixmatch_lyrics_is_linesynced == 1 && in_track_change == false) {
                 calcDynamicScrolling(min_scroll_value, max_scroll_value, track_duration_ms, progress_ms, clickable_synced_lines_timestamp_array);
                 sync_button.src = "{{ url_for('static', filename='/img/sync_button_blue.png') }}";
                 sync_button.style.filter = "drop-shadow(0 0 15px #62dbfb)";
                 sync_button.style.opacity = "1";
+
                 bottom_hr.classList.add("classHRsyncOn");
                 top_hr.classList.add("classHRsyncOn");
+
+                if (clicked_counter_repeat_section == 3 && repeat_section_on == true) {
+                    bottom_hr.classList.add("classHRsyncOnWithRepeat");
+                    top_hr.classList.add("classHRsyncOnWithRepeat");
+
+                    bottom_hr.classList.remove("classHRsyncOn");
+                    top_hr.classList.remove("classHRsyncOn");
+                }
             }
 
             // No synced lyrics available cases
@@ -653,6 +691,9 @@
                 sync_button.style.opacity = "0.5";
                 bottom_hr.classList.remove("classHRsyncOn");
                 top_hr.classList.remove("classHRsyncOn");
+
+                bottom_hr.classList.remove("classHRsyncOnWithRepeat");
+                top_hr.classList.remove("classHRsyncOnWithRepeat");
             }
             // If no synced lyrics are available -> Display error message when enabling sync
             if (dynamic_scroll && musixmatch_lyrics_is_linesynced == 0 && in_track_change == false) {
@@ -665,6 +706,9 @@
                 sync_button.style.opacity = "1";
                 bottom_hr.classList.add("classHRsyncOn");
                 top_hr.classList.add("classHRsyncOn");
+
+                bottom_hr.classList.remove("classHRsyncOnWithRepeat");
+                top_hr.classList.remove("classHRsyncOnWithRepeat");
             }
 
             if (complete_source_code_found == 0) {
@@ -681,7 +725,7 @@
 
         <div id="IDsettingsOverlay">
             <div id="IDsettingsOverlayContent">
-                <h1 id="IDcloseSettings">Close</h1>
+                <img id="IDcloseSettings" src="static/img/close_settings_button.png" alt="Close Settings" title="Close Settings"/>
 
                 <div id="IDmainSettings" onmousedown="return false" onselectstart="return false">
                     <div class="individualSettings" id="IDcapoSettings">
@@ -723,14 +767,15 @@
 
             </div>
             <!--<a href="https://www.simonroedig.com/" target="_blank" title="Website: Simon Roedig">-->
-            <h1 id="IDsettingsButton">Settings</h1>
+            <!--<h1 id="IDsettingsButton">Settings</h1>-->
+            <img id="IDsettingsButton" src="static/img/settings_button.png" alt="Open Settings" title="Open Settings"/>
             <hr id="IDtopHR">
         </div>
 
         
         <div id="IDdivAlbumAndTrackAndTime">
             <div id="IDdivAlbum">
-                <img id="IDAlbum" src="static/img/empty_album_placeholder.png" alt="Album Cover"> 
+                <img id="IDAlbum" src="static/img/empty_album_placeholder.png" alt="Album Cover" title="Mute/Unmute Song"> 
             </div>
             
             <div id="IDdivTrackAndTime">
@@ -743,9 +788,11 @@
                 </div>
 
                 <div id="IDmusicControl">
+                    <img id="IDshuffleButton" title="Shuffle Songs" src="static/img/music_control/shuffle_off.png"/>
                     <img id="IDbackButton" title="Previous Song" src="static/img/music_control/back_button.png"/>
                     <img id="IDplayAndPauseButton" title="Play or Pause Song" src="static/img/music_control/play_button.png"/>
                     <img id="IDforwardButton" title="Next Song" src="static/img/music_control/forward_button.png"/>
+                    <img id="IDrepeatSpotifyButton" title="Repeat Song/Playlist" src="static/img/music_control/repeat_spotify_off.png"/>
                 </div>
                 
                 <div id="IDdivTime">
