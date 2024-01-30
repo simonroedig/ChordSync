@@ -273,6 +273,8 @@ def calculate_median_amnt_of_lyrics(log):
 def calculate_mean_path_percentage(log, striiing):
     total_sync_ratio = 0
     count_non_zero = 0
+    
+    arr = []
 
     for line in log:
         if striiing in line:
@@ -280,6 +282,7 @@ def calculate_mean_path_percentage(log, striiing):
             try:
                 sync_ratio_value = float(sync_ratio_str)
                 total_sync_ratio += sync_ratio_value
+                arr.append(sync_ratio_value)
                 count_non_zero += 1
             except ValueError:
                 print(f"Error converting '{sync_ratio_str}' to float. Skipping this line.")
@@ -287,6 +290,7 @@ def calculate_mean_path_percentage(log, striiing):
     if count_non_zero == 0:
         return 0  # Avoid division by zero
 
+    # print(f"{striiing}: {arr}")
     average_sync_ratio = total_sync_ratio / count_non_zero
     return round(average_sync_ratio, 2)
 
