@@ -757,3 +757,17 @@ main algorithm via colors in the lyrics */
     background-image: url('/static/img/repeat_section_button_2.png');
     background-size: cover;
 }
+
+#IDcredit {
+    color: #ffffff;
+    font-size: 0.8rem;
+    margin: 0;
+    margin-top: 8vh;
+    opacity: 0.75;
+    letter-spacing: 5px;
+}
+
+a {
+    color: #ffffff;
+    text-decoration: none;
+}
