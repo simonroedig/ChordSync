@@ -356,7 +356,6 @@ function transposeChord(chord, n) {
     }
     return transposed_base_chord;
 }
-// console.log(sharOrFlatTranposer(transposeChord("Cmaj7b5", 1), "#"));
 
 
 //////// FLAT/SHARP BUTTON ////////
@@ -476,6 +475,7 @@ function flatOrSharpPersistSetting() {
     lines_hover_and_clickable();
 }
 
+
 //////// SPOTIFY MUSIC CONTROL BUTTONS ////////
 // Next Song
 var next_spotify_track_button = document.getElementById("IDforwardButton");
@@ -521,7 +521,7 @@ play_pause_spotify_track_button.addEventListener("mouseout", () => {
 });
 
 
-//////// TRACK TIMELINE ////////
+//////// SONG TIMELINE ////////
 var line_empty = document.getElementById('IDtimeLineEmpty');
 var line_filled = document.getElementById('IDtimeLineFilled');
 var line_empty_2 = document.getElementById('IDtimeLineEmpty2');
@@ -704,6 +704,7 @@ sync_button.addEventListener('click', () =>  {
 });
 
 
+//////// SYNC SKIP BUTTON ////////
 var sync_skip_toggle = document.getElementById("IDsyncSkipToggle");
 sync_skip_toggle.addEventListener('click', () =>  {
 
@@ -826,7 +827,6 @@ function alignLeft() {
     socket.emit('trackStaticDataRequest', "left");
     // margins have to be fixed, which is done withing the handling of trackStaticDataResponse
 }
-
 
 left_align_settings.addEventListener("click", () => {
     if (window.getComputedStyle(left_align_settings).backgroundColor == greenRGB) {
@@ -960,7 +960,6 @@ document.addEventListener('keydown', function(event) {
 });
 
 
-
 //////// REPEAT SECTION BUTTON ////////
 var repeat_section_button = document.getElementById("IDrepeatSectionToggle");
 clicked_counter_repeat_section = 0;
@@ -1003,7 +1002,6 @@ repeat_section_button.addEventListener("click", () => {
         `;
         document.head.appendChild(style);
     }
-    
 });
 
 function resetRepeatSectionFlag() {
@@ -1035,6 +1033,7 @@ shuffle_button.addEventListener("mouseout", () => {
     shuffle_button.style.scale = "1";
 });
 
+
 //////// REPEAT SPOTIFY ////////
 var spotify_repeat_button = document.getElementById("IDrepeatSpotifyButton");
 spotify_repeat_button.addEventListener("click", () => {
@@ -1049,3 +1048,19 @@ spotify_repeat_button.addEventListener("mouseout", () => {
     spotify_repeat_button.style.scale = "1";
 });
 
+var repeatSectionToggle = document.getElementById("IDrepeatSectionToggle");
+repeatSectionToggle.addEventListener("click", function() {
+    // Check the state of the checkbox
+    if (repeatSectionToggle.checked) {
+        repeatSectionToggle.title = "Click LINE to define START of Repeat Section";
+    } else {
+        repeatSectionToggle.title = "Repeat/Replay Section";
+    }
+});
+
+// Initial setup based on the checkbox state
+if (repeatSectionToggle.checked) {
+    repeatSectionToggle.title = "Click LINE to define START of Repeat Section";
+} else {
+    repeatSectionToggle.title = "Repeat/Replay Section";
+}

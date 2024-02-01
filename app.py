@@ -11,25 +11,24 @@ by Simon Roedig (Mediainformatics @LMU Munich)
 Bachelor's Thesis (WS 2023/2024)
 """
 
-
-######## IMPORTS (DUH) ########
-import math
-from dotenv import load_dotenv
-import os
-import spotipy
-from spotipy.oauth2 import SpotifyOAuth
-from spotipy.exceptions import SpotifyException
-import requests
-from flask import Flask, render_template, request, send_from_directory, redirect, session
-from bs4 import BeautifulSoup
-import re
-from fuzzywuzzy import fuzz
-import json
-from icecream import ic
-from flask_socketio import SocketIO, emit
+######## IMPORTS ########
 import atexit
 import datetime
 import html
+import json
+import math
+import os
+import re
+import requests
+from bs4 import BeautifulSoup
+from dotenv import load_dotenv
+from flask import Flask, redirect, render_template, request, send_from_directory, session
+from fuzzywuzzy import fuzz
+from icecream import ic
+from flask_socketio import SocketIO, emit
+from spotipy import SpotifyOAuth
+from spotipy.exceptions import SpotifyException
+import spotipy
 
 
 ######## .env ########
@@ -222,7 +221,6 @@ def handleDynamicDataRequest():
 def handleStaticDataRequest(align="left"):
     emit('trackStaticDataResponse', getTrackStaticData(align))
     
-
 @socketio.on('nextSpotifyTrack')
 def nextSpotifyTrack():
     try:
@@ -999,7 +997,6 @@ def extractMainChordsBody(complete_source_code, align):
     else:
         return "Failed to find main chords/lyrics content of the source code"
 
-
 def replace_spaces_within_chords(input_string):
     pattern = re.compile(r'\[tab\](\s+)\[ch\]')
     pattern_2 = re.compile(r'\[/ch\](\s+)\[ch\]')
@@ -1018,6 +1015,7 @@ def replace_spaces_within_chords(input_string):
     result_string_2 = re.sub(pattern_2, replace_2, result_string_1)
 
     return result_string_2
+
 
 ######## MUSIXMATCH API ########
 # Returns the synced lyrics json from the musixmatch (respectively free GitHub) API
@@ -1104,7 +1102,6 @@ def getSyncedLyricsJson(track_id):
             ic(f'Error making lyrics request, Perhaps no lyrics available: {e}')
             return "COULDN'T FIND LYRICS, ERROR REQUESTING", found_musixmatch_lyrics, musixmatch_lyrics_is_linesynced
     
-
 # Returns an array of tupels of the form (timestamp, lyrics line) (e.g. [(19100, 'Up with the worry and down in a flurry'), ...])
 def parseSyncedLyricsJsonToTupelArray(synced_lyrics_json):
     global musixmatch_lyrics_is_linesynced
@@ -1562,7 +1559,6 @@ def lerpNOTSYNCEDFirstLines(array_with_timestamps_to_be_lerped):
         print("lerpNOTSYNCEDFirstLines failed")
         return array_with_timestamps_to_be_lerped, True
         
-
 # Merge the synced lyrics array and the residual array        
 def mergeSyncedLyricsAndResidual(main_chords_body_line_array_residual_with_index_and_timestamp, main_chords_body_line_array_lyrics_with_index_and_timestamp):        
     try:
@@ -1593,13 +1589,11 @@ def mergeSyncedLyricsAndResidual(main_chords_body_line_array_residual_with_index
         return main_chords_body_line_array_residual_with_index_and_timestamp, True
         
 
-
 # Delete Spotify cash when program stops (to achieve same functionality as /logout)
 def cleanup():
     cache_file = '.cache'
     if os.path.exists(cache_file):
-        os.remove(cache_file)
-        
+        os.remove(cache_file)            
 atexit.register(cleanup)  
 
 

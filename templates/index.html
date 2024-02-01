@@ -4,7 +4,6 @@
     <title>ChordSync</title>
     <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='styles/mainpage.css') }}">
     <link rel="icon" type="image/x-icon" href="{{ url_for('favicon') }}">
-    <link href="https://fonts.cdnfonts.com/css/the-expressions" rel="stylesheet">
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js" integrity="sha384-mZLF4UVrpi/QTWPA7BjNPEnkIfRFn4ZEO3Qt/HFklTJBj/gBOV8G3HcKn4NfQblz" crossorigin="anonymous"></script>
     <script>
         //////// GLOBAL VARIABLES ////////
@@ -151,7 +150,7 @@
 
         //////// Websocket response for parameters that DON'T change during the song ////////
         socket.on('trackStaticDataResponse', (track_static_data) => {
- 
+            // Song Key
             try {
                 track_key = sharOrFlatTranposer(transposeChord(track_static_data.track_key, 0), current_flat_or_sharp);
                 if (track_key == "0") {
@@ -162,20 +161,24 @@
                 console.log('%cNo track key available', 'color: yellow; font-weight: bold;');
             }
             
-
+            // Sync Ratio
             sync_ratio_percentage = track_static_data.sync_ratio_percentage;
             sync_ratio_percentage_string = "Sync Available (" + sync_ratio_percentage + "%)";
 
+            // Song BPM
             track_bpm = track_static_data.track_bpm;
             document.getElementById("IDtrackBPMvalue").textContent = track_bpm;
 
+            // Capo local storage
             previous_capo_value = current_capo_value_int;
             localStorage.setItem("key_local_storage_previous_capo_value", previous_capo_value);
 
+            // Sync Button (For color)
             sync_button = document.getElementById("IDsyncButton");
             bottom_hr = document.getElementById("IDbottomHR");
             top_hr = document.getElementById("IDtopHR");
 
+            // Sync Skip Button
             if (sync_skip_on == 1 && clicked_previous == 0 && (track_static_data.musixmatch_lyrics_is_linesynced == 0 || track_static_data.complete_source_code_found == 0)) {
                 socket.emit('nextSpotifyTrack');
                 return;
@@ -186,12 +189,14 @@
             }
             clicked_previous = 0;
 
+            // To halt diverse things at this state
             in_track_change = false;
 
+            // Repeat Section Logic
             spotify_error = track_static_data.spotify_error;
             if (spotify_error == 1) {
                 document.getElementById("IDrepeatSectionToggle").style.pointerEvents = 'none';
-
+                document.getElementById("IDrepeatSectionToggle").title = "Repeat/Replay Section";
                 document.getElementById("IDsourceCodeLink").style.opacity = "0.5";
                 document.getElementById('IDdivMainChordsWrapper').style.justifyContent = "center";
 
@@ -204,8 +209,8 @@
                 }
             } else {
                 document.getElementById("IDrepeatSectionToggle").style.pointerEvents = 'auto';
-
                 document.getElementById("IDsourceCodeLink").style.opacity = "1";
+                document.getElementById("IDrepeatSectionToggle").title = "Repeat/Replay Section";
                 document.getElementById('IDdivMainChordsWrapper').style.justifyContent = "flex-start";
                 document.getElementById("IDsyncAvailableIMG").style.display = "block";
                 document.getElementById("IDsyncAvailableIMG").style.visibility = "visible";
@@ -237,7 +242,6 @@
             // Musixmatch lyrics 
             musixmatch_lyrics_is_linesynced = track_static_data.musixmatch_lyrics_is_linesynced;
             found_musixmatch_lyrics = track_static_data.found_musixmatch_lyrics;
-
             if (musixmatch_lyrics_is_linesynced == 0) {
                 dynamic_scroll = false;
                 document.getElementById('IDsyncAvailableIMG').src = "{{ url_for('static', filename='/img/sync_not_available_check.png') }}";
@@ -250,7 +254,7 @@
                 document.getElementById('IDsyncAvailableIMG').title = sync_ratio_percentage_string;
             }
 
-            // Main source 
+            //////// Main source ////////
             main_chords_body = track_static_data.main_chords_body;
             document.getElementById('IDdivMainChords').innerHTML = main_chords_body;
 
@@ -269,9 +273,8 @@
                         if (match) {
                             let lineTimestamp = match[1];
 
-                            // Repeat Section Logic
+                            //////// Repeat Section Logic ////////
                             if (clicked_counter_repeat_section == 2 && repeat_section_on == true) {
-
                                 // Make second line only clickable if difference to first line is bigger than 1 second
                                 if (Math.abs(parseInt(first_line_time) - parseInt(lineTimestamp)) <= 1000) {
                                     resetRepeatSectionFunc();
@@ -292,7 +295,6 @@
                                 }
                                 last_line_time = next_line_timestamp + 2000;
                                 console.log("Last Line Time: " + last_line_time)
-
                                 var style = document.createElement('style');
                                 style.type = 'text/css';
                                 style.innerHTML = `
@@ -311,7 +313,7 @@
                                 document.head.appendChild(style);
                                 dynamic_scroll = true;
                                 clicked_counter_repeat_section = 3;
-
+                                document.getElementById("IDrepeatSectionToggle").title = "Defined Section is being repeated";
                                 socket.emit('jumpInsideTrack', parseInt(first_line_time));
 
                             } else if (clicked_counter_repeat_section == 1 && repeat_section_on == true) {
@@ -327,14 +329,16 @@
                                     }
                                 `;
                                 document.head.appendChild(style);
-
                                 clicked_counter_repeat_section = 2;
+                                document.getElementById("IDrepeatSectionToggle").title = "Click LINE to define END of Repeat Section";
                                 socket.emit('jumpInsideTrack', parseInt(lineTimestamp));
+
                             } else {
-                                // End Repeat Section Logic
                                 socket.emit('jumpInsideTrack', parseInt(lineTimestamp));
+                                document.getElementById("IDrepeatSectionToggle").title = "Repeat/Replay Section";
                                 resetRepeatSectionFunc();
                             }  
+                            // End Repeat Section Logic
                         }
 
                         // Scroll line instantly to center of screen
@@ -348,11 +352,11 @@
                         } catch {
                             console.log('%cNo current synced line available - Could not center current line', 'color: yellow; font-weight: bold;');
                         }
-
                         // Wait 1 second before enabling dynamic scrolling again after click on synced line
                         sleepPromise(1000).then(() => { dynamic_scroll = true; });        
                     });
 
+                    // Lyrics line color change on hover
                     line.addEventListener('mouseover', (event) => {
                         if (!is_on_touch_device) {
                             if (repeat_section_on == true) {
@@ -366,7 +370,6 @@
                             line.style.filter = drop_shadow;
                         }
                     });
-
                     line.addEventListener('mouseout', (event) => {
                         if (!is_on_touch_device) {
                             line.style.color = "white";
@@ -378,7 +381,6 @@
             }
             lines_hover_and_clickable();
             
-
 
             //////// CHORDS SOURCE CODE URL AND ICON ////////
             document.getElementById('IDsourceCodeLink').href = track_static_data.complete_source_code_link;
@@ -411,7 +413,6 @@
             }
             document.getElementById("IDguitarCapo").style.fontWeight = "bold";
             document.getElementById("IDguitarCapo").style.color = "#1DB954";
-
             // Persist capo value between songs if settings turned on
             function persist_capo() {
                 var difference = initial_capo_value - previous_capo_value;
@@ -486,6 +487,7 @@
             }
             align_flat_or_sharp_persister = true;
 
+
             //////// USEFUL LOGS ////////
             console.log('%cArtist Name: ' + track_static_data.artist_name, 'color: #1DB954; font-weight: bold;');
             console.log('%cTrack Name: ' + track_static_data.track_name, 'color: #1DB954; font-weight: bold;');
@@ -513,6 +515,8 @@
 
         });
 
+
+
         //////// Websocket response for parameters that change during the song ////////
         socket.on('trackDynamicDataResponse', (track_dynamic_data) => {
             // New track -> Request new static Websocket data
@@ -535,6 +539,8 @@
                     `;
                     document.head.appendChild(style);
                     var repeatSectionToggle = document.getElementById('IDrepeatSectionToggle');
+
+                    document.getElementById("IDrepeatSectionToggle").title = "Repeat/Replay Section";
                     repeatSectionToggle.checked = false;
                 } 
                 resetRepeatSectionFunc();
@@ -559,6 +565,7 @@
             }
 
 
+            //////// Spotify Buttons and Timeline ////////
             if (track_dynamic_data.current_repeat_state == "off") {
                 document.getElementById('IDrepeatSpotifyButton').src = "static/img/music_control/repeat_spotify_off.png";
             } else if (track_dynamic_data.current_repeat_state == "track") {
@@ -601,9 +608,10 @@
             }
 
 
-            //////// MAIN ALGORITHM TO PUT CURRENT LINE IN THE CENTER ////////
+            //////// MAIN ALGORITHM TO CENTER CURRENT LINE ////////
             let scroll_box = document.getElementById("IDdivMainChordsWrapper");
             let scroll_to_value = scroll_box.scrollTop;
+
             // Turn of autoscroll if user scrolls manually
             scroll_box.addEventListener("wheel", () => {
                 dynamic_scroll = false;
@@ -618,7 +626,8 @@
             function calcDynamicScrolling(min_scroll_value, max_scroll_value, track_duration_ms, progress_ms, clickable_synced_lines_timestamp_array) {
 
                 clickable_synced_lines_timestamp_array.forEach((timestamp) => {
-                    // Repeat Section Logic
+
+                    //////// Repeat Section Logic ////////
                     if (clicked_counter_repeat_section == 3 && repeat_section_on == true && first_line_time != -1 && last_line_time != -1) {
                         if (Math.abs(progress_ms - parseInt(last_line_time)) <= 500) {
                             if (already_in_section_request_first_line == false) {
@@ -643,19 +652,20 @@
                         } catch {
                             console.log('%cNo current synced line available - Could not center current line', 'color: yellow; font-weight: bold;');
                         }
-
                     }
                 });
+
             }
 
-            // Depending on wether dynamic scrolling is enabled or disabled -> change sync button appearance and enable calcDynamicScrolling() function
+            // Depending on wether dynamic scrolling is enabled or disabled 
+            // -> change sync button appearance and enable calcDynamicScrolling() function
             if (!dynamic_scroll && musixmatch_lyrics_is_linesynced == 1 && in_track_change == false) {
                 sync_button.src = "{{ url_for('static', filename='/img/sync_button.png') }}";
                 sync_button.style.filter = "";
                 sync_button.style.opacity = "0.5";
+
                 bottom_hr.classList.remove("classHRsyncOn");
                 top_hr.classList.remove("classHRsyncOn");
-
                 bottom_hr.classList.remove("classHRsyncOnWithRepeat");
                 top_hr.classList.remove("classHRsyncOnWithRepeat");
                 if (repeat_section_on == true && clicked_counter_repeat_section == 3) {
@@ -671,11 +681,12 @@
 
                 bottom_hr.classList.add("classHRsyncOn");
                 top_hr.classList.add("classHRsyncOn");
+                bottom_hr.classList.remove("classHRsyncOnWithRepeat");
+                top_hr.classList.remove("classHRsyncOnWithRepeat");
 
                 if (clicked_counter_repeat_section == 3 && repeat_section_on == true) {
                     bottom_hr.classList.add("classHRsyncOnWithRepeat");
                     top_hr.classList.add("classHRsyncOnWithRepeat");
-
                     bottom_hr.classList.remove("classHRsyncOn");
                     top_hr.classList.remove("classHRsyncOn");
                 }
@@ -684,33 +695,35 @@
             // No synced lyrics available cases
             if (!dynamic_scroll && musixmatch_lyrics_is_linesynced == 0 && in_track_change == false) {
                 document.getElementById('IDdivMainChordsWrapper').style.justifyContent = "flex-start";
-
                 document.getElementById('IDdivMainChords').innerHTML = main_chords_body;
+
                 sync_button.src = "{{ url_for('static', filename='/img/sync_button.png') }}";
                 sync_button.style.filter = "";
                 sync_button.style.opacity = "0.5";
+
                 bottom_hr.classList.remove("classHRsyncOn");
                 top_hr.classList.remove("classHRsyncOn");
-
                 bottom_hr.classList.remove("classHRsyncOnWithRepeat");
                 top_hr.classList.remove("classHRsyncOnWithRepeat");
             }
+
             // If no synced lyrics are available -> Display error message when enabling sync
             if (dynamic_scroll && musixmatch_lyrics_is_linesynced == 0 && in_track_change == false) {
                 document.getElementById('IDdivMainChordsWrapper').style.justifyContent = "center";
-
                 // Don't also rewrite main_chords_body to persist previous content
                 document.getElementById('IDdivMainChords').innerHTML = "Syncing chords not possible for this song.";
+
                 sync_button.src = "{{ url_for('static', filename='/img/sync_button_blue.png') }}";
                 sync_button.style.filter = "drop-shadow(0 0 15px #62dbfb)";
                 sync_button.style.opacity = "1";
+
                 bottom_hr.classList.add("classHRsyncOn");
                 top_hr.classList.add("classHRsyncOn");
-
                 bottom_hr.classList.remove("classHRsyncOnWithRepeat");
                 top_hr.classList.remove("classHRsyncOnWithRepeat");
             }
 
+            // Center error messages and don't influence lyrics' left alignment
             if (complete_source_code_found == 0) {
                 document.getElementById('IDdivMainChordsWrapper').style.justifyContent = "center";
             }
@@ -723,20 +736,21 @@
 <body>
     <div id="IDdivSmallerBody">
 
+        <!-- Settings Overlay -->
         <div id="IDsettingsOverlay">
             <div id="IDsettingsOverlayContent">
                 <img id="IDcloseSettings" src="static/img/close_settings_button.png" alt="Close Settings" title="Close Settings"/>
 
                 <div id="IDmainSettings" onmousedown="return false" onselectstart="return false">
-                    <div class="individualSettings" id="IDcapoSettings">
+                    <div class="individualSettings" id="IDcapoSettings" title="Default: OFF | Setting prevents change of capo value with recommendation">
                         <h1 class="settingsTexts" id="IDcapoSettingsText">Persist Capo Value:</h1>
                         <div class="customSettingsCheckbox" id="IDcapoSettingsCheckbox">&nbsp;</div>
                     </div>
-                    <div class="individualSettings" id="IDflatSharpSettings">
+                    <div class="individualSettings" id="IDflatSharpSettings" title="Default: ON | Setting auto-transposes chords to fit #/b preference">
                         <h1 class="settingsTexts" id="IDflatSharpSettingsText">Persist #/b Preference:</h1>
                         <div class="customSettingsCheckbox" id="IDflatSharpSettingsCheckbox">&nbsp;</div>
                     </div>
-                    <div class="individualSettings" id="IDalignContentSettings">
+                    <div class="individualSettings" id="IDalignContentSettings" title="Default: L | L: Left, M: Middle | Setting aligns chords and lyrics">
                         <h1 class="settingsTexts" id="IDalignSettingsText">Align Chords and Lyrics:</h1>
                         <div class="customSettingsCheckbox" id="IDalignSettingsCheckbox">L</div>
                         <div class="customSettingsCheckbox" id="IDalignSettingsCheckbox2">M</div>
@@ -745,6 +759,7 @@
             </div>
         </div>
 
+        <!-- Navbar (Top Things)-->
         <div id="IDheadlines">
             <div id="IDheadlineAndUser">
                 <a href="" title="ChordSync"><h1 id="IDheadline">ChordSync</h1></a>
@@ -766,13 +781,12 @@
                 {% endif %}
 
             </div>
-            <!--<a href="https://www.simonroedig.com/" target="_blank" title="Website: Simon Roedig">-->
-            <!--<h1 id="IDsettingsButton">Settings</h1>-->
             <img id="IDsettingsButton" src="static/img/settings_button.png" alt="Open Settings" title="Open Settings"/>
             <hr id="IDtopHR">
         </div>
 
         
+        <!-- Song and Media Player -->
         <div id="IDdivAlbumAndTrackAndTime">
             <div id="IDdivAlbum">
                 <img id="IDAlbum" src="static/img/empty_album_placeholder.png" alt="Album Cover" title="Mute/Unmute Song"> 
@@ -796,7 +810,6 @@
                 </div>
                 
                 <div id="IDdivTime">
-                    
                     <div id="IDtimeLineEmpty">
                         <div id="IDtimeLineFilled"></div> 
                     </div>
@@ -805,37 +818,32 @@
                     </div>
 
                     <div id="IDdivCurrentTime">
-
                         <div id="IDdivRepeatButtonAndCurrentTime">
                             <p><span id="IDcurrentTime">{{ minutes }}:{{ "%02d"|format(seconds) }}</span></p>
-                            <input id="IDrepeatSectionToggle" type="checkbox"/ title="todo">
-                        </div>
-
+                            <input id="IDrepeatSectionToggle" type="checkbox"/ title="Repeat/Replay Section">
+                        </div> 
 
                         <div id="IDdivSyncButtonAndTime">
-                            <input id="IDsyncSkipToggle" type="checkbox"/ title="Turn On/Off: Show Only Syncable Songs">
+                            <input id="IDsyncSkipToggle" type="checkbox"/ title="Turn On/Off: Show ONLY Syncable Songs when 'Skip'">
                             <p><span id="IDtrackDuration">{{ minutes }}:{{ "%02d"|format(seconds) }}</span></p>
                         </div>
-
                     </div>
-                
                 </div>
-                
+
             </div>
-            
         </div>
     
+        <!-- Toolbar and Main Chord Content -->
         <div id="IDdivAllChordsAndInfos">
             <hr id="IDmiddleHR1">
             
+            <!-- Toolbar -->
             <div id="IDdivTuningAndCapo">
                 <!--https://github.com/qiuxiang/tuner?tab=readme-ov-file-->
                 <a href="https://qiuxiang.github.io/tuner/app/" target="_blank"><img id="IDtuningIcon" src="static/img/tuning_icon.png"></img></a><span id="IDguitarTuning">{{ guitar_tuning }}</span>
 
-
                 <p id="IDverticalDelimeter1">&nbsp;&nbsp;|&nbsp;&nbsp;</p>
 
-                <!--<p id="IDcapoText">Capo:&nbsp;</p>-->
                 <img id="IDcapoIcon" src="static/img/capo_icon.png"></img>
                 <p id="IDcapoMinusButton" title="Transpose Chords One Semitone Up" onmousedown="return false" onselectstart="return false">-&nbsp;</p>
                 <p><span id="IDguitarCapo" onmousedown="return false" onselectstart="return false">{{ guitar_capo }}</span></p>
@@ -853,17 +861,18 @@
 
                 <img id="IDkeyIcon" src="static/img/key_icon.png"></img>
                 <p id="IDtrackKeyText"><span id="IDtrackKeyValue">C</span></p>
-
             </div>
             
             <hr id="IDmiddleHR2">
     
+            <!-- Main Chord Content -->
             <div id="IDdivMainChordsWrapper" onmousedown="return false" onselectstart="return false">
                 <div id="IDdivMainChords">{{ main_chords_body|safe }}</div>
             </div>
     
             <hr id="IDbottomHR">
 
+            <!-- Bottom Things -->
             <div id="IDdivLoginAndSyncAndSourceCode">
                 {% if is_logged_in %}
                     <a id="IDlogoutText" href="/logout" title="Logout"><p>&#8672; Logout</p></a>
@@ -873,12 +882,9 @@
                 <img id="IDsyncButton" title="Sync or Unsync Song" src="{{ url_for('static', filename='/img/sync_button.png') }}"/>
                 <a id="IDsourceCodeLink" href="{{ complete_source_code_link }}" target="_blank" title="Find Chords or Look Up Source"><img src="{{ url_for('static', filename='/img/search_icon.png') }}"/></a>
             </div>
-
-        </div>   
+        </div>    
     </div>
-    
-    </body>
+</body>
 
-    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
-  
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </html> 
