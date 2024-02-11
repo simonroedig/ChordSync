@@ -32,7 +32,7 @@
 ```
 pip install -r requirements.txt
 ```
-- **5.** `Locate the env.txt` file and `follow its' inctructions`, the files name afterwards must be solely `.env`, read next points to understand what
+- **5.** `Locate the env.txt` file and `follow its inctructions`, the files name afterwards must be solely `.env`, read next points to understand what
 to paste exactly into this file
 - **6.** Create an `Spotify "App"`:
    - ChordSync connects to your Spotify account and uses the `Spotify API` (you must have Spotify `Premium!`)
