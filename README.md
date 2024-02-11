@@ -34,7 +34,7 @@ pip install -r requirements.txt
 - **5.** `Locate the env.txt` file and `follow its' inctructions`, the files name afterwards must be solely `.env`, read next points to understand what
 to paste exactly into this file
 - **6.** Create an `Spotify "App"`:
-- ChordSync connects to your Spotify account and uses the `Spotify API` (you must have Spotify `Premium!`)
+-- ChordSync connects to your Spotify account and uses the `Spotify API` (you must have Spotify `Premium!`)
 - Go to: https://developer.spotify.com/dashboard and `create a new App` (click "Create App")
 - Paste http://localhost:5000/callback into the `Redirect URIs` field, enter your desired name and description
 - Go to the created Apps' `Settings`, here you will find the `Client ID` and `Client secret` (click "view client secret")
