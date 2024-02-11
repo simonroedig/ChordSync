@@ -24,7 +24,7 @@
 - **5. Integrated Guitar Tools:** Access standard functionalities such as capo settings, chord preferences, BPM and key display, and a tuner, with user preferences persisting across songs 
 
 ## How to install ChordSync:
-1. Install python: https://phoenixnap.com/kb/how-to-install-python-3-windows
+**1.** Install python: https://phoenixnap.com/kb/how-to-install-python-3-windows
 2. Optional: install a Code-Editor like Visual Studio Code
 3. Download this repository (main branch), (e.g. click green "<> Code" button on GitHub, download ZIP and unpack)
 4. Install dependencies: Open a terminal in the ...\ChordSync-main folder, and run:
