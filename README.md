@@ -54,17 +54,17 @@ to retreive these lyrics you need a `sp_dc cookie` from spotify:
    - `Paste` the (very long) content of the sp_dc cookie `to the .env file` at `SP_DC_COOKIE`
 - **9.** The setup should be complete, the main `entry point of ChordSync` is the file `App.py`, which you can either `run with your Code-Editor/IDE` or via `clicking App.py directly`
    - It will open a terminal with some information, you should see the following:
-```
-.
-.
-WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
- * Running on all addresses (0.0.0.0)
- * Running on http://127.0.0.1:5000 (*1)
- * Running on http://192.168.2.100:5000 (*2)
-Press CTRL+C to quit
-.
-.
-```
+   ```
+   .
+   .
+   WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+   * Running on all addresses (0.0.0.0)
+   * Running on http://127.0.0.1:5000 (*1)
+   * Running on http://192.168.2.100:5000 (*2)
+   Press CTRL+C to quit
+   .
+   .
+   ```
    - The adresses (*1, *2) might be different for you
    - To open ChordSync `paste one of those IP-Adresses into your browser`:
    - *1 is the Loopback IP-Adress, it also resolves to http://localhost:5000/, with it you can access ChordSync only from the computer you ran it from
