@@ -8,6 +8,7 @@
                                        __/ |           
                                       |___/  
 ```
+<img src="/for_git_readme/afterstudy_chordsync.png" alt="ChordSync Snapshot" width="100%" height="100%">
 
 ## User Story:
 "As a guitarist who enjoys playing along with songs, I often find it frustrating that my chord sheets require constant scrolling and manual adjustment to stay synchronized with the song, disrupting my playing flow. Additionally, I frequently play songs from my Spotify playlist, which necessitates actively searching and finding the correct chord sheets after each song. Seeking a solution, I discovered ChordSync, a revolutionary software designed to streamline the play-along experience for guitarists. With ChordSync's instant connection to Spotify, I can effortlessly select a song and have the corresponding chord sheet immediately retreived and displayed from Ultimate Guitar via a refined search algorithm. The innovative auto-scrolling algorithm ensures bidirectional synchronization between the chord sheet and the song itself. Whether navigating different sections in the song's timeline or on the chord sheet, ChordSync seamlessly adjusts, eliminating the need for manual corrections and enabling effortless song navigation. Moreover, with the repeat functionality, I can define specific sections in the chord sheet and practice them repeatedly by simply clicking the lyrics or chords, allowing for focused practice on particular parts of the song. To ensure ChordSync displays only syncable songs, I can activate the functionality to instruct Spotify to exclusively play and skip to songs that ChordSync can successfully process. Furthermore, ChordSync integrates standard guitar tool functionalities like capo settings, chord preferences, BPM and key display, and even a tuner, with the added benefit of persisting user preferences across songs, automatically applying them to newly parsed chord sheets. With ChordSync, not only can I play along with my favorite songs effortlessly, but I can also discover and explore new music recommended by Spotify while simultaneously improving my guitar skills."
@@ -65,7 +66,7 @@ to retreive these lyrics you need a `sp_dc cookie` from spotify:
    .
    .
    ```
-   - The adresses (*1, *2) might be different for you
+   - The adresses `(*1, *2)` might be different for you
    - To open ChordSync `paste one of those IP-Adresses into your browser`:
    - *1 is the Loopback IP-Adress, it also resolves to http://localhost:5000/, with it you can access ChordSync only from the computer you ran it from
    - *2 is the private IP-Adress of the device you ran it from, you can ALSO paste this IP into other devices' browser in your network and will see ChordSync
