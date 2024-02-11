@@ -24,36 +24,35 @@
 - **5. Integrated Guitar Tools:** Access standard functionalities such as capo settings, chord preferences, BPM and key display, and a tuner, with user preferences persisting across songs 
 
 ## How to install ChordSync:
-**1.** Install python: https://phoenixnap.com/kb/how-to-install-python-3-windows
-2. Optional: install a Code-Editor like Visual Studio Code
-3. Download this repository (main branch), (e.g. click green "<> Code" button on GitHub, download ZIP and unpack)
-4. Install dependencies: Open a terminal in the ...\ChordSync-main folder, and run:
+**1.** Install `python`: https://phoenixnap.com/kb/how-to-install-python-3-windows
+**2.** Optional: install a `Code-Editor` like Visual Studio Code
+**3.** `Download` this `repository` (main branch), (e.g. click green "<> Code" button on GitHub, download ZIP and unpack)
+**4.** Install `dependencies`: Open a terminal in the ...\ChordSync-main folder, and run:
 ```
 pip install -r requirements.txt
 ```
-5. Locate the env.txt file and follow its' inctructions, the files name afterwards must be solely .env, read next points to understand what
+**5.** `Locate the env.txt` file and `follow its' inctructions`, the files name afterwards must be solely `.env`, read next points to understand what
 to paste exactly into this file
-6. Create an Spotify "App":
-- ChordSync connects to your Spotify account and uses the Spotify API (you must have Spotify Premium!)
-- Go to: https://developer.spotify.com/dashboard and create an new App (click "Create App")
-- Paste http://localhost:5000/callback into the Redirect URIs field, enter your desired name and description
-- Go to the created Apps' "Settings", here you will find the "Client ID" and "Client secret" (click "view client secret")
-- Paste both values into your .env file at the respective place
-7. Set-up Google Search API:
+**6.** Create an `Spotify "App"`:
+- ChordSync connects to your Spotify account and uses the `Spotify API` (you must have Spotify `Premium!`)
+- Go to: https://developer.spotify.com/dashboard and `create a new App` (click "Create App")
+- Paste http://localhost:5000/callback into the `Redirect URIs` field, enter your desired name and description
+- Go to the created Apps' `Settings`, here you will find the `Client ID` and `Client secret` (click "view client secret")
+- `Paste` both values `to the .env file` at the `respective places`
+**7.** Set-up `Google Search API`:
 - To find and retreive the chord sheets from Ultimate-Guitar, the Search API from Google is used
-- You can request this API 100x per day for free, meaning you can play up to 100 songs per day with ChordSync
-- Go to: https://developers.google.com/custom-search/v1/overview and click "Get a Key" at the API Key section, the project name doesn't matter
-- Click to show the API Key, paste this value to the .env at GOOGLE_API_KEY
-- Go to: https://programmablesearchengine.google.com/controlpanel/all and create a new search engine
-- Choose to search the whole web, the search engine name doesn't matter
-- Don't copy the "script" code, but click on adjust/customize and find and copy the search engine ID
-- Paste this value to the .env at GOOGLE_SEARCH_ENGINE_ID
-8. ChordSyncs' main algorithm is based on Musixmatchs lyrics that is also the lyrics you find when you listen to a song on spotify,
-to retreive these lyrics you need a sp_dc cookie from spotify:
-- A general detailed guide to retreive this cookie was provided by [akashrchandran](https://github.com/akashrchandran/akashrchandran) -> [here](https://github.com/akashrchandran/syrics/wiki/Finding-sp_dc).
-- Paste the (very long) content of the sp_dc cookie to the .env at SP_DC_COOKIE
-9. The setup should be complete, the main entry point of ChordSync is the file App.py, which you can either run 
-with your Code-Editor/IDE or via clicking App.py directly
+- You can request this API `100x per day for free`, meaning you can play up to 100 songs per day with ChordSync, you `will not be automatically charged` if you exceed this limit unless you register for a billing plan, chordSync will inform you when your daily Quota is exceeded
+- Go to: https://developers.google.com/custom-search/v1/overview and click `Get a Key` at the `API Key section`, the project name doesn't matter
+- Click to `show the API Key`, `paste` this value `to the .env file` at `GOOGLE_API_KEY`
+- Go to: https://programmablesearchengine.google.com/controlpanel/all and `create a new search engine`
+- Choose to `search the whole web`, the search engine name doesn't matter
+- Don't copy the "script" code, but click on adjust/customize and `locate and copy the search engine ID`
+- `Paste` this value `to the .env file ` at `GOOGLE_SEARCH_ENGINE_ID`
+**8.** ChordSyncs' main algorithm is based on Musixmatchs lyrics that is also the lyrics you find when you listen to a song on spotify,
+to retreive these lyrics you need a `sp_dc cookie` from spotify:
+- A general `detailed guide to retreive this cookie` was provided by [akashrchandran](https://github.com/akashrchandran/akashrchandran) -> [here](https://github.com/akashrchandran/syrics/wiki/Finding-sp_dc).
+- `Paste` the (very long) content of the sp_dc cookie `to the .env file` at `SP_DC_COOKIE`
+**9.** The setup should be complete, the main `entry point of ChordSync` is the file `App.py`, which you can either `run with your Code-Editor/IDE` or via `clicking App.py directly`
 - It will open a terminal with some information, you should see the following:
 ```
 .
@@ -67,10 +66,10 @@ Press CTRL+C to quit
 .
 ```
 - The adresses (*1, *2) might be different for you
-- To open ChordSync paste one of those IP-Adresses into your browser:
+- To open ChordSync `paste one of those IP-Adresses into your browser`:
 - *1 is the Loopback IP-Adress, it also resolves to http://localhost:5000/, with it you can access ChordSync only from the computer you ran it from
 - *2 is the private IP-Adress of the device you ran it from, you can ALSO paste this IP into other devices' browser in your network and will see ChordSync
 - Feel free to set a browser bookmark to access ChordSync via the IP's quicker, however *2 might change depending on your router settings
-- You can stop ChordSync with CTRL+C in your terminal, you have to redo step 9. if you want to run ChordSync again
-10. If you have any troubles with installing and running, feel free to reach out to me
+- You can `stop ChordSync with CTRL+C in your terminal`, you have to redo step 9. if you want to run ChordSync again
+**10.** If you have `any troubles` with installing and running, `feel free to reach out to me`
 
