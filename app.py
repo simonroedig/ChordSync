@@ -1067,7 +1067,7 @@ def getSyncedLyricsJson(track_id):
     ### SELF-MADE SPOTIFY LYRICS APPROACH:
     if (lyrics_api_source == "SELFMADE"):
         # Make this song appear like it has no lyrics, for study: 1vxw6aYJls2oq3gW0DujAo
-        if (track_id == "ignoreAAA"):
+        if (track_id == "ignoreThisIf"):
             found_musixmatch_lyrics = 0
             musixmatch_lyrics_is_linesynced = 0
             ic(f'Crazy by Gnarls Barkley has no synced lyrics') 
