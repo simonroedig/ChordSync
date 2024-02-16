@@ -42,7 +42,7 @@ to paste exactly into this file
    - `Paste` both values `to the .env file` at the `respective places`
 - **7.** Set-up `Google Search API`:
    - To find and retreive the chord sheets from Ultimate-Guitar, the Search API from Google is used
-   - You can request this API `100x per day for free`, meaning you can play up to 100 songs per day with ChordSync. You `will not be automatically charged` if you exceed this limit unless you register for a billing plan, chordSync will inform you when your daily Quota is exceeded
+   - You can request this API `100x per day for free`, meaning you can play up to 100 songs per day with ChordSync. You `will not be automatically charged` if you exceed this limit unless you register for a billing plan, ChordSync will inform you when your daily Quota is exceeded
    - Go to: https://developers.google.com/custom-search/v1/overview and click `Get a Key` at the `API Key section`, the project name doesn't matter
    - Click to `show the API Key`, `paste` this value `to the .env file` at `GOOGLE_API_KEY`
    - Go to: https://programmablesearchengine.google.com/controlpanel/all and `create a new search engine`

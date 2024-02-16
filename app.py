@@ -876,6 +876,7 @@ def googleChords(track_name, artist_name):
     
     # remove keywords for remastered version songs as they might hinder the search
     query = f'{artist_name} {track_name.lower().replace("remastered", "").replace("remaster", "").replace("version", "")} chords Ultimate Guitar'
+    
     search_url = f"https://www.googleapis.com/customsearch/v1?key={google_api_key}&cx={google_search_engine_id}&q={query}"
     
     desired_url_substring = 'tabs.ultimate-guitar.com/tab'
@@ -913,17 +914,17 @@ def googleChords(track_name, artist_name):
                     # The title on Ultimate Guitar may look something like this: <title>BREATHE CHORDS (ver 2) by Pink Floyd @ Ultimate-Guitar.Com</title>
                     # Or like this: ONE CHORDS by Metallica for guitar, ukulele, piano at Ultimate-Guitar
                     title_text_no_ver = (re.sub(r'\(ver \d+\)', '', title_text)).replace("  ", " ") # e.g BREATHE CHORDS by Pink Floyd @ Ultimate-Guitar.Com
-                    title_text_no_ue = title_text_no_ver.replace(" @ Ultimate-Guitar.Com", "") # e.g BREATHE CHORDS by Pink Floyd 
-                    title_text_no_ue = title_text_no_ue.replace(" for guitar, ukulele, piano at Ultimate-Guitar", "") # e.g BREATHE CHORDS by Pink Floyd
-                    title_text_no_ue = title_text_no_ue.lower() # e.g. breathe chords by pink floyd
+                    title_text_no_ug = title_text_no_ver.replace(" @ Ultimate-Guitar.Com", "") # e.g BREATHE CHORDS by Pink Floyd 
+                    title_text_no_ug = title_text_no_ug.replace(" for guitar, ukulele, piano at Ultimate-Guitar", "") # e.g BREATHE CHORDS by Pink Floyd
+                    title_text_no_ug = title_text_no_ug.lower() # e.g. breathe chords by pink floyd
                     
                     # if "chords" exists in title
-                    if (title_text_no_ue.find("chords") != -1):
+                    if (title_text_no_ug.find("chords") != -1):
                         
-                        ue_track_name = title_text_no_ue.split("chords by")[0].strip() # e.g. breathe
-                        ue_arist_name = title_text_no_ue.split("chords by")[1].strip() # e.g. pink floyd
-                        ic(ue_track_name)
-                        ic(ue_arist_name)
+                        ug_track_name = title_text_no_ug.split("chords by")[0].strip() # e.g. breathe
+                        ug_artist_name = title_text_no_ug.split("chords by")[1].strip() # e.g. pink floyd
+                        ic(ug_track_name)
+                        ic(ug_artist_name)
                         
                         spotify_track_name = (track_name.lower().replace('remastered', '').replace('remaster', '').replace('version', '')).strip() # e.g. Breathe - 2011 Remastered Version -> breathe - 2011
                         spotify_track_name = re.sub(r'\s- \s\d{4}', '', spotify_track_name) # both replace year
@@ -933,11 +934,11 @@ def googleChords(track_name, artist_name):
                         ic(spotify_track_name)
                         ic(spotify_artist_name)
                         
-                        ic(fuzz.ratio(ue_track_name, spotify_track_name))
-                        ic(fuzz.ratio(ue_arist_name, spotify_artist_name))
+                        ic(fuzz.ratio(ug_track_name, spotify_track_name))
+                        ic(fuzz.ratio(ug_artist_name, spotify_artist_name))
                         
                         # Often titles on spotify include further things like (acoustic, version, remastered, unplugged), title are often the exact same, thus different ratio thresholds
-                        if (fuzz.ratio(ue_track_name, spotify_track_name) >= 40) and (fuzz.ratio(ue_arist_name, spotify_artist_name) >= 40):
+                        if (fuzz.ratio(ug_track_name, spotify_track_name) >= 40) and (fuzz.ratio(ug_artist_name, spotify_artist_name) >= 40):
                             return source_code, link, 1, result_index
     
                 
