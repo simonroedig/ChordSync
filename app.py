@@ -988,7 +988,7 @@ def extractMainChordsBody(complete_source_code, align):
 
     pattern = re.compile(re.escape(start_string) + r'(.*?)' + re.escape(end_string))
     match = pattern.search(complete_source_code)
-
+    
     if match:
         result = match.group(1)
         if align != "middle":
@@ -1076,7 +1076,7 @@ def getSyncedLyricsJson(track_id):
         try:
             original_json = selfmade_spotify_lyrics.getLyrics(track_id)
             response_json = {'lines': original_json['lyrics']['lines'], "syncType":  original_json['lyrics']['syncType']}
-            # ic(response_json)
+            # ic(original_json)
             
             # Found lyrics but not synced
             if 'syncType' in response_json and response_json['syncType'] == 'UNSYNCED':
@@ -1123,6 +1123,7 @@ def insertTimestampsToMainChordsBody(synced_lyrics_tupel_array, main_chords_body
     
     # Removes all empty lyrics and music notes from Musixmatch lyrics, as they can't be matched anyways and cause errors in red and blue paths
     synced_lyrics_tupel_array = [(timestamp, lyric) for timestamp, lyric in synced_lyrics_tupel_array if lyric not in ['', '♪']]
+    ic(synced_lyrics_tupel_array)
     
     # Array of all new lines in the source code  
     main_chords_body_line_array = main_chords_body.split("<br>")
@@ -1412,7 +1413,7 @@ def insertTimestampsToMainChordsBody(synced_lyrics_tupel_array, main_chords_body
                 file.write(f"SUM BLUE PATH'S PERCENTAGE: {(((blue_path_ratio_COUNTER*2)+(blue_path_ratio_3_COUNTER*3)+(blue_path_ratio_4_COUNTER*4))/amm_of_lines_succ_synced)*100}%\n")
                 
                 file.write(f"-----\n")
-                
+    
     """
     ### Interpolate timestamps for lyrics lines that couldn't be matched ###
     main_chords_body_line_array_lyrics_with_index_and_timestamp = lerpNOTSYNCEDWithin(main_chords_body_line_array_lyrics_with_index_and_timestamp)
