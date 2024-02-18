@@ -1448,8 +1448,8 @@ def insertTimestampsToMainChordsBody(synced_lyrics_tupel_array, main_chords_body
     
     # Insert synced array into main chords body array
     for i in range (0, len(merged_array)):
-        main_chords_body_line_array[merged_array[i][1]] = f'<span id="IS_SYNCED_AT:{merged_array[i][0]}">{main_chords_body_line_array[merged_array[i][1]]}</span>'
-            
+        main_chords_body_line_array[merged_array[i][1]] = f'<span id="IS_SYNCED_AT:{merged_array[i][0]}">{main_chords_body_line_array[merged_array[i][1]]}</span>'    
+                
     return "<br>".join(main_chords_body_line_array), False
     
 # Replace NOTSCYNCED timestamps by interpolating with timestamps that exist in surrounding lines
