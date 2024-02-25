@@ -1,0 +1,21 @@
+# The UG_LIST_ARRAY looks like:
+[['NOTSYNCED', 0, '[Intro]'],
+...
+['NOTSYNCED', 5, '<span class="chord_span">Am</span>'],
+['NOTSYNCED', 6, 'Psychic spies from China'],
+['NOTSYNCED', 7, "&nbsp;&nbsp;&nbsp;&nbsp;<span class="chord_span">F</span>"],
+['NOTSYNCED', 8, "Try to steal your mind's elation"],
+...
+
+ISOLATE elements into UG_LYRICS_LIST_ARRAY by REMOVING lines that are likely not lyrics:
+    IF <span class="chord_span"> IS IN line
+    IF [] IS IN line
+    IF |- IS IN line
+    ...
+
+# The new array UG_LYRICS_LIST_ARRAY looks like:
+[['NOTSYNCED', 6, 'Psychic spies from China'],
+['NOTSYNCED', 8, "Try to steal your mind's elation"],
+['NOTSYNCED', 10, 'Little girls from Sweden'],
+['NOTSYNCED', 12, 'Dream of silver screen quotations'],
+...

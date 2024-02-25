@@ -1,0 +1,74 @@
+MM_LYRICS_TUPEL_ARRAY = [(20530, Psychic spies from..),..]
+UG_LYRICS_LIST_ARRAY = [['NOTSYNCED', 6, 'Psychic spies from ..']..]
+# Counter to never re-iterate or query UG_LYRICS_LIST_ARRAY ELEMENT more than once
+UG_START = 0 
+
+ITERATE MM_LYRICS_TUPEL_ARRAY:
+    IF: UG_START = 0 
+    THEN: UG_RANGE = LENGTH(UG_LYRICS_LIST_ARRAY)
+    ELSE: UG_RANGE = 1/6 * MEAN_OF_LENGTH(MM_LYRICS_TUPEL_ARRAY, UG_LYRICS_LIST_ARRAY)
+
+    ITERATE UG_LYRICS_LIST_ARRAY (in range(UG_START, UG_RANGE)):
+        RESET ALL COLOR_PATH_RATIOS
+
+        CALCULATE COLOR_PATH_RATIOS via FUZZY STRING MATCHING (Assign IF fuzz.ratio() >= 70):
+            GREEN_PATH_RATIO = COMPARE Musixmatch line with UG line
+            
+            RED_PATH_RATIO = COMPARE Musixmatch line with TWO NEXT CONSECUTIVE UG lines
+            RED_PATH_RATIO_3 = COMPARE Musixmatch line with THREE NEXT CONSECUTIVE UG lines
+            RED_PATH_RATIO_4 = COMPARE Musixmatch line with FOUR NEXT CONSECUTIVE UG lines
+
+            BLUE_PATH_RATIO = COMPARE TWO NEXT CONSECUTIVE Musixmatch lines with UG line
+            BLUE_PATH_RATIO_3 = COMPARE THREE NEXT CONSECUTIVE Musixmatch lines with UG line
+            BLUE_PATH_RATIO_4 = COMPARE FOUR NEXT CONSECUTIVE Musixmatch lines with UG line
+
+        IF NO COLOR_PATH_RATIOS is >= 70: NO MATCH FOUND: CONTINUE, ELSE:
+        DECIDE which COLOR_PATH_RATIO is largest:
+            GREEN:
+                REPLACE 'NOTSYNCED' in UG_LYRICS_LIST_ARRAY with timestamp from MM_LYRICS_TUPEL_ARRAY
+                UG_START = UG_LYRICS_LIST_ARRAY+1
+            RED:
+                REPLACE 'NOTSYNCED' in UG_LYRICS_LIST_ARRAY with timestamp from MM_LYRICS_TUPEL_ARRAY
+
+                CACLULATE timestamp_1 via INTERPOLATING with NEXT timestamp
+                REPLACE 'NOTSYNCED' in UG_LYRICS_LIST_ARRAY+1 with INTERPOLATED timestamp_1 
+                UG_START = UG_LYRICS_LIST_ARRAY+2
+            RED_3: 
+                REPLACE 'NOTSYNCED' in UG_LYRICS_LIST_ARRAY with timestamp from MM_LYRICS_TUPEL_ARRAY
+
+                CACLULATE timestamp_1 and _2 via INTERPOLATING with NEXT timestamps
+                REPLACE 'NOTSYNCED' in UG_LYRICS_LIST_ARRAY+1 with INTERPOLATED timestamp_1
+                REPLACE 'NOTSYNCED' in UG_LYRICS_LIST_ARRAY+2 with INTERPOLATED timestamp_2
+                UG_START = UG_LYRICS_LIST_ARRAY+3
+            RED_4: 
+                REPLACE 'NOTSYNCED' in UG_LYRICS_LIST_ARRAY with timestamp from MM_LYRICS_TUPEL_ARRAY
+
+                CACLULATE timestamp_1 and _2 and _3 via INTERPOLATING with NEXT timestamps
+                REPLACE 'NOTSYNCED' in UG_LYRICS_LIST_ARRAY+1 with INTERPOLATED timestamp_1
+                REPLACE 'NOTSYNCED' in UG_LYRICS_LIST_ARRAY+2 with INTERPOLATED timestamp_2
+                REPLACE 'NOTSYNCED' in UG_LYRICS_LIST_ARRAY+3 with INTERPOLATED timestamp_3
+                UG_START = UG_LYRICS_LIST_ARRAY+4
+            BLUE:
+                REPLACE 'NOTSYNCED' in UG_LYRICS_LIST_ARRAY with timestamp from MM_LYRICS_TUPEL_ARRAY
+                (SKIP next iteration of MM_LYRICS_TUPEL_ARRAY)
+                UG_START = UG_LYRICS_LIST_ARRAY+1
+            BLUE_3:
+                REPLACE 'NOTSYNCED' in UG_LYRICS_LIST_ARRAY with timestamp from MM_LYRICS_TUPEL_ARRAY
+                (SKIP next two iterations of MM_LYRICS_TUPEL_ARRAY)
+                UG_START = UG_LYRICS_LIST_ARRAY+1
+            BLUE_4:
+                REPLACE 'NOTSYNCED' in UG_LYRICS_LIST_ARRAY with timestamp from MM_LYRICS_TUPEL_ARRAY
+                (SKIP next three iterations of MM_LYRICS_TUPEL_ARRAY)
+                UG_START = UG_LYRICS_LIST_ARRAY+1
+
+
+
+
+
+
+        
+        
+        
+        
+        
+        

@@ -1,0 +1,23 @@
+JavaScript Client:
+
+REPEAT EVERY 250ms:
+    SOCKET.EMIT trackDynamicDataRequest
+
+SOCKET.ON trackDynamicDataResponse:
+    GET PROGRESS_MS
+    GET TRACK_ID
+    IF TRACK_ID != PREVIOUS_TRACK_ID:
+        SOCKET.EMIT trackStaticDataRequest
+    GET further dynamic track data
+    
+    *MainAlgJS
+
+
+Python Server:
+
+SOCKET.ON trackDynamicDataRequest
+    SOCKET.EMIT trackDynamicDataResponse:
+        SEND:
+            PROGRESS_MS
+            TRACK_ID
+            further dynamic track data

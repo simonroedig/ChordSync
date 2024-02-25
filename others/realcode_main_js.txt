@@ -1,0 +1,40 @@
+HTML:
+...
+<div id="IDdivMainChordsWrapper" onmousedown="return false" onselectstart="return false">
+    <div id="IDdivMainChords">{{ SYNC_MERGED_UG_SOURCE |safe }}</div>
+</div>
+...
+
+JavaScript:
+...
+// Generate array of all existing timestamps
+clickable_synced_lines_array = document.querySelectorAll(`[id*="${"IS_SYNCED_AT:"}"]`);
+clickable_synced_lines_array.forEach((line) => {
+    let match = line.id.match(/^IS_SYNCED_AT:(.+)/);
+    if (match) {
+        clickable_synced_lines_timestamp_array.push(parseInt(match[1]));
+    }
+
+// Function gets called every 250ms
+function calcDynamicScrolling(min_scroll_value, max_scroll_value, 
+                              track_duration_ms, progress_ms, 
+                              clickable_synced_lines_timestamp_array) {
+
+    clickable_synced_lines_timestamp_array.forEach((timestamp) => {
+        ...
+        if (Math.abs(progress_ms - timestamp) <= 200) {
+            current_synced_line = document.getElementById("IS_SYNCED_AT:" + timestamp);
+
+            try {
+                current_synced_line.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center',
+                    inline: 'center'
+                });
+                current_synced_line.scrollTo;
+            } catch {
+                console.log('%cNo current synced line available - Could not center current line);
+            }
+        }
+    });
+}

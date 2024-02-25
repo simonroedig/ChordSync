@@ -1,0 +1,39 @@
+ISOLATE the UG_MAIN_BODY from UG_SOURCE_CODE via REGEX
+
+# The UG_MAIN_BODY looks like:
+...
+[VERSE]\\r\
+[tab][ch]Am[/ch]\\r\
+Psychic spies from '
+ 'China[/tab]\\r\
+[tab]       [ch]F[/ch]\\r\
+Try to steal your minds elation[/tab]\\r\
+...
+
+REPLACE ALL [tab] [ch] with ammount of '&nbsp;' by COUNTING spaces between
+REPLACE ALL [ch]<CHORD>[/ch] with <span class="chord_span"><CHORD></span>
+REPLACE ALL \\r\ with <br>
+
+# The modified UG_MAIN_BODY looks like:
+...
+[VERSE]<br>
+<span class="chord_span">Am</span><br>
+Psychic spies from China<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="chord_span">F</span><br>
+Try to steal your minds elation<br>
+...
+
+CREATE UG_LIST_ARRAY:
+    SEPERATE at every <br>
+    KEEP TRACK of INDEX
+    INSERT 'NOTSYNCED'
+
+# The UG_LIST_ARRAY looks like:
+...
+[['NOTSYNCED', 3, '[VERSE]'],
+...
+['NOTSYNCED', 5, '<span class="chord_span">Am</span>'],
+['NOTSYNCED', 6, 'Psychic spies from China'],
+['NOTSYNCED', 7, "&nbsp;&nbsp;&nbsp;&nbsp;<span class="chord_span">F</span>"],
+['NOTSYNCED', 8, "Try to steal your mind's elation"],
+...

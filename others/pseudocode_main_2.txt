@@ -1,0 +1,45 @@
+# The UG_LYRICS_LIST_ARRAY with inserted timestamps looks like:
+# Some 'NOTSYNCED' may remain
+['20540', 6, 'Psychic spies from China'],
+['22970', 8, "Try to steal your mind's elation"],
+['25400', 10, 'Little girls from Sweden'],
+...
+['NOTSYNCED', 108, '  Ooooo - ooooh   Oooo -  ooooh'],
+['169900', 112, 'Born and raised by those who praise'],
+['172330', 114, 'Control of population'],
+...
+
+MERGE synced UG_LYRICS_LIST_ARRAY back with RESIDUAL elements of UG_LIST_ARRAY
+
+# The MERGED_UG_ARRAY looks like this:
+[['NOTSYNCED', 0, '[Intro]'],
+...
+['NOTSYNCED', 5, '<span class="chord_span">Am</span>'],
+['20540', 6, 'Psychic spies from China'],
+['NOTSYNCED', 7, "&nbsp;&nbsp;&nbsp;&nbsp;<span class="chord_span">F</span>"],
+['22970', 8, "Try to steal your mind's elation"],
+...
+
+INTERPOLATE every 'NOTSYNCED' with sorrounding timestamps in the MERGED_UG_ARRAY
+
+# The MERGED_UG_ARRAY_LERPED looks like this:
+[['0', 0, '[Intro]'],
+...
+['18450', 5, '<span class="chord_span">Am</span>'],
+['20540', 6, 'Psychic spies from China'],
+['21755', 7, "&nbsp;&nbsp;&nbsp;&nbsp;<span class="chord_span">F</span>"],
+['22970', 8, "Try to steal your mind's elation"],
+...
+
+ITERATE MERGED_UG_ARRAY_LERPED:
+    REPLACE <TIMESTAMP> with <span id="IS_SYNCED_AT:<TIMESTAMP>">
+    INSERT <br> after every element
+    JOIN back
+
+# The COMPLETE_SYNCED_MAIN_SOURCE:
+'<span id="IS_SYNCED_AT:0">[Intro]</span>'<br>
+...
+'<span id="IS_SYNCED_AT:20540">Psychic spies from China</span>'<br>
+'<span id="IS_SYNCED_AT:21755">&nbsp;&nbsp;&nbsp;&nbsp;<span class="chord_span">F</span></span>'<br>
+'<span id="IS_SYNCED_AT:22970.0">Try to steal your minds elation</span>'<br>
+...

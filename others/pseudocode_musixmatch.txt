@@ -1,0 +1,44 @@
+# Musixmatch API responds with a JSON like:
+...
+   'language': 'en',
+   'lines': [
+              {'endTimeMs': '0',
+              'startTimeMs': '10540',
+              'syllables': [],
+              'words': '♪'},
+
+              {'endTimeMs': '0',
+              'startTimeMs': '20540',
+              'syllables': [],
+              'words': 'Psychic spies from China try to steal your '
+                       "mind's elation"},
+              ....
+              {'endTimeMs': '0',
+              'startTimeMs': '317720',
+              'syllables': [],
+              'words': 'Dream of Californication'},
+             ...
+   'provider': 'MusixMatch',
+   ...
+   'syncType': 'LINE_SYNCED'}}
+
+IF syncType is LINE_SYNCED:
+    ISOLATE timestamps and lyrics into MM_LYRICS_TUPEL_ARRAY
+
+#The MM_LYRICS_TUPEL_ARRAY looks like this:
+[(10540, "♪"),
+ (20540, "Psychic spies from China try to steal your mind's elation"),
+ (25400, 'And little girls from Sweden dream of silverscreen quotation'),
+ (30400, 'And if you want these kind of dreams'),
+ (33010, "It's Californication"),
+ (43010, ""),
+ ...
+
+REMOVE ALL empty lyrics (" ") and notes lyrics ('♪')
+
+#The MM_LYRICS_TUPEL_ARRAY looks like this:
+[(20540, "Psychic spies from China try to steal your mind's elation"),
+ (25400, 'And little girls from Sweden dream of silverscreen quotation'),
+ (30400, 'And if you want these kind of dreams'),
+ (33010, "It's Californication"),
+ ...

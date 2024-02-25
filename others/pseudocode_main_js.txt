@@ -1,0 +1,9 @@
+GENERATE array TIMESTAMP_ARR of all existing TIMESTAMPS found in SYNC_MERGED_UG_SOURCE
+
+REPEAT every 250ms:
+    GET current song progress PROGRESS_MS (Websocket Connection)
+    ITERATE TIMESTAMP_ARR:
+        IF PROGRESS_MS is in TIMESTAMP_ARR (with DELTA=200):
+            ASSIGN FOUND_TIMESTAMP from TIMESTAMP_ARR
+            GET HTML ELEMENT via searching for "IS_SYNCED_AT:<FOUND_TIMESTAMP>"
+            CENTER this HTML ELEMENT via scrolling it into the view

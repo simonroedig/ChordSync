@@ -1,0 +1,18 @@
+JavaScript Client:
+
+SOCKET.ON trackStaticDataResponse:
+    GET SYNC_MERGED_UG_SOURCE
+    GET further static track data
+
+
+Python Server:
+
+SOCKET.ON trackStaticDataRequest
+    SOCKET.EMIT trackStaticDataResponse:
+        *ScrapeChordSheet 
+        *GetSyncedLyrics 
+        *MainAlgPython 
+
+        SEND:
+            SYNC_MERGED_UG_SOURCE
+            further static track data (KEY, CAPO,...)

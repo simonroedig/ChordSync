@@ -1,0 +1,16 @@
+CREATE search query based on Spotify track:
+    ISOLATE SPOTIFY_ARTIST_NAME and SPOTIFY_TRACK_NAME by removing redundant strings
+    QUERY = <SPOTIFY_ARTIST_NAME> + <SPOTIFY_TRACK_NAME> + "chords Ultimate Guitar"
+
+RESULTS = Send query to Google-Search-API
+
+UG_LINK_SUBSTRING = ’tabs.ultimate-guitar.com/tab’
+
+ITERATE first 10 RESULTS:
+    IF UG_LINK_SUBSTRING in RESULTS:
+        EXTRACT UG_TITLE
+        IF "chords" in UG_TITLE:
+            ISOLATE UG_ARTIST_NAME and UG_TRACK_NAME by removing redundant strings from UG_TITLE
+            IF fuzz.ratio(SPOTIFY_ARTIST_NAME, UG_ARTIST_NAME) >= 40 AND
+            IF fuzz.ratio(SPOTIFY_TRACK_NAME,UG_TRACK_NAME) >= 40:
+                return UG_SOURCE_CODE
