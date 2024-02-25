@@ -11,24 +11,24 @@ by Simon Roedig (Mediainformatics @LMU Munich)
 Bachelor's Thesis (WS 2023/2024)
 """
 
-
-######## IMPORTS (DUH) ########
-from dotenv import load_dotenv
-import os
-import spotipy
-from spotipy.oauth2 import SpotifyOAuth
-from spotipy.exceptions import SpotifyException
-import requests
-from flask import Flask, render_template, request, send_from_directory, redirect, session
-from bs4 import BeautifulSoup
-import re
-from fuzzywuzzy import fuzz
-import json
-from icecream import ic
-from flask_socketio import SocketIO, emit
+######## IMPORTS ########
 import atexit
 import datetime
 import html
+import json
+import math
+import os
+import re
+import requests
+from bs4 import BeautifulSoup
+from dotenv import load_dotenv
+from flask import Flask, redirect, render_template, request, send_from_directory, session
+from fuzzywuzzy import fuzz
+from icecream import ic
+from flask_socketio import SocketIO, emit
+from spotipy import SpotifyOAuth
+from spotipy.exceptions import SpotifyException
+import spotipy
 
 
 ######## .env ########
@@ -118,6 +118,13 @@ spotify_error = 0
 is_logged_in = False
 
 spotify_user_name = ""
+
+track_bpm = 0
+track_key = 0
+
+sync_ratio_percentage = "0%"
+
+previous_spotify_volume = 0
 
 
 ######## HTTP ROUTES ########
@@ -211,10 +218,9 @@ def handleDynamicDataRequest():
     emit('trackDynamicDataResponse', getTrackDynamicData())
     
 @socketio.on('trackStaticDataRequest')
-def handleStaticDataRequest():
-    emit('trackStaticDataResponse', getTrackStaticData())
+def handleStaticDataRequest(align="left"):
+    emit('trackStaticDataResponse', getTrackStaticData(align))
     
-
 @socketio.on('nextSpotifyTrack')
 def nextSpotifyTrack():
     try:
@@ -280,6 +286,149 @@ def playPauseSpotifyTrack():
         print(f'Error: {e}')
         return redirect('/')
 
+@socketio.on('increaseVolumeSpotify')
+def increaseVolumeSpotify():
+    try:
+        token_info = refresh_token()
+        if token_info == 0:
+            return redirect('/')
+
+        spotify = spotipy.Spotify(auth=token_info['access_token'])
+        current_track = spotify.current_playback()
+        current_volume = current_track['device']['volume_percent']
+
+        # Increase the volume by 10% (you can adjust this value)
+        new_volume = min(current_volume + 10, 100)
+
+        spotify.volume(volume_percent=new_volume)
+        return redirect('/')
+    
+    except SpotifyException as e:
+        if e.http_status == 403 and "PREMIUM_REQUIRED" in str(e):
+            emit('error_message', {'message': 'Error: Spotify Premium required for this action.'})
+        else:
+            print(f'Error: {e}')
+    except Exception as e:
+        print(f'Error: {e}')
+        return redirect('/')
+
+@socketio.on('decreaseVolumeSpotify')
+def decreaseVolumeSpotify():
+    try:
+        token_info = refresh_token()
+        if token_info == 0:
+            return redirect('/')
+
+        spotify = spotipy.Spotify(auth=token_info['access_token'])
+        current_track = spotify.current_playback()
+        current_volume = current_track['device']['volume_percent']
+
+        # Decrease the volume by 10% (you can adjust this value)
+        new_volume = max(current_volume - 10, 0)
+
+        spotify.volume(volume_percent=new_volume)
+        return redirect('/')
+    
+    except SpotifyException as e:
+        if e.http_status == 403 and "PREMIUM_REQUIRED" in str(e):
+            emit('error_message', {'message': 'Error: Spotify Premium required for this action.'})
+        else:
+            print(f'Error: {e}')
+    except Exception as e:
+        print(f'Error: {e}')
+        return redirect('/')
+
+@socketio.on('muteSpotifyTrack')
+def muteSpotifyTrack():
+    global previous_spotify_volume
+    try:
+        token_info = refresh_token()
+        if token_info == 0:
+            return redirect('/')
+
+        spotify = spotipy.Spotify(auth=token_info['access_token'])
+        current_track = spotify.current_playback()
+        current_volume = current_track['device']['volume_percent']
+        
+        if (current_volume != 0):
+            previous_spotify_volume = current_volume
+            
+        elif (current_volume == 0):
+            spotify.volume(volume_percent=previous_spotify_volume)
+            return redirect('/')
+
+        # Decrease the volume by 10% (you can adjust this value)
+        new_volume = max(current_volume - current_volume, 0)
+
+        spotify.volume(volume_percent=new_volume)
+        return redirect('/')
+    
+    except SpotifyException as e:
+        if e.http_status == 403 and "PREMIUM_REQUIRED" in str(e):
+            emit('error_message', {'message': 'Error: Spotify Premium required for this action.'})
+        else:
+            print(f'Error: {e}')
+    except Exception as e:
+        print(f'Error: {e}')
+        return redirect('/')
+   
+@socketio.on('toggleShuffleState')
+def toggleShuffleState():
+    try:
+        token_info = refresh_token()
+        if token_info == 0:
+            return redirect('/')
+
+        spotify = spotipy.Spotify(auth=token_info['access_token'])
+        current_playback = spotify.current_playback()
+        current_shuffle_state = current_playback['shuffle_state']
+
+        # Toggle the shuffle state
+        new_shuffle_state = not current_shuffle_state
+
+        spotify.shuffle(state=new_shuffle_state)
+        return redirect('/')
+
+    except SpotifyException as e:
+        if e.http_status == 403 and "PREMIUM_REQUIRED" in str(e):
+            emit('error_message', {'message': 'Error: Spotify Premium required for this action.'})
+        else:
+            print(f'Error: {e}')
+    except Exception as e:
+        print(f'Error: {e}')
+        return redirect('/')
+
+@socketio.on('toggleRepeatState')
+def toggleRepeatState():
+    try:
+        token_info = refresh_token()
+        if token_info == 0:
+            return redirect('/')
+
+        spotify = spotipy.Spotify(auth=token_info['access_token'])
+        current_playback = spotify.current_playback()
+        current_repeat_state = current_playback['repeat_state']
+
+        # Toggle the repeat state
+        if current_repeat_state == 'off':
+            new_repeat_state = 'track'  # Repeat current track
+        elif current_repeat_state == 'track':
+            new_repeat_state = 'context'  # Repeat current context (playlist or album)
+        else:
+            new_repeat_state = 'off'  # Turn off repeat
+
+        spotify.repeat(state=new_repeat_state)
+        return redirect('/')
+
+    except SpotifyException as e:
+        if e.http_status == 403 and "PREMIUM_REQUIRED" in str(e):
+            emit('error_message', {'message': 'Error: Spotify Premium required for this action.'})
+        else:
+            print(f'Error: {e}')
+    except Exception as e:
+        print(f'Error: {e}')
+        return redirect('/')
+    
 @socketio.on('jumpInsideTrack')
 def jumpInsideTrack(ms):
     try:
@@ -300,6 +449,53 @@ def jumpInsideTrack(ms):
         print(f'Error: {e}')
         return redirect('/')
 
+@socketio.on('/songBackwards')
+def seek(progress_ms, wind_lenght_ms):
+    try:
+        token_info = refresh_token()
+        if token_info == 0:
+            return redirect('/')
+
+        print("SONG BACKWARDS")
+        new_progress_ms = int(progress_ms) - int(wind_lenght_ms)
+        if new_progress_ms < 0:
+            new_progress_ms = 0
+        spotify = spotipy.Spotify(auth=token_info['access_token'])
+        spotify.seek_track(new_progress_ms)
+        return redirect('/')
+    
+    except SpotifyException as e:
+        if e.http_status == 403 and "PREMIUM_REQUIRED" in str(e):
+            emit('error_message', {'message': 'Error: Spotify Premium required for this action.'})
+        else:
+            print(f'Error: {e}')
+    except Exception as e:
+        print(f'Error: {e}')
+        return redirect('/')
+    
+@socketio.on('/songForwards')
+def seek(progress_ms, track_duration_ms, wind_lenght_ms):
+    try:
+        token_info = refresh_token()
+        if token_info == 0:
+            return redirect('/')
+
+        new_progress_ms = int(progress_ms) + int(wind_lenght_ms)
+        if new_progress_ms > track_duration_ms:
+            new_progress_ms = progress_ms
+        spotify = spotipy.Spotify(auth=token_info['access_token'])
+        spotify.seek_track(new_progress_ms)
+        return redirect('/')
+    
+    except SpotifyException as e:
+        if e.http_status == 403 and "PREMIUM_REQUIRED" in str(e):
+            emit('error_message', {'message': 'Error: Spotify Premium required for this action.'})
+        else:
+            print(f'Error: {e}')
+    except Exception as e:
+        print(f'Error: {e}')
+        return redirect('/')
+
 
 # Called by WebSocket - returns object with parameters that change during the song 
 def getTrackDynamicData():    
@@ -309,7 +505,10 @@ def getTrackDynamicData():
             'track_id': "0",
             'progress_ms': 0,
             'current_time': "0:00",
-            'play_or_pause': "False"
+            'play_or_pause': "False",
+            'current_volume': 0,
+            'current_shuffle_state': "False",
+            'current_repeat_state': 'off'
         }
     spotify = spotipy.Spotify(auth=token_info['access_token'])
     
@@ -324,23 +523,32 @@ def getTrackDynamicData():
             'track_id': "0",
             'progress_ms': 0,
             'current_time': "0:00",
-            'play_or_pause': "False"
+            'play_or_pause': "False",
+            'current_volume': 0,
+            'current_shuffle_state': "False",
+            'current_repeat_state': 'off'
         }
     
     track_id = current_track['item']['id']
     progress_ms = current_track['progress_ms']
     minutes, seconds = divmod(progress_ms / 1000, 60)
     is_playing = str(current_track['is_playing'])
+    current_volume = current_track['device']['volume_percent']
+    current_shuffle_state = current_track['shuffle_state']
+    current_repeat_state = current_track['repeat_state']
     
     return {
             'track_id': track_id,
             'progress_ms': progress_ms,
             'current_time': f"{int(minutes)}:{int(seconds):02d}",
-            'play_or_pause': is_playing
+            'play_or_pause': is_playing,
+            'current_volume': current_volume,
+            'current_shuffle_state': current_shuffle_state,
+            'current_repeat_state': current_repeat_state
         }
 
 # Called by Websocket - returns object with parameters that DON'T change during the song 
-def getTrackStaticData():        
+def getTrackStaticData(align):        
     global complete_source_code 
     global complete_source_code_link
     global complete_source_code_found
@@ -354,6 +562,11 @@ def getTrackStaticData():
     global main_chords_body 
     
     global spotify_error
+    
+    global track_bpm
+    global track_key
+    
+    global sync_ratio_percentage
     
     global song_in_log
     
@@ -374,6 +587,11 @@ def getTrackStaticData():
         found_musixmatch_lyrics = 0
         musixmatch_lyrics_is_linesynced = 0
         
+        track_bpm = 0
+        track_key = 0
+        
+        sync_ratio_percentage = "0%"
+        
         spotify_error = 1
         
         return {
@@ -389,7 +607,10 @@ def getTrackStaticData():
             'complete_source_code_found': complete_source_code_found,
             'musixmatch_lyrics_is_linesynced': musixmatch_lyrics_is_linesynced,
             'found_musixmatch_lyrics': found_musixmatch_lyrics,
-            'spotify_error': spotify_error
+            'spotify_error': spotify_error,
+            'track_bpm': track_bpm,
+            'sync_ratio_percentage': sync_ratio_percentage,
+            'track_key': track_key
         }
         
     spotify = spotipy.Spotify(auth=token_info['access_token'])
@@ -407,6 +628,29 @@ def getTrackStaticData():
         track_duration_ms = current_track["item"]["duration_ms"]
         minutes, seconds = divmod(track_duration_ms / 1000, 60)
         album_cover_url = current_track['item']['album']['images'][0]['url']
+        
+        ####
+        # Get audio features for the current track
+        try:
+            audio_features = spotify.audio_features([track_id])
+            if audio_features:
+                track_bpm = round(audio_features[0]['tempo'])
+                
+                track_key_value = audio_features[0]['key'] # Range: -1 - 11: https://en.wikipedia.org/wiki/Pitch_class
+                
+                key_number_array = [-1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+                key_tonal_array = ["0", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
+                key_tonal = key_tonal_array[key_number_array.index(track_key_value)]
+                
+                track_key_major_or_minor_value = audio_features[0]['mode'] # Major is represented by 1 and minor is 0
+                track_key_major_or_minor = "" if track_key_major_or_minor_value == 1 else "m"
+                
+                track_key = f"{key_tonal}{track_key_major_or_minor}"
+            else:
+                ic('Audio features not available for this track.')
+        except SpotifyException as e:
+            ic(f'Error fetching audio features: {e}')
+        ###
         
         
         if (dev_or_prod == "DEVELOPMENT" and log_on_off == "ON" and wrote_block_1 != track_id):
@@ -442,7 +686,7 @@ def getTrackStaticData():
             guitar_tuning = extractTuning(complete_source_code)
             guitar_capo = extractCapo(complete_source_code)
         
-            main_chords_body = extractMainChordsBody(complete_source_code)
+            main_chords_body = extractMainChordsBody(complete_source_code, align)
             
             synced_lyrics_json, found_musixmatch_lyrics, musixmatch_lyrics_is_linesynced = getSyncedLyricsJson(track_id)
             
@@ -459,7 +703,32 @@ def getTrackStaticData():
                 synced_lyrics_tupel_array = parseSyncedLyricsJsonToTupelArray(synced_lyrics_json)
 
                 ### Main Algorithm
-                main_chords_body = insertTimestampsToMainChordsBody(synced_lyrics_tupel_array, main_chords_body, track_duration_ms, track_id)
+                main_chords_body, error_syncing = insertTimestampsToMainChordsBody(synced_lyrics_tupel_array, main_chords_body, track_duration_ms, track_id)
+                
+                # If sync below treshold, regard as unsyncable (like no lyrics found)
+                if error_syncing:
+                    print(error_syncing)
+                    sync_ratio_percentage = "0"
+                    found_musixmatch_lyrics = 0
+                    musixmatch_lyrics_is_linesynced = 0
+                    return {
+                        'track_name': track_name,
+                        'artist_name': artist_name,
+                        'track_duration_ms': track_duration_ms,
+                        'track_duration_m_and_s': f"{int(minutes)}:{int(seconds):02d}",
+                        'album_cover_url': album_cover_url,
+                        'guitar_tuning': guitar_tuning,
+                        'guitar_capo': guitar_capo,
+                        'main_chords_body': main_chords_body,
+                        'complete_source_code_link': complete_source_code_link,
+                        'complete_source_code_found': complete_source_code_found,
+                        'musixmatch_lyrics_is_linesynced': musixmatch_lyrics_is_linesynced,
+                        'found_musixmatch_lyrics': found_musixmatch_lyrics,
+                        'spotify_error': spotify_error,
+                        'track_bpm': track_bpm,
+                        'sync_ratio_percentage': sync_ratio_percentage,
+                        'track_key': track_key
+                    }
                 
                 return {
                     'track_name': track_name,
@@ -474,11 +743,15 @@ def getTrackStaticData():
                     'complete_source_code_found': complete_source_code_found,
                     'musixmatch_lyrics_is_linesynced': musixmatch_lyrics_is_linesynced,
                     'found_musixmatch_lyrics': found_musixmatch_lyrics,
-                    'spotify_error': spotify_error
+                    'spotify_error': spotify_error,
+                    'track_bpm': track_bpm,
+                    'sync_ratio_percentage': sync_ratio_percentage,
+                    'track_key': track_key
                 }
             
             # Found chords but no synced lyrics
             else:
+                sync_ratio_percentage = "0"
                 return {
                     'track_name': track_name,
                     'artist_name': artist_name,
@@ -492,7 +765,10 @@ def getTrackStaticData():
                     'complete_source_code_found': complete_source_code_found,
                     'musixmatch_lyrics_is_linesynced': musixmatch_lyrics_is_linesynced,
                     'found_musixmatch_lyrics': found_musixmatch_lyrics,
-                    'spotify_error': spotify_error
+                    'spotify_error': spotify_error,
+                    'track_bpm': track_bpm,
+                    'sync_ratio_percentage': sync_ratio_percentage,
+                    'track_key': track_key
                 }
                 
         # No chords found, also regard as no synced lyrics found    
@@ -517,6 +793,8 @@ def getTrackStaticData():
             found_musixmatch_lyrics = 0
             musixmatch_lyrics_is_linesynced = 0
             
+            sync_ratio_percentage = "0%"
+            
             return {
                 'track_name': track_name,
                 'artist_name': artist_name,
@@ -530,7 +808,10 @@ def getTrackStaticData():
                 'complete_source_code_found': complete_source_code_found,
                 'musixmatch_lyrics_is_linesynced': musixmatch_lyrics_is_linesynced,
                 'found_musixmatch_lyrics': found_musixmatch_lyrics,
-                'spotify_error': spotify_error
+                'spotify_error': spotify_error,
+                'track_bpm': track_bpm,
+                'sync_ratio_percentage': sync_ratio_percentage,
+                'track_key': track_key
             }
     
     # Can't request Spotify (user might need to start Spotify and select song first)
@@ -545,6 +826,11 @@ def getTrackStaticData():
         
         found_musixmatch_lyrics = 0
         musixmatch_lyrics_is_linesynced = 0
+        
+        track_bpm = 0
+        track_key = 0
+        
+        sync_ratio_percentage = "0%"
         
         spotify_error = 1
         
@@ -561,7 +847,10 @@ def getTrackStaticData():
             'complete_source_code_found': complete_source_code_found,
             'musixmatch_lyrics_is_linesynced': musixmatch_lyrics_is_linesynced,
             'found_musixmatch_lyrics': found_musixmatch_lyrics,
-            'spotify_error': spotify_error
+            'spotify_error': spotify_error,
+            'track_bpm': track_bpm,
+            'sync_ratio_percentage': sync_ratio_percentage,
+            'track_key': track_key
         }
 
 
@@ -587,6 +876,7 @@ def googleChords(track_name, artist_name):
     
     # remove keywords for remastered version songs as they might hinder the search
     query = f'{artist_name} {track_name.lower().replace("remastered", "").replace("remaster", "").replace("version", "")} chords Ultimate Guitar'
+    
     search_url = f"https://www.googleapis.com/customsearch/v1?key={google_api_key}&cx={google_search_engine_id}&q={query}"
     
     desired_url_substring = 'tabs.ultimate-guitar.com/tab'
@@ -624,28 +914,31 @@ def googleChords(track_name, artist_name):
                     # The title on Ultimate Guitar may look something like this: <title>BREATHE CHORDS (ver 2) by Pink Floyd @ Ultimate-Guitar.Com</title>
                     # Or like this: ONE CHORDS by Metallica for guitar, ukulele, piano at Ultimate-Guitar
                     title_text_no_ver = (re.sub(r'\(ver \d+\)', '', title_text)).replace("  ", " ") # e.g BREATHE CHORDS by Pink Floyd @ Ultimate-Guitar.Com
-                    title_text_no_ue = title_text_no_ver.replace(" @ Ultimate-Guitar.Com", "") # e.g BREATHE CHORDS by Pink Floyd 
-                    title_text_no_ue = title_text_no_ue.replace(" for guitar, ukulele, piano at Ultimate-Guitar", "") # e.g BREATHE CHORDS by Pink Floyd 
-                    title_text_no_ue = title_text_no_ue.lower() # e.g. breathe chords by pink floyd
+                    title_text_no_ug = title_text_no_ver.replace(" @ Ultimate-Guitar.Com", "") # e.g BREATHE CHORDS by Pink Floyd 
+                    title_text_no_ug = title_text_no_ug.replace(" for guitar, ukulele, piano at Ultimate-Guitar", "") # e.g BREATHE CHORDS by Pink Floyd
+                    title_text_no_ug = title_text_no_ug.lower() # e.g. breathe chords by pink floyd
                     
                     # if "chords" exists in title
-                    if (title_text_no_ue.find("chords") != -1):
+                    if (title_text_no_ug.find("chords") != -1):
                         
-                        ue_track_name = title_text_no_ue.split("chords by")[0].strip() # e.g. breathe
-                        ue_arist_name = title_text_no_ue.split("chords by")[1].strip() # e.g. pink floyd
-                        ic(ue_track_name)
-                        ic(ue_arist_name)
+                        ug_track_name = title_text_no_ug.split("chords by")[0].strip() # e.g. breathe
+                        ug_artist_name = title_text_no_ug.split("chords by")[1].strip() # e.g. pink floyd
+                        ic(ug_track_name)
+                        ic(ug_artist_name)
                         
                         spotify_track_name = (track_name.lower().replace('remastered', '').replace('remaster', '').replace('version', '')).strip() # e.g. Breathe - 2011 Remastered Version -> breathe - 2011
+                        spotify_track_name = re.sub(r'\s- \s\d{4}', '', spotify_track_name) # both replace year
+                        spotify_track_name = re.sub(r'\s-\s\d{4}', '', spotify_track_name)
+
                         spotify_artist_name = artist_name.lower().strip() # e.g. Pink Floyd
                         ic(spotify_track_name)
                         ic(spotify_artist_name)
                         
-                        ic(fuzz.ratio(ue_track_name, spotify_track_name))
-                        ic(fuzz.ratio(ue_arist_name, spotify_artist_name))
+                        ic(fuzz.ratio(ug_track_name, spotify_track_name))
+                        ic(fuzz.ratio(ug_artist_name, spotify_artist_name))
                         
                         # Often titles on spotify include further things like (acoustic, version, remastered, unplugged), title are often the exact same, thus different ratio thresholds
-                        if (fuzz.ratio(ue_track_name, spotify_track_name) >= 40) and (fuzz.ratio(ue_arist_name, spotify_artist_name) >= 40):
+                        if (fuzz.ratio(ug_track_name, spotify_track_name) >= 40) and (fuzz.ratio(ug_artist_name, spotify_artist_name) >= 40):
                             return source_code, link, 1, result_index
     
                 
@@ -689,21 +982,21 @@ def extractCapo(complete_source_code):
         return "0"
 
 # Returns the main chords/lyrics content of the source code (modified with <br> and <span> tags for chords)
-def extractMainChordsBody(complete_source_code):
+def extractMainChordsBody(complete_source_code, align):
     start_string = "{&quot;content&quot;:&quot;"
     end_string = "&quot;,&quot;revision_id&quot;"
 
     pattern = re.compile(re.escape(start_string) + r'(.*?)' + re.escape(end_string))
     match = pattern.search(complete_source_code)
-
+    
     if match:
         result = match.group(1)
-        # Modify source code to include line breaks and span tags for chords
-        result = replace_spaces_within_chords(result)
-        return result.replace("\\r\\n", "<br>").replace("[ch]", '<span class="chord_span">').replace("[/ch]", "</span>").replace("[tab]", "").replace("[/tab]", "")
+        if align != "middle":
+            # Modify source code to include line breaks and span tags for chords (don't do if client requests middle align)
+            result = replace_spaces_within_chords(result)
+        return result.replace("\\r\\n", "<br>").replace("[ch]", '<span class="chord_span">').replace("[/ch]", "</span>").replace("[tab]", "").replace("[/tab]", "").replace('\&quot;', '"')
     else:
         return "Failed to find main chords/lyrics content of the source code"
-
 
 def replace_spaces_within_chords(input_string):
     pattern = re.compile(r'\[tab\](\s+)\[ch\]')
@@ -723,6 +1016,7 @@ def replace_spaces_within_chords(input_string):
     result_string_2 = re.sub(pattern_2, replace_2, result_string_1)
 
     return result_string_2
+
 
 ######## MUSIXMATCH API ########
 # Returns the synced lyrics json from the musixmatch (respectively free GitHub) API
@@ -773,8 +1067,8 @@ def getSyncedLyricsJson(track_id):
     
     ### SELF-MADE SPOTIFY LYRICS APPROACH:
     if (lyrics_api_source == "SELFMADE"):
-        # Make this song appear like it has no lyrics, for study
-        if (track_id == "1vxw6aYJls2oq3gW0DujAo"):
+        # Make this song appear like it has no lyrics, for study: 1vxw6aYJls2oq3gW0DujAo
+        if (track_id == "ignoreThisIf"):
             found_musixmatch_lyrics = 0
             musixmatch_lyrics_is_linesynced = 0
             ic(f'Crazy by Gnarls Barkley has no synced lyrics') 
@@ -782,7 +1076,7 @@ def getSyncedLyricsJson(track_id):
         try:
             original_json = selfmade_spotify_lyrics.getLyrics(track_id)
             response_json = {'lines': original_json['lyrics']['lines'], "syncType":  original_json['lyrics']['syncType']}
-            # ic(response_json)
+            # ic(original_json)
             
             # Found lyrics but not synced
             if 'syncType' in response_json and response_json['syncType'] == 'UNSYNCED':
@@ -809,7 +1103,6 @@ def getSyncedLyricsJson(track_id):
             ic(f'Error making lyrics request, Perhaps no lyrics available: {e}')
             return "COULDN'T FIND LYRICS, ERROR REQUESTING", found_musixmatch_lyrics, musixmatch_lyrics_is_linesynced
     
-
 # Returns an array of tupels of the form (timestamp, lyrics line) (e.g. [(19100, 'Up with the worry and down in a flurry'), ...])
 def parseSyncedLyricsJsonToTupelArray(synced_lyrics_json):
     global musixmatch_lyrics_is_linesynced
@@ -826,9 +1119,11 @@ def parseSyncedLyricsJsonToTupelArray(synced_lyrics_json):
 # Main algorithm that inserts Musixmatch timestamps into the Ultimate Guitar source code
 def insertTimestampsToMainChordsBody(synced_lyrics_tupel_array, main_chords_body, track_length_ms, track_id):  
     global wrote_block_4
+    global sync_ratio_percentage
     
     # Removes all empty lyrics and music notes from Musixmatch lyrics, as they can't be matched anyways and cause errors in red and blue paths
     synced_lyrics_tupel_array = [(timestamp, lyric) for timestamp, lyric in synced_lyrics_tupel_array if lyric not in ['', '♪']]
+    ic(synced_lyrics_tupel_array)
     
     # Array of all new lines in the source code  
     main_chords_body_line_array = main_chords_body.split("<br>")
@@ -842,8 +1137,6 @@ def insertTimestampsToMainChordsBody(synced_lyrics_tupel_array, main_chords_body
     # Add "NOTSYNCED" to each line which will then be replaced with the timestamp
     main_chords_body_line_array_lyrics_with_index_and_timestamp = [["NOTSYNCED", t[0], html.unescape(t[1])] for t in main_chords_body_line_array_lyrics_with_index]
     
-    # ic(main_chords_body_line_array_lyrics_with_index_and_timestamp)
-    
     # Inserts timestamps into main_chords_body_line_array_lyrics_with_index_and_timestamp by fuzzy lyrics matching
     # official_lyrics_line = Lyrics Line from MusixMatch API
     # unofficial_lyrics_line = Lyrics Line from Ultimate Guitar
@@ -851,6 +1144,8 @@ def insertTimestampsToMainChordsBody(synced_lyrics_tupel_array, main_chords_body
     insert_hit = 0         
     official_lyrics_line = 0
     max_unoffical_line_iteration = 0
+    # Defines that maximum ammount of next lines to check on UG when trying to match MusixMatch (mean and 1/6 of it, and round up) (was about 5 hardcoded before)
+    unofficial_line_iteration_check_range = math.ceil(((len(main_chords_body_line_array_lyrics_with_index) + len(synced_lyrics_tupel_array)) / 2) / 6)
     
     amm_of_lines_to_sync = len(synced_lyrics_tupel_array)
     green_path_ratio_COUNTER = 0
@@ -871,7 +1166,7 @@ def insertTimestampsToMainChordsBody(synced_lyrics_tupel_array, main_chords_body
         if (insert_hit == 0):
             max_unoffical_line_iteration = len(main_chords_body_line_array_lyrics_with_index)
         else:
-            max_unoffical_line_iteration = insert_hit + 5
+            max_unoffical_line_iteration = insert_hit + unofficial_line_iteration_check_range
             if max_unoffical_line_iteration >= len(main_chords_body_line_array_lyrics_with_index):
                 max_unoffical_line_iteration = len(main_chords_body_line_array_lyrics_with_index)
                 
@@ -1066,13 +1361,22 @@ def insertTimestampsToMainChordsBody(synced_lyrics_tupel_array, main_chords_body
                 break
              
         official_lyrics_line += 1  
-        
+       
+    print(f"AMMOUNT OF MUSIXMATCH LYRICS TO SYNC (without empty or note): {amm_of_lines_to_sync}\n")
+    print(f"AMMOUNT OF SUCCESSFULLY SYNCED MUSIXMATCH LYRICS: {amm_of_lines_succ_synced}\n")
+    print(f"SYNC RATIO: {(amm_of_lines_succ_synced/amm_of_lines_to_sync)*100}%\n")
+    sync_ratio_percentage = round((amm_of_lines_succ_synced/amm_of_lines_to_sync)*100)
+    # If the Sync Ratio is below 60% return the original source code without any timestamps and regard as not synced
+    if (sync_ratio_percentage < 60):
+        return main_chords_body, True
+                
     if (dev_or_prod == "DEVELOPMENT" and log_on_off == "ON" and wrote_block_4 != track_id):
             with open(log_file_path, 'a') as file:
                 wrote_block_4 = track_id
                 
                 file.write(f"AMMOUNT OF MUSIXMATCH LYRICS TO SYNC (without empty or note): {amm_of_lines_to_sync}\n")
                 file.write(f"AMMOUNT OF SUCCESSFULLY SYNCED MUSIXMATCH LYRICS: {amm_of_lines_succ_synced}\n")
+                # file.write(f"AMMOUNT OF LYRICS (AND PERHAPS OTHER TEXT) LINES ON UG: {len(main_chords_body_line_array_lyrics_with_index_and_timestamp)}\n")
                 file.write(f"SYNC RATIO: {(amm_of_lines_succ_synced/amm_of_lines_to_sync)*100}%\n")
                 
                 file.write(f"-----\n")
@@ -1109,7 +1413,7 @@ def insertTimestampsToMainChordsBody(synced_lyrics_tupel_array, main_chords_body
                 file.write(f"SUM BLUE PATH'S PERCENTAGE: {(((blue_path_ratio_COUNTER*2)+(blue_path_ratio_3_COUNTER*3)+(blue_path_ratio_4_COUNTER*4))/amm_of_lines_succ_synced)*100}%\n")
                 
                 file.write(f"-----\n")
-                
+    
     """
     ### Interpolate timestamps for lyrics lines that couldn't be matched ###
     main_chords_body_line_array_lyrics_with_index_and_timestamp = lerpNOTSYNCEDWithin(main_chords_body_line_array_lyrics_with_index_and_timestamp)
@@ -1129,22 +1433,24 @@ def insertTimestampsToMainChordsBody(synced_lyrics_tupel_array, main_chords_body
     main_chords_body_line_array_residual_with_index_and_timestamp = [["NOTSYNCED", t[0], t[1]] for t in main_chords_body_line_array_residual_with_index]
     
     # Array of all synced and interpolated lyrics lines merged with unsynced residual lines
-    merged_array = mergeSyncedLyricsAndResidual(main_chords_body_line_array_residual_with_index_and_timestamp, main_chords_body_line_array_lyrics_with_index_and_timestamp)
+    merged_array, error_merging = mergeSyncedLyricsAndResidual(main_chords_body_line_array_residual_with_index_and_timestamp, main_chords_body_line_array_lyrics_with_index_and_timestamp)
     
     # Interpolate timestamps for residual lines with regard to synced lyrics lines timestamps    
-    merged_array = lerpNOTSYNCEDWithin(merged_array)
-    merged_array = lerpNOTSYNCEDLastLines(merged_array, track_length_ms)
-    merged_array = lerpNOTSYNCEDFirstLines(merged_array)
+    merged_array, error_lerping_1 = lerpNOTSYNCEDWithin(merged_array)
+    merged_array, error_lerping_2 = lerpNOTSYNCEDLastLines(merged_array, track_length_ms)
+    merged_array, error_lerping_3 = lerpNOTSYNCEDFirstLines(merged_array)
     
-    # ic(merged_array)
+    # If error occured in merging or lerping return original source code without any timestamps and regard as not synced
+    if (error_merging or error_lerping_1 or error_lerping_2 or error_lerping_3):
+        return main_chords_body, True
     
     ############################################
     
     # Insert synced array into main chords body array
     for i in range (0, len(merged_array)):
-        main_chords_body_line_array[merged_array[i][1]] = f'<span id="IS_SYNCED_AT:{merged_array[i][0]}">{main_chords_body_line_array[merged_array[i][1]]}</span>'
-            
-    return "<br>".join(main_chords_body_line_array)
+        main_chords_body_line_array[merged_array[i][1]] = f'<span id="IS_SYNCED_AT:{merged_array[i][0]}">{main_chords_body_line_array[merged_array[i][1]]}</span>'    
+                
+    return "<br>".join(main_chords_body_line_array), False
     
 # Replace NOTSCYNCED timestamps by interpolating with timestamps that exist in surrounding lines
 def lerpNOTSYNCEDWithin(array_with_timestamps_to_be_lerped):       
@@ -1189,10 +1495,11 @@ def lerpNOTSYNCEDWithin(array_with_timestamps_to_be_lerped):
                 for add_timestamp in range (1, amm_of_cons_notsynced_lines):
                     array_with_timestamps_to_be_lerped[timstamp + add_timestamp-1][0] = str(int(sorrounding_timestamp_before + (timestamp_adder * add_timestamp))) + "\" class='LERP_LINE'"
         
-        return array_with_timestamps_to_be_lerped  
+        return array_with_timestamps_to_be_lerped, False
     
     except:
         ic("lerpNOTSYNCEDWithin failed")
+        return array_with_timestamps_to_be_lerped, True
 
 # Replace NOTSCYNCED timestamps by interpolating timestamps between the last synced timestamp and the end of the track
 def lerpNOTSYNCEDLastLines(array_with_timestamps_to_be_lerped, track_length_ms):        
@@ -1220,10 +1527,11 @@ def lerpNOTSYNCEDLastLines(array_with_timestamps_to_be_lerped, track_length_ms):
             for add_timestamp in range (1, amm_of_cons_notsynced_lines):
                 array_with_timestamps_to_be_lerped[timestamp_before_index+1 + add_timestamp-1][0] = str(int(sorrounding_timestamp_before + (timestamp_adder * add_timestamp))) + "\" class='LERP_LINE'"
         
-        return array_with_timestamps_to_be_lerped
+        return array_with_timestamps_to_be_lerped, False
     
     except:
-        print("lerpNOTSYNCEDLastLines failed")     
+        print("lerpNOTSYNCEDLastLines failed")    
+        return array_with_timestamps_to_be_lerped, True 
 
 # Replace NOTSCYNCED timestamps by interpolating timestamps between the beginning of the track and the first synced timestamp 
 def lerpNOTSYNCEDFirstLines(array_with_timestamps_to_be_lerped):    
@@ -1247,11 +1555,12 @@ def lerpNOTSYNCEDFirstLines(array_with_timestamps_to_be_lerped):
             for add_timestamp in range (1, amm_of_cons_notsynced_lines):
                 array_with_timestamps_to_be_lerped[1 + add_timestamp-1][0] = str(int(sorrounding_timestamp_before + (timestamp_adder * add_timestamp))) + "\" class='LERP_LINE'"
         
-        return array_with_timestamps_to_be_lerped
+        return array_with_timestamps_to_be_lerped, False
     
     except:
         print("lerpNOTSYNCEDFirstLines failed")
-
+        return array_with_timestamps_to_be_lerped, True
+        
 # Merge the synced lyrics array and the residual array        
 def mergeSyncedLyricsAndResidual(main_chords_body_line_array_residual_with_index_and_timestamp, main_chords_body_line_array_lyrics_with_index_and_timestamp):        
     try:
@@ -1275,18 +1584,18 @@ def mergeSyncedLyricsAndResidual(main_chords_body_line_array_residual_with_index
         merged_array.extend(main_chords_body_line_array_residual_with_index_and_timestamp[residual_index:])
         merged_array.extend(main_chords_body_line_array_lyrics_with_index_and_timestamp[lyrics_index:])
 
-        return merged_array
+        return merged_array, False
     
     except:
         print("mergeSyncedLyricsAndResidual failed")    
-
+        return main_chords_body_line_array_residual_with_index_and_timestamp, True
+        
 
 # Delete Spotify cash when program stops (to achieve same functionality as /logout)
 def cleanup():
     cache_file = '.cache'
     if os.path.exists(cache_file):
-        os.remove(cache_file)
-        
+        os.remove(cache_file)            
 atexit.register(cleanup)  
 
 

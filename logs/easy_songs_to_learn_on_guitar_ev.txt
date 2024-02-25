@@ -14,7 +14,7 @@ Found Lyrics: YES: 473, NO: 25
 -> Found Lyrics but Lyrics are NOT Line Synced: 20
 -> Found NO Lyrics but Lyrics are Line Synced (Should be 0): 0
 -----
-Songs that are syncable (Found Chords and Line Synced Lyrics): 417
+Songs that are syncable (Found Chords and Line Synced Lyrics): 407
 -> Mean Successfully Synced Lines Ratio: 88.33%
 -> Median Successfully Synced Lines Ratio: 95.0%
 -> Mean Ammount of MusixMatch Lyrics Lines to sync (without Note symbol or empty string): 41.75

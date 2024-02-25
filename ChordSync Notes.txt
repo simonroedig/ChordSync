@@ -1,0 +1,29 @@
+- Settings button statt by Simon R
+- Oerlays whole screen, shows settings:
+- Kepp set capo value
+- Align vertical or left
+- Maybe inform that user can zoom with ctrl + mousewheel
+
+
+merge icon
+blend icon
+overlapping waveform icon
+autoscroll  icon <- also vlt doch so wie davor
+
+new UC for studies!!!!
+- Frage ob # oder b bevorzugt (antwort meisten #)
+- Frage ob #/b auch persestieren soll 
+- someone wanna know how good song is synced
+- Prefer Sharp or Flat? (s. Auch chrome estension die existiert)
+
+What to change on ChordSync, based on study results:
+- Sync Icon(s)
+- Sync Ratio on Hover
+- Capo Icon
+- Allowed negativ capo values
+- Settings: Align middle or left
+- Settings: Capo persisting
+- Settings: Flat/Sharp persisting
+- Mute Button: (Seeings Lyrics in middle is enough to keep rythm, vorgeschlagen bei einer probandin, und getestet mit ihr)
+- Tuner: https://github.com/qiuxiang/tuner?tab=readme-ov-file
+- Key
