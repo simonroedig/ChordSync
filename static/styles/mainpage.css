@@ -767,6 +767,15 @@ main algorithm via colors in the lyrics */
     letter-spacing: 5px;
 }
 
+#IDcredit2 {
+    color: #ffffff;
+    font-size: 0.6rem;
+    margin: 0;
+    margin-top: 10px;
+    opacity: 0.75;
+    letter-spacing: 1px;
+}
+
 a {
     color: #ffffff;
     text-decoration: none;
