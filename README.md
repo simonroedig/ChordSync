@@ -73,6 +73,3 @@ to retreive these lyrics you need a `sp_dc cookie` from spotify:
    - Feel free to set a browser bookmark to access ChordSync via the IP's quicker, however *2 might change depending on your router settings
    - You can `stop ChordSync with CTRL+C in your terminal`, you have to redo step 9. if you want to run ChordSync again
 - **10.** If you have `any troubles` with installing and running, `feel free to reach out to me`
-
-<p>ChordSync © 2024 by Simon Rödig is licensed under CC BY-NC-ND 4.0.</p>
-<p>To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-nd/4.0/</p>
