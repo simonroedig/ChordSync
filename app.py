@@ -22,13 +22,52 @@ import re
 import requests
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
-from flask import Flask, redirect, render_template, request, send_from_directory, session
+from flask import Flask, redirect, render_template, request, send_from_directory, session, g
 from fuzzywuzzy import fuzz
 from icecream import ic
 from flask_socketio import SocketIO, emit
 from spotipy import SpotifyOAuth
 from spotipy.exceptions import SpotifyException
 import spotipy
+import sqlite3
+
+######## FLASK ########
+app = Flask(__name__)
+app.secret_key = os.getenv("FLASK_SECRET_KEY")
+
+
+######## DATABASE ########
+DATABASE = 'cache.db'
+
+def get_db():
+    db = getattr(g, '_database', None)
+    if db is None:
+        db = g._database = sqlite3.connect(DATABASE)
+        db.row_factory = sqlite3.Row
+    return db
+
+def close_db(exception):
+    db = getattr(g, '_database', None)
+    if db is not None:
+        db.close()
+
+def init_db():
+    with app.app_context():
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS cache (
+                track_id TEXT PRIMARY KEY,
+                artist_name TEXT,
+                track_name TEXT,
+                original_json TEXT
+            )
+        ''')
+        db.commit()
+
+@app.teardown_appcontext
+def teardown_db(exception):
+    close_db(exception)
 
 
 ######## .env ########
@@ -65,11 +104,6 @@ if (lyrics_api_source == "SELFMADE"):
     from spotify_lyrics import SpotifyLyrics
     sp_dc_cookie = os.getenv("SP_DC_COOKIE")
     selfmade_spotify_lyrics = SpotifyLyrics(sp_dc_cookie)
-
-
-######## FLASK ########
-app = Flask(__name__)
-app.secret_key = os.getenv("FLASK_SECRET_KEY")
 
 
 ######## WEB SOCKET ########
@@ -688,7 +722,7 @@ def getTrackStaticData(align):
         
             main_chords_body = extractMainChordsBody(complete_source_code, align)
             
-            synced_lyrics_json, found_musixmatch_lyrics, musixmatch_lyrics_is_linesynced = getSyncedLyricsJson(track_id)
+            synced_lyrics_json, found_musixmatch_lyrics, musixmatch_lyrics_is_linesynced = getSyncedLyricsJson(track_id, artist_name, track_name)
             
             if (dev_or_prod == "DEVELOPMENT" and log_on_off == "ON" and wrote_block_3 != track_id):
                 with open(log_file_path, 'a') as file:
@@ -773,7 +807,7 @@ def getTrackStaticData(align):
                 
         # No chords found, also regard as no synced lyrics found    
         else:
-            synced_lyrics_json, found_musixmatch_lyrics, musixmatch_lyrics_is_linesynced = getSyncedLyricsJson(track_id)
+            synced_lyrics_json, found_musixmatch_lyrics, musixmatch_lyrics_is_linesynced = getSyncedLyricsJson(track_id, artist_name, track_name)
             
             if (dev_or_prod == "DEVELOPMENT" and log_on_off == "ON" and wrote_block_3 != track_id):
                 with open(log_file_path, 'a') as file:
@@ -896,11 +930,11 @@ def googleChords(track_name, artist_name):
                 result_index += 1
                 
                 link = result.get('link', '')
-                ic('POSSIBLE LINK: ' + link)
+                #ic('POSSIBLE LINK: ' + link)
                 
                 # Check if the link contains the desired substring (i.e. is on Ultimate Guitar)
                 if desired_url_substring in link:
-                    ic('FOUND THIS LINK: ' + link)
+                    #ic('FOUND THIS LINK: ' + link)
 
                     page_response = requests.get(link)
                     page_response.raise_for_status()
@@ -923,19 +957,19 @@ def googleChords(track_name, artist_name):
                         
                         ug_track_name = title_text_no_ug.split("chords by")[0].strip() # e.g. breathe
                         ug_artist_name = title_text_no_ug.split("chords by")[1].strip() # e.g. pink floyd
-                        ic(ug_track_name)
-                        ic(ug_artist_name)
+                        #ic(ug_track_name)
+                        #ic(ug_artist_name)
                         
                         spotify_track_name = (track_name.lower().replace('remastered', '').replace('remaster', '').replace('version', '')).strip() # e.g. Breathe - 2011 Remastered Version -> breathe - 2011
                         spotify_track_name = re.sub(r'\s- \s\d{4}', '', spotify_track_name) # both replace year
                         spotify_track_name = re.sub(r'\s-\s\d{4}', '', spotify_track_name)
 
                         spotify_artist_name = artist_name.lower().strip() # e.g. Pink Floyd
-                        ic(spotify_track_name)
-                        ic(spotify_artist_name)
+                        #ic(spotify_track_name)
+                        #ic(spotify_artist_name)
                         
-                        ic(fuzz.ratio(ug_track_name, spotify_track_name))
-                        ic(fuzz.ratio(ug_artist_name, spotify_artist_name))
+                        #ic(fuzz.ratio(ug_track_name, spotify_track_name))
+                        #ic(fuzz.ratio(ug_artist_name, spotify_artist_name))
                         
                         # Often titles on spotify include further things like (acoustic, version, remastered, unplugged), title are often the exact same, thus different ratio thresholds
                         if (fuzz.ratio(ug_track_name, spotify_track_name) >= 40) and (fuzz.ratio(ug_artist_name, spotify_artist_name) >= 40):
@@ -1020,7 +1054,7 @@ def replace_spaces_within_chords(input_string):
 
 ######## MUSIXMATCH API ########
 # Returns the synced lyrics json from the musixmatch (respectively free GitHub) API
-def getSyncedLyricsJson(track_id):
+def getSyncedLyricsJson(track_id, artist_name, track_name):
     global found_musixmatch_lyrics
     global musixmatch_lyrics_is_linesynced
     
@@ -1071,10 +1105,35 @@ def getSyncedLyricsJson(track_id):
         if (track_id == "ignoreThisIf"):
             found_musixmatch_lyrics = 0
             musixmatch_lyrics_is_linesynced = 0
-            ic(f'Crazy by Gnarls Barkley has no synced lyrics') 
+            #ic(f'Crazy by Gnarls Barkley has no synced lyrics') 
             return "COULDN'T FIND LYRICS, ERROR REQUESTING", found_musixmatch_lyrics, musixmatch_lyrics_is_linesynced
+        
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute('SELECT artist_name, track_name, original_json FROM cache WHERE track_id = ?', (track_id,))
+        cached_data = cursor.fetchone()
+        
+        if cached_data:
+            artist_name = cached_data[0]
+            track_name = cached_data[1]
+            original_json = json.loads(cached_data[2])
+            print(f'Found lyrics in database')
+        else:
+            try:
+                original_json = selfmade_spotify_lyrics.getLyrics(track_id)
+                cursor.execute('INSERT OR REPLACE INTO cache (track_id, artist_name, track_name, original_json) VALUES (?, ?, ?, ?)', (track_id, artist_name, track_name, json.dumps(original_json)))
+                db.commit()
+                print(f'Lyrics not found in database, but now cached')
+            except Exception as e:
+                found_musixmatch_lyrics = 0
+                musixmatch_lyrics_is_linesynced = 0
+                ic(f'Error making lyrics request, Perhaps no lyrics available: {e}')
+                return "COULDN'T FIND LYRICS, ERROR REQUESTING", found_musixmatch_lyrics, musixmatch_lyrics_is_linesynced
+        
+        cursor.close()
+            
         try:
-            original_json = selfmade_spotify_lyrics.getLyrics(track_id)
+            #original_json = selfmade_spotify_lyrics.getLyrics(track_id)
             response_json = {'lines': original_json['lyrics']['lines'], "syncType":  original_json['lyrics']['syncType']}
             # ic(original_json)
             
@@ -1123,7 +1182,7 @@ def insertTimestampsToMainChordsBody(synced_lyrics_tupel_array, main_chords_body
     
     # Removes all empty lyrics and music notes from Musixmatch lyrics, as they can't be matched anyways and cause errors in red and blue paths
     synced_lyrics_tupel_array = [(timestamp, lyric) for timestamp, lyric in synced_lyrics_tupel_array if lyric not in ['', '♪']]
-    ic(synced_lyrics_tupel_array)
+    #ic(synced_lyrics_tupel_array)
     
     # Array of all new lines in the source code  
     main_chords_body_line_array = main_chords_body.split("<br>")
@@ -1362,9 +1421,9 @@ def insertTimestampsToMainChordsBody(synced_lyrics_tupel_array, main_chords_body
              
         official_lyrics_line += 1  
        
-    print(f"AMMOUNT OF MUSIXMATCH LYRICS TO SYNC (without empty or note): {amm_of_lines_to_sync}\n")
-    print(f"AMMOUNT OF SUCCESSFULLY SYNCED MUSIXMATCH LYRICS: {amm_of_lines_succ_synced}\n")
-    print(f"SYNC RATIO: {(amm_of_lines_succ_synced/amm_of_lines_to_sync)*100}%\n")
+    #print(f"AMMOUNT OF MUSIXMATCH LYRICS TO SYNC (without empty or note): {amm_of_lines_to_sync}\n")
+    #print(f"AMMOUNT OF SUCCESSFULLY SYNCED MUSIXMATCH LYRICS: {amm_of_lines_succ_synced}\n")
+    #print(f"SYNC RATIO: {(amm_of_lines_succ_synced/amm_of_lines_to_sync)*100}%\n")
     sync_ratio_percentage = round((amm_of_lines_succ_synced/amm_of_lines_to_sync)*100)
     # If the Sync Ratio is below 60% return the original source code without any timestamps and regard as not synced
     if (sync_ratio_percentage < 60):
@@ -1602,4 +1661,5 @@ atexit.register(cleanup)
 ######## START FLASK SERVER ########        
 if __name__ == '__main__':
     if (dev_or_prod == "DEVELOPMENT"):
+        init_db()
         app.run(host="0.0.0.0", port=5000, debug=True)
