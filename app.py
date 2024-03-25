@@ -37,29 +37,30 @@ app.secret_key = os.getenv("FLASK_SECRET_KEY")
 
 
 ######## DATABASE ########
-DATABASE = 'cache.db'
+DATABASE = 'lyrics_data.db'
 
-def get_db():
+def get_lyrics_db():
     db = getattr(g, '_database', None)
     if db is None:
         db = g._database = sqlite3.connect(DATABASE)
         db.row_factory = sqlite3.Row
     return db
 
-def close_db(exception):
+def close_lyrics_db(exception):
     db = getattr(g, '_database', None)
     if db is not None:
         db.close()
 
-def init_db():
+def init_lyrics_db():
     with app.app_context():
-        db = get_db()
+        db = get_lyrics_db()
         cursor = db.cursor()
         cursor.execute('''
-            CREATE TABLE IF NOT EXISTS cache (
+            CREATE TABLE IF NOT EXISTS lyrics_db (
                 track_id TEXT PRIMARY KEY,
                 artist_name TEXT,
                 track_name TEXT,
+                save_timestamp TEXT,
                 original_json TEXT
             )
         ''')
@@ -67,7 +68,7 @@ def init_db():
 
 @app.teardown_appcontext
 def teardown_db(exception):
-    close_db(exception)
+    close_lyrics_db(exception)
 
 
 ######## .env ########
@@ -1108,22 +1109,40 @@ def getSyncedLyricsJson(track_id, artist_name, track_name):
             #ic(f'Crazy by Gnarls Barkley has no synced lyrics') 
             return "COULDN'T FIND LYRICS, ERROR REQUESTING", found_musixmatch_lyrics, musixmatch_lyrics_is_linesynced
         
-        db = get_db()
+        db = get_lyrics_db()
         cursor = db.cursor()
-        cursor.execute('SELECT artist_name, track_name, original_json FROM cache WHERE track_id = ?', (track_id,))
+        cursor.execute('SELECT artist_name, track_name, save_timestamp, original_json FROM lyrics_db WHERE track_id = ?', (track_id,))
         cached_data = cursor.fetchone()
         
         if cached_data:
             artist_name = cached_data[0]
             track_name = cached_data[1]
-            original_json = json.loads(cached_data[2])
+            save_timestamp_str = cached_data[2]
+            save_timestamp = datetime.datetime.strptime(save_timestamp_str, '%Y-%m-%d %H:%M:%S.%f')
+            original_json = json.loads(cached_data[3])
             print(f'Found lyrics in database')
+            
+            # renew lyrics in database if older than X days
+            days_to_renew = 30
+            current_date = datetime.datetime.now()
+            if (current_date - save_timestamp).days > days_to_renew:
+                try:
+                    original_json = selfmade_spotify_lyrics.getLyrics(track_id)
+                    cursor.execute('INSERT OR REPLACE INTO lyrics_db (track_id, artist_name, track_name, save_timestamp, original_json) VALUES (?, ?, ?, ?, ?)', (track_id, artist_name, track_name, datetime.datetime.now(), json.dumps(original_json)))
+                    db.commit()
+                    print(f'Lyrics found in database but outdated, now in lyrics_db')
+                except Exception as e:
+                    ic(f'Requested lyrics to renew in database, as it is older than {days_to_renew} days, failed, used old one: {e}')
+                    artist_name = cached_data[0]
+                    track_name = cached_data[1]
+                    save_timestamp = cached_data[2]
+                    original_json = json.loads(cached_data[3])
         else:
             try:
                 original_json = selfmade_spotify_lyrics.getLyrics(track_id)
-                cursor.execute('INSERT OR REPLACE INTO cache (track_id, artist_name, track_name, original_json) VALUES (?, ?, ?, ?)', (track_id, artist_name, track_name, json.dumps(original_json)))
+                cursor.execute('INSERT OR REPLACE INTO lyrics_db (track_id, artist_name, track_name, save_timestamp, original_json) VALUES (?, ?, ?, ?, ?)', (track_id, artist_name, track_name, datetime.datetime.now(), json.dumps(original_json)))
                 db.commit()
-                print(f'Lyrics not found in database, but now cached')
+                print(f'Lyrics not found in database, but now in lyrics_db')
             except Exception as e:
                 found_musixmatch_lyrics = 0
                 musixmatch_lyrics_is_linesynced = 0
@@ -1661,5 +1680,5 @@ atexit.register(cleanup)
 ######## START FLASK SERVER ########        
 if __name__ == '__main__':
     if (dev_or_prod == "DEVELOPMENT"):
-        init_db()
+        init_lyrics_db()
         app.run(host="0.0.0.0", port=5000, debug=True)

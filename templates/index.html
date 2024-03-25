@@ -91,6 +91,13 @@
         var resetRepeatSectionFunc = () => {};
 
 
+        // Spotify Player Buttons
+        var old_shuffle_button = "";
+        var old_repeat_button = "";
+        var old_play_or_pause_button = "";
+        var old_sync_button = "";
+        var new_sync_button = "";
+
         // Local Storage
         localStorage.getItem("key_local_storage_settings_align") == null ? localStorage.setItem("key_local_storage_settings_align", settings_align) : settings_align = localStorage.getItem("key_local_storage_settings_align");
 
@@ -566,19 +573,31 @@
 
 
             //////// Spotify Buttons and Timeline ////////
+            var new_repeat_button;
             if (track_dynamic_data.current_repeat_state == "off") {
-                document.getElementById('IDrepeatSpotifyButton').src = "static/img/music_control/repeat_spotify_off.png";
+                new_repeat_button = "static/img/music_control/repeat_spotify_off.png";
             } else if (track_dynamic_data.current_repeat_state == "track") {
-                document.getElementById('IDrepeatSpotifyButton').src = "static/img/music_control/repeat_spotify_song.png";
+                new_repeat_button = "static/img/music_control/repeat_spotify_song.png";
             } else if (track_dynamic_data.current_repeat_state == "context") {
-                document.getElementById('IDrepeatSpotifyButton').src = "static/img/music_control/repeat_spotify_context.png";
+                new_repeat_button = "static/img/music_control/repeat_spotify_context.png";
+            }
+            if (old_repeat_button != new_repeat_button) {
+                document.getElementById('IDrepeatSpotifyButton').src = new_repeat_button;
+                old_repeat_button = new_repeat_button;
             }
 
+
+            var new_shuffle_button;
             if (track_dynamic_data.current_shuffle_state == true) {
-                document.getElementById('IDshuffleButton').src = "static/img/music_control/shuffle_on.png";
+                new_shuffle_button= "static/img/music_control/shuffle_on.png";
             } else if (track_dynamic_data.current_shuffle_state == false) {
-                document.getElementById('IDshuffleButton').src = "static/img/music_control/shuffle_off.png";
+                new_shuffle_button = "static/img/music_control/shuffle_off.png";
             }
+            if (old_shuffle_button != new_shuffle_button) {
+                document.getElementById('IDshuffleButton').src = new_shuffle_button;
+                old_shuffle_button = new_shuffle_button;
+            }
+
 
             if (track_dynamic_data.current_volume != 0) {
                 document.getElementById('IDAlbum').style.opacity = "1";
@@ -589,12 +608,17 @@
             }
 
             // Update Play/Pause button dynamically
+            var new_play_or_pause_button;
             if (track_dynamic_data.play_or_pause == "True") {
-                document.getElementById('IDplayAndPauseButton').src = "static/img/music_control/play_button.png";
+                new_play_or_pause_button = "static/img/music_control/play_button.png";
                 song_played_or_paused = "True";
             } else if (track_dynamic_data.play_or_pause == "False") {
-                document.getElementById('IDplayAndPauseButton').src = "static/img/music_control/pause_button.png";
+                new_play_or_pause_button = "static/img/music_control/pause_button.png";
                 song_played_or_paused = "False";
+            }
+            if (old_play_or_pause_button != new_play_or_pause_button) {
+                document.getElementById('IDplayAndPauseButton').src = new_play_or_pause_button;
+                old_play_or_pause_button = new_play_or_pause_button;
             }
 
             // Only update timeline and current time if user hasn't just clicked timeline on it or is currently hovering timeline
@@ -641,6 +665,9 @@
 
                     if (Math.abs(progress_ms - timestamp) <= 200) {
                         current_synced_line = document.getElementById("IS_SYNCED_AT:" + timestamp);
+                        if (!current_synced_line) {
+                            current_synced_line = document.getElementById("IS_SYNCED_AT:" + timestamp + ".0");
+                        }
 
                         try {
                             current_synced_line.scrollIntoView({
@@ -649,7 +676,30 @@
                                 inline: 'center'
                             });
                             current_synced_line.scrollTo;
-                        } catch {
+
+                            // new, dynamic highlight testing
+                            /*
+                            clickable_synced_lines_array.forEach((line, index) => {
+                                if ((!line.classList.contains('LERP_LINE')) && (Math.abs(progress_ms - clickable_synced_lines_timestamp_array[index]) > 4000)) {
+                                    line.style.color = "white";
+                                    line.style.filter = "";
+                                    line.innerText = line.innerText.replace("• ", "");
+                                    line.innerText = line.innerText.replace(" •", "");
+                                    line.style.fontWeight = "normal";
+                                    
+                                }
+                            });
+                            if (!current_synced_line.classList.contains('LERP_LINE')) {
+                                //current_synced_line.style.color = '#1DB954';
+                                //current_synced_line.style.filter = 'drop-shadow(0 0 15px #1DB954)';
+                                //current_synced_line.innerText = "• " + current_synced_line.innerText + " •";
+                                current_synced_line.style.fontWeight = "bold";
+                                console.log(current_synced_line.innerText)
+                            }
+                            */
+                            // end new, dynamic highlight testing
+                        } catch(e) {
+                            console.log('The exact error message is: ' + e);
                             console.log('%cNo current synced line available - Could not center current line', 'color: yellow; font-weight: bold;');
                         }
                     }
@@ -660,9 +710,13 @@
             // Depending on wether dynamic scrolling is enabled or disabled 
             // -> change sync button appearance and enable calcDynamicScrolling() function
             if (!dynamic_scroll && musixmatch_lyrics_is_linesynced == 1 && in_track_change == false) {
-                sync_button.src = "{{ url_for('static', filename='/img/sync_button.png') }}";
-                sync_button.style.filter = "";
-                sync_button.style.opacity = "0.5";
+                new_sync_button = "{{ url_for('static', filename='/img/sync_button.png') }}";
+                if (new_sync_button != old_sync_button) {
+                    sync_button.src = new_sync_button;
+                    sync_button.style.filter = "";
+                    sync_button.style.opacity = "0.5";
+                    old_sync_button = new_sync_button;
+                }
 
                 bottom_hr.classList.remove("classHRsyncOn");
                 top_hr.classList.remove("classHRsyncOn");
@@ -675,9 +729,13 @@
 
             if (dynamic_scroll && musixmatch_lyrics_is_linesynced == 1 && in_track_change == false) {
                 calcDynamicScrolling(min_scroll_value, max_scroll_value, track_duration_ms, progress_ms, clickable_synced_lines_timestamp_array);
-                sync_button.src = "{{ url_for('static', filename='/img/sync_button_blue.png') }}";
-                sync_button.style.filter = "drop-shadow(0 0 15px #62dbfb)";
-                sync_button.style.opacity = "1";
+                new_sync_button = "{{ url_for('static', filename='/img/sync_button_blue.png') }}";
+                if (new_sync_button != old_sync_button) {
+                    sync_button.src = new_sync_button;
+                    sync_button.style.filter = "drop-shadow(0 0 15px #62dbfb)";
+                    sync_button.style.opacity = "1";
+                    old_sync_button = new_sync_button;
+                }
 
                 bottom_hr.classList.add("classHRsyncOn");
                 top_hr.classList.add("classHRsyncOn");
@@ -697,9 +755,13 @@
                 document.getElementById('IDdivMainChordsWrapper').style.justifyContent = "flex-start";
                 document.getElementById('IDdivMainChords').innerHTML = main_chords_body;
 
-                sync_button.src = "{{ url_for('static', filename='/img/sync_button.png') }}";
-                sync_button.style.filter = "";
-                sync_button.style.opacity = "0.5";
+                new_sync_button = "{{ url_for('static', filename='/img/sync_button.png') }}";
+                if (new_sync_button != old_sync_button) {
+                    sync_button.src = new_sync_button;
+                    sync_button.style.filter = "";
+                    sync_button.style.opacity = "0.5";
+                    old_sync_button = new_sync_button;
+                }
 
                 bottom_hr.classList.remove("classHRsyncOn");
                 top_hr.classList.remove("classHRsyncOn");
@@ -713,9 +775,13 @@
                 // Don't also rewrite main_chords_body to persist previous content
                 document.getElementById('IDdivMainChords').innerHTML = "Syncing chords not possible for this song.";
 
-                sync_button.src = "{{ url_for('static', filename='/img/sync_button_blue.png') }}";
-                sync_button.style.filter = "drop-shadow(0 0 15px #62dbfb)";
-                sync_button.style.opacity = "1";
+                new_sync_button = "{{ url_for('static', filename='/img/sync_button_blue.png') }}";
+                if (new_sync_button != old_sync_button) {
+                    sync_button.src = new_sync_button;
+                    sync_button.style.filter = "drop-shadow(0 0 15px #62dbfb)";
+                    sync_button.style.opacity = "1";
+                    old_sync_button = new_sync_button;
+                }
 
                 bottom_hr.classList.add("classHRsyncOn");
                 top_hr.classList.add("classHRsyncOn");
@@ -847,6 +913,15 @@
 
                 <p id="IDverticalDelimeter1">&nbsp;&nbsp;|&nbsp;&nbsp;</p>
 
+                <p id="IDtrackBPMtext"><span id="IDtrackBPMvalue">0</span> BPM</p>
+
+                <p id="IDverticalDelimeter1">&nbsp;&nbsp;|&nbsp;&nbsp;</p>
+
+                <img id="IDkeyIcon" src="static/img/key_icon.png"></img>
+                <p id="IDtrackKeyText"><span id="IDtrackKeyValue">C</span></p>
+                
+                <p id="IDverticalDelimeter1">&nbsp;&nbsp;|&nbsp;&nbsp;</p>
+
                 <img id="IDcapoIcon" src="static/img/capo_icon.png"></img>
                 <p id="IDcapoMinusButton" title="Transpose Chords One Semitone Up" onmousedown="return false" onselectstart="return false">-&nbsp;</p>
                 <p><span id="IDguitarCapo" onmousedown="return false" onselectstart="return false">{{ guitar_capo }}</span></p>
@@ -856,14 +931,9 @@
 
                 <p id="IDflatOrSharp" title="Toggle Between Sharp- and Flat Chords" onmousedown="return false" onselectstart="return false"><span id="IDsharpSymbol">#</span>/<span id="IDflatSymbol">b</span>&nbsp;</p>
 
-                <p id="IDverticalDelimeter1">&nbsp;&nbsp;|&nbsp;&nbsp;</p>
+                
 
-                <p id="IDtrackBPMtext"><span id="IDtrackBPMvalue">0</span> BPM</p>
-
-                <p id="IDverticalDelimeter1">&nbsp;&nbsp;|&nbsp;&nbsp;</p>
-
-                <img id="IDkeyIcon" src="static/img/key_icon.png"></img>
-                <p id="IDtrackKeyText"><span id="IDtrackKeyValue">C</span></p>
+                
             </div>
             
             <hr id="IDmiddleHR2">
