@@ -37,38 +37,56 @@ app.secret_key = os.getenv("FLASK_SECRET_KEY")
 
 
 ######## DATABASE ########
-DATABASE = 'lyrics_data.db'
+DATABASE_LYRICS = 'lyrics_data.db'
+DATABASE_UE = 'ue_data.db'
 
-def get_lyrics_db():
-    db = getattr(g, '_database', None)
+def get_database(db_name):
+    db = getattr(g, '_database_' + db_name, None)
     if db is None:
-        db = g._database = sqlite3.connect(DATABASE)
+        db = g._database = sqlite3.connect(db_name)
         db.row_factory = sqlite3.Row
     return db
 
-def close_lyrics_db(exception):
-    db = getattr(g, '_database', None)
+def close_database(db_name, exception):
+    db = getattr(g, '_database_' + db_name, None)
     if db is not None:
         db.close()
 
-def init_lyrics_db():
+def init_database(db_name, table_name, columns):
     with app.app_context():
-        db = get_lyrics_db()
+        db = get_database(db_name)
         cursor = db.cursor()
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS lyrics_db (
-                track_id TEXT PRIMARY KEY,
-                artist_name TEXT,
-                track_name TEXT,
-                save_timestamp TEXT,
-                original_json TEXT
+        cursor.execute(f'''
+            CREATE TABLE IF NOT EXISTS {table_name} (
+                {', '.join(columns)}
             )
         ''')
         db.commit()
 
 @app.teardown_appcontext
 def teardown_db(exception):
-    close_lyrics_db(exception)
+    close_database('lyrics', exception)
+    close_database('ue', exception)
+
+# Initialization
+init_database(DATABASE_LYRICS, 'lyrics_db', [
+    'track_id TEXT PRIMARY KEY',
+    'artist_name TEXT',
+    'track_name TEXT',
+    'save_timestamp TEXT',
+    'original_json TEXT'
+])
+
+init_database(DATABASE_UE, 'ue_db', [
+    'track_id TEXT PRIMARY KEY',
+    'artist_name TEXT',
+    'track_name TEXT',
+    'save_timestamp TEXT',
+    'complete_source_code TEXT',
+    'complete_source_code_link TEXT',
+    'complete_source_code_found INTEGER',
+    'result_index INTEGER'
+])
 
 
 ######## .env ########
@@ -704,7 +722,7 @@ def getTrackStaticData(align):
         
         spotify_error = 0
         
-        complete_source_code, complete_source_code_link, complete_source_code_found, result_index = googleChords(track_name, artist_name)
+        complete_source_code, complete_source_code_link, complete_source_code_found, result_index = googleChordsForDB(track_name, artist_name, track_id)
         main_chords_body = complete_source_code;
         
         if (dev_or_prod == "DEVELOPMENT" and log_on_off == "ON" and wrote_block_2 != track_id):
@@ -891,9 +909,70 @@ def getTrackStaticData(align):
 
 ######## ULTIMATE GUITAR SCRAPING ########
 # Returns the source code, the link to the source, and 0 or 1 if the source code was found or not
+def googleChordsForDB(track_name, artist_name, track_id):
+    db = get_database(DATABASE_UE)
+    cursor = db.cursor()
+    cursor.execute('SELECT artist_name, track_name, save_timestamp, complete_source_code, complete_source_code_link, complete_source_code_found, result_index FROM ue_db WHERE track_id = ?', (track_id,))
+    cached_data = cursor.fetchone()
+    
+    if cached_data:
+        artist_name = cached_data[0]
+        track_name = cached_data[1]
+        save_timestamp_str = cached_data[2]
+        save_timestamp = datetime.datetime.strptime(save_timestamp_str, '%Y-%m-%d %H:%M:%S.%f')
+        complete_source_code = cached_data[3]
+        complete_source_code_link = cached_data[4]
+        complete_source_code_found = cached_data[5]
+        result_index = cached_data[6]
+        print(f'Found ue in database')
+        
+        # renew ue in database if older than X days
+        days_to_renew = 30
+        current_date = datetime.datetime.now()
+        if (current_date - save_timestamp).days > days_to_renew:
+            try:
+                complete_source_code, complete_source_code_link, complete_source_code_found, result_index = googleChords(track_name, artist_name)
+                if (complete_source_code_found == 0):
+                    cursor.close()
+                    return complete_source_code, complete_source_code_link, complete_source_code_found, result_index
+                cursor.execute('INSERT OR REPLACE INTO ue_db (track_id, artist_name, track_name, save_timestamp, complete_source_code, complete_source_code_link, complete_source_code_found, result_index) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', (track_id, artist_name, track_name, datetime.datetime.now(), complete_source_code, complete_source_code_link, complete_source_code_found, result_index))
+                db.commit()
+                print(f'UE found in database but outdated, now in ue database')
+                cursor.close()
+                return complete_source_code, complete_source_code_link, complete_source_code_found, result_index
+            except Exception as e:
+                ic(f'Requested ue to renew in database, as it is older than {days_to_renew} days, failed, used old one: {e}')
+                artist_name = cached_data[0]
+                track_name = cached_data[1]
+                save_timestamp = cached_data[2]
+                complete_source_code = json.loads(cached_data[3])
+                complete_source_code_link = cached_data[4]
+                complete_source_code_found = cached_data[5]
+                result_index = cached_data[6]
+                cursor.close()
+                return complete_source_code, complete_source_code_link, complete_source_code_found, result_index
+        else:
+            cursor.close()
+            return complete_source_code, complete_source_code_link, complete_source_code_found, result_index
+    
+    else:
+        complete_source_code, complete_source_code_link, complete_source_code_found, result_index = googleChords(track_name, artist_name)
+        # do not save if no source code found
+        if (complete_source_code_found == 0):
+            cursor.close()
+            return complete_source_code, complete_source_code_link, complete_source_code_found, result_index
+        cursor.execute('INSERT OR REPLACE INTO ue_db (track_id, artist_name, track_name, save_timestamp, complete_source_code, complete_source_code_link, complete_source_code_found, result_index) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', (track_id, artist_name, track_name, datetime.datetime.now(), complete_source_code, complete_source_code_link, complete_source_code_found, result_index))
+        db.commit()
+        print(f'ue not found in database, but now in ue database')
+        cursor.close()
+        return complete_source_code, complete_source_code_link, complete_source_code_found, result_index
+    
+    cursor.close()
+            
+                
 def googleChords(track_name, artist_name): 
     global spotify_error
-    
+    print("googled for chords, and used API")
     ### Example Response to prevent daily free Google API quota from being exceeded
     """
     url = 'https://tabs.ultimate-guitar.com/tab/dekker/maybe-october-chords-4033981'
@@ -1109,7 +1188,7 @@ def getSyncedLyricsJson(track_id, artist_name, track_name):
             #ic(f'Crazy by Gnarls Barkley has no synced lyrics') 
             return "COULDN'T FIND LYRICS, ERROR REQUESTING", found_musixmatch_lyrics, musixmatch_lyrics_is_linesynced
         
-        db = get_lyrics_db()
+        db = get_database(DATABASE_LYRICS)
         cursor = db.cursor()
         cursor.execute('SELECT artist_name, track_name, save_timestamp, original_json FROM lyrics_db WHERE track_id = ?', (track_id,))
         cached_data = cursor.fetchone()
@@ -1680,5 +1759,4 @@ atexit.register(cleanup)
 ######## START FLASK SERVER ########        
 if __name__ == '__main__':
     if (dev_or_prod == "DEVELOPMENT"):
-        init_lyrics_db()
         app.run(host="0.0.0.0", port=5000, debug=True)
