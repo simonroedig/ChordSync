@@ -589,8 +589,10 @@
 
             var new_shuffle_button;
             if (track_dynamic_data.current_shuffle_state == true) {
-                new_shuffle_button= "static/img/music_control/shuffle_on.png";
+                new_shuffle_button = "static/img/music_control/shuffle_on.png";
             } else if (track_dynamic_data.current_shuffle_state == false) {
+                new_shuffle_button = "static/img/music_control/shuffle_off.png";
+            } else {
                 new_shuffle_button = "static/img/music_control/shuffle_off.png";
             }
             if (old_shuffle_button != new_shuffle_button) {
