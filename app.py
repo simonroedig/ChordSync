@@ -1037,16 +1037,16 @@ def googleChords(track_name, artist_name):
                         
                         ug_track_name = title_text_no_ug.split("chords by")[0].strip() # e.g. breathe
                         ug_artist_name = title_text_no_ug.split("chords by")[1].strip() # e.g. pink floyd
-                        #ic(ug_track_name)
-                        #ic(ug_artist_name)
+                        ic(ug_track_name)
+                        ic(ug_artist_name)
                         
                         spotify_track_name = (track_name.lower().replace('remastered', '').replace('remaster', '').replace('version', '')).strip() # e.g. Breathe - 2011 Remastered Version -> breathe - 2011
                         spotify_track_name = re.sub(r'\s- \s\d{4}', '', spotify_track_name) # both replace year
                         spotify_track_name = re.sub(r'\s-\s\d{4}', '', spotify_track_name)
 
                         spotify_artist_name = artist_name.lower().strip() # e.g. Pink Floyd
-                        #ic(spotify_track_name)
-                        #ic(spotify_artist_name)
+                        ic(spotify_track_name)
+                        ic(spotify_artist_name)
                         
                         #ic(fuzz.ratio(ug_track_name, spotify_track_name))
                         #ic(fuzz.ratio(ug_artist_name, spotify_artist_name))
@@ -1523,6 +1523,7 @@ def insertTimestampsToMainChordsBody(synced_lyrics_tupel_array, main_chords_body
     #print(f"AMMOUNT OF SUCCESSFULLY SYNCED MUSIXMATCH LYRICS: {amm_of_lines_succ_synced}\n")
     #print(f"SYNC RATIO: {(amm_of_lines_succ_synced/amm_of_lines_to_sync)*100}%\n")
     sync_ratio_percentage = round((amm_of_lines_succ_synced/amm_of_lines_to_sync)*100)
+    print(f"SYNC RATIO: {sync_ratio_percentage}%")
     # If the Sync Ratio is below 60% return the original source code without any timestamps and regard as not synced
     if (sync_ratio_percentage < 60):
         return main_chords_body, True
