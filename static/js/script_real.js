@@ -766,7 +766,7 @@ capo_settings.addEventListener("click", () => {
     if (window.getComputedStyle(capo_settings_checkbox).backgroundColor == grayRGB) {
         capoPersistOn();
     } else if (window.getComputedStyle(capo_settings_checkbox).backgroundColor == greenRGB) {
-       capoPersistOff();
+    capoPersistOff();
     }
 });
 

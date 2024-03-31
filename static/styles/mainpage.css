@@ -77,6 +77,12 @@ body {
     margin: -13px 15px 0 0;
 }
 
+#IDio {
+    font-weight: bold;
+    color: #aaaaaa;
+    font-size: 0.8rem;
+}
+
 #IDusernameAndImage {
     display: flex;
     flex-direction: row;
