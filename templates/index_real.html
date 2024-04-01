@@ -303,8 +303,8 @@
                                 last_line_time = next_line_timestamp + 2000;
                                 console.log("Last Line Time: " + last_line_time)
                                 var style = document.createElement('style');
-                                style.type = 'text/css';
-                                style.innerHTML = `
+                                var existingStyle = document.querySelector('style#repeatSectionStyle');
+                                var styleContent = `
                                     @keyframes blinkAnimation {
                                         0% { opacity: 1; }
                                         50% { opacity: 0.5; }
@@ -317,7 +317,14 @@
                                         animation: blinkAnimation 2s infinite; /* 2s for a complete blink, adjust as needed */
                                     }
                                 `;
-                                document.head.appendChild(style);
+                                if (existingStyle) {
+                                    existingStyle.innerHTML = styleContent;
+                                } else {
+                                    style.innerHTML = styleContent;
+                                    style.id = 'repeatSectionStyle';
+                                    style.type = 'text/css';
+                                    document.head.appendChild(style);
+                                }
                                 dynamic_scroll = true;
                                 clicked_counter_repeat_section = 3;
                                 document.getElementById("IDrepeatSectionToggle").title = "Defined Section is being repeated";
@@ -328,14 +335,21 @@
                                 console.log("First Line Time: " + first_line_time)
 
                                 var style = document.createElement('style');
-                                style.type = 'text/css';
-                                style.innerHTML = `
+                                var existingStyle = document.querySelector('style#repeatSectionStyle');
+                                var styleContent = `
                                     #IDrepeatSectionToggle:checked:before {
                                         background-image:url('/static/img/repeat_section_button_3.png');
                                         background-size: cover;
                                     }
                                 `;
-                                document.head.appendChild(style);
+                                if (existingStyle) {
+                                    existingStyle.innerHTML = styleContent;
+                                } else {
+                                    style.type = 'text/css';
+                                    style.id = 'repeatSectionStyle';
+                                    style.innerHTML = styleContent;
+                                    document.head.appendChild(style);
+                                }
                                 clicked_counter_repeat_section = 2;
                                 document.getElementById("IDrepeatSectionToggle").title = "Click LINE to define END of Repeat Section";
                                 socket.emit('jumpInsideTrack', parseInt(lineTimestamp));
@@ -537,14 +551,21 @@
                     repeat_section_on = false;
 
                     var style = document.createElement('style');
-                    style.type = 'text/css';
-                    style.innerHTML = `
+                    var existingStyle = document.querySelector('style#repeatSectionStyle');
+                    var styleContent = `
                         #IDrepeatSectionToggle:checked:before {
                             background-image:url('/static/img/repeat_section_button_1.png');
                             background-size: cover;
                         }
                     `;
-                    document.head.appendChild(style);
+                    if (existingStyle) {
+                        existingStyle.innerHTML = styleContent;
+                    } else {
+                        style.id = 'repeatSectionStyle';
+                        style.type = 'text/css';
+                        style.innerHTML = styleContent;
+                        document.head.appendChild(style);
+                    }
                     var repeatSectionToggle = document.getElementById('IDrepeatSectionToggle');
 
                     document.getElementById("IDrepeatSectionToggle").title = "Repeat/Replay Section";
