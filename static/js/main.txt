@@ -120,7 +120,7 @@ var log_on_off = "{{ log_on_off }}";
 
 if (dev_or_prod == "PRODUCTION") {
     console.log("In Production");
-    var socket = io.connect('wss://chordsync.io');
+    var socket = io.connect('https://chordsync.io', {transports: ['websocket']});
 }
 else if (dev_or_prod == "DEVELOPMENT") {
     console.log("In Development");
