@@ -128,7 +128,15 @@
 
         if (dev_or_prod == "PRODUCTION") {
             console.log("In Production");
-            var socket = io.connect('wss://chordsync.onrender.com');
+            // Extract the domain name from the current URL
+            var currentDomain = window.location.hostname;
+
+            // Check if the domain is either chordsync.onrender.com or chordsync.io
+            if (currentDomain === "chordsync.onrender.com" || currentDomain === "chordsync.io") {
+                console.log("In Production");
+                // Form the WebSocket connection URL dynamically based on the current domain
+                var socket = io.connect('wss://' + currentDomain);
+            }
         }
         else if (dev_or_prod == "DEVELOPMENT") {
             console.log("In Development");
