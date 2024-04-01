@@ -126,7 +126,7 @@ if (lyrics_api_source == "SELFMADE"):
 
 
 ######## WEB SOCKET ########
-socketio = SocketIO(app) 
+socketio = SocketIO(app, cors_allowed_origins="*")  # Allow connections from any origin
 
 
 ######## SPOTIFY API ########
