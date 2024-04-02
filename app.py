@@ -26,6 +26,7 @@ from flask import Flask, redirect, render_template, request, send_from_directory
 from fuzzywuzzy import fuzz
 from icecream import ic
 from flask_socketio import SocketIO, emit
+from flask_cors import CORS
 from spotipy import SpotifyOAuth
 from spotipy.exceptions import SpotifyException
 import spotipy
@@ -34,7 +35,8 @@ import sqlite3
 ######## FLASK ########
 app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY")
-
+CORS(app)
+# https://stackoverflow.com/questions/20035101/why-does-my-javascript-code-receive-a-no-access-control-allow-origin-header-i
 
 ######## DATABASE ########
 DATABASE_LYRICS = 'lyrics_data.db'
