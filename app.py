@@ -1763,3 +1763,4 @@ atexit.register(cleanup)
 if __name__ == '__main__':
     if (dev_or_prod == "DEVELOPMENT"):
         app.run(host="0.0.0.0", port=5000, debug=True)
+        socketio.run(app)
