@@ -35,7 +35,7 @@ import sqlite3
 ######## FLASK ########
 app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY")
-CORS(app, resources={r"/*": {"origins": "https://chordsync.io"}})
+CORS(app, resources={r"/*": {"origins": ["https://chordsync.io", "https://chordsync.onrender.com"]}})
 
 # https://stackoverflow.com/questions/20035101/why-does-my-javascript-code-receive-a-no-access-control-allow-origin-header-i
 
@@ -129,7 +129,7 @@ if (lyrics_api_source == "SELFMADE"):
 
 
 ######## WEB SOCKET ########
-socketio = SocketIO(app, cors_allowed_origins="https://chordsync.io")
+socketio = SocketIO(app, cors_allowed_origins=["https://chordsync.io", "https://chordsync.onrender.com"])
 
 
 ######## SPOTIFY API ########
