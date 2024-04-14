@@ -208,9 +208,11 @@ def index():
         spotify_user_name = ""
         spotify_user_image = ""
 
-    return render_template('index.html', album_cover_url="", track_name="Track", artist_name="Artist", minutes=0, seconds=00, 
+    response = render_template('index.html', album_cover_url="", track_name="Track", artist_name="Artist", minutes=0, seconds=00, 
                            guitar_tuning="E A D G B E", guitar_capo="0", main_chords_body="", complete_source_code_link='javascript:void(0)', 
                            is_logged_in=is_logged_in, spotify_user_name=spotify_user_name, spotify_user_image=spotify_user_image, dev_or_prod=dev_or_prod, log_on_off=log_on_off)
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response
 
 @app.route('/login')
 def login():
