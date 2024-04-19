@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>ChordSync.io</title>
+    <title>ChordSync</title>
     <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='styles/mainpage.css') }}">
     <link rel="icon" type="image/x-icon" href="{{ url_for('favicon') }}">
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js" integrity="sha384-mZLF4UVrpi/QTWPA7BjNPEnkIfRFn4ZEO3Qt/HFklTJBj/gBOV8G3HcKn4NfQblz" crossorigin="anonymous"></script>
@@ -128,8 +128,8 @@
 
         if (dev_or_prod == "PRODUCTION") {
             console.log("In Production");
-            //var socket = io.connect('wss://chordsync.onrender.com');
-            var socket = io.connect('wss://chordsync.io');
+            var socket = io.connect('wss://chordsync.onrender.com');
+            //var socket = io.connect('wss://chordsync.io');
         }
         else if (dev_or_prod == "DEVELOPMENT") {
             console.log("In Development");
@@ -846,7 +846,7 @@
                         <div class="customSettingsCheckbox" id="IDalignSettingsCheckbox2">M</div>
                     </div>
 
-                <a href="https://www.simonroedig.com/" target="_blank" title="Open Creators Website ⭷"><p  id="IDcredit"> • @2024 ChordSync.io | by Simon R. •</a></p>
+                <a href="https://www.simonroedig.com/" target="_blank" title="Open Creators Website ⭷"><p  id="IDcredit"> • @2024 ChordSync | by Simon R. •</a></p>
                 <a href="http://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" title="Open License Copy ⭷"><p  id="IDcredit2">Licensed under CC BY-NC-ND 4.0</a></p>
                 </div>
             </div>
@@ -855,7 +855,7 @@
         <!-- Navbar (Top Things)-->
         <div id="IDheadlines">
             <div id="IDheadlineAndUser">
-                <a href="" title="ChordSync.io"><h1 id="IDheadline">ChordSync<span id="IDio">.io</span></h1></a>
+                <a href="" title="ChordSync"><h1 id="IDheadline">ChordSync<span id="IDio"></span></h1></a>
 
                 {% if is_logged_in %}
                     <a href="https://www.spotify.com/" id="IDspotifyUser" target="_blank" title="Open Spotify">
