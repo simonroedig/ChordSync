@@ -8,7 +8,7 @@
                                        __/ |           
                                       |___/  
 ```
-[![Video Demo](https://img.youtube.com/vi/YOUR_VIDEO_ID/0.jpg)](https://www.youtube.com/watch?v=wDmgxC9_2-g)
+[![Video Demo](/for_git_readme/youtube.png)](https://www.youtube.com/watch?v=wDmgxC9_2-g)
 
 <img src="/for_git_readme/afterstudy_chordsync.png" alt="ChordSync Snapshot" width="100%" height="100%">
 
