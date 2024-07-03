@@ -11,7 +11,7 @@
 <img src="/for_git_readme/afterstudy_chordsync.png" alt="ChordSync Snapshot" width="100%" height="100%">
 
 ## Video Demonstration:
-<a href="https://www.youtube.com/watch?v=wDmgxC9_2-g">
+<a href="https://www.youtube.com/watch?v=wDmgxC9_2-g" target="_blank">
     <img src="/for_git_readme/youtube.png" alt="Watch the video demonstration" width="100" height="auto"/>
 </a>
 
