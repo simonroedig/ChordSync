@@ -9,7 +9,7 @@
                                       |___/  
 ```
 <a href="https://www.youtube.com/watch?v=wDmgxC9_2-g">
-    <img src="/for_git_readme/youtubepng" alt="Watch the video demonstration" width="200" height="auto"/>
+    <img src="/for_git_readme/youtube.png" alt="Watch the video demonstration" width="200" height="auto"/>
 </a>
 
 <img src="/for_git_readme/afterstudy_chordsync.png" alt="ChordSync Snapshot" width="100%" height="100%">
