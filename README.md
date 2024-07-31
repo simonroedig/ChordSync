@@ -76,5 +76,6 @@ to retreive these lyrics you need a `sp_dc cookie` from spotify:
    - *1 is the Loopback IP-Adress, it also resolves to http://localhost:5000/, with it you can access ChordSync only from the computer you ran it from
    - *2 is the private IP-Adress of the device you ran it from, you can ALSO paste this IP into other devices' browser in your network and will see ChordSync
    - Feel free to set a browser bookmark to access ChordSync via the IP's quicker, however *2 might change depending on your router settings
-   - You can `stop ChordSync with CTRL+C in your terminal`, you have to redo step 9. if you want to run ChordSync again
+   - You can `stop ChordSync with CTRL+C in your terminal`. You have to redo step 9, if you want to run ChordSync again
 - **10.** If you have `any troubles` with installing and running, `feel free to reach out to me`
+s
