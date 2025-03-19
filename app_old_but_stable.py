@@ -12,17 +12,14 @@ Bachelor's Thesis (WS 2023/2024)
 """
 
 ######## IMPORTS ########
-import eventlet
-eventlet.monkey_patch()
-
+import atexit
+import datetime
 import html
 import json
 import math
 import os
 import re
 import requests
-import datetime
-import atexit
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 from flask import Flask, redirect, render_template, request, send_from_directory, session, g
@@ -34,33 +31,10 @@ from spotipy import SpotifyOAuth
 from spotipy.exceptions import SpotifyException
 import spotipy
 import sqlite3
-import pathlib
-import string
-import time
-import random
-import threading
-
-# Fix SSL recursion issue
-import ssl
-try:
-    _create_unverified_https_context = ssl._create_unverified_context
-except AttributeError:
-    # Legacy Python that doesn't verify HTTPS certificates by default
-    pass
-else:
-    # Handle target environment that doesn't support HTTPS verification
-    ssl._create_default_https_context = _create_unverified_https_context
 
 ######## FLASK ########
 app = Flask(__name__)
-app.config.from_object(__name__)
-app.config.update(
-  SESSION_COOKIE_NAME='spotify-login-session',
-  SECRET_KEY=os.environ['FLASK_SECRET_KEY'],
-  SESSION_COOKIE_SECURE=True,
-  SESSION_COOKIE_HTTPONLY=True,
-  SESSION_COOKIE_SAMESITE='Lax',
-)
+app.secret_key = os.getenv("FLASK_SECRET_KEY")
 #CORS(app, resources={r"/*": {"origins": ["https://chordsync.io", "https://chordsync.onrender.com", "http://192.168.2.100:5000/"]}})
 
 # https://stackoverflow.com/questions/20035101/why-does-my-javascript-code-receive-a-no-access-control-allow-origin-header-i
@@ -156,7 +130,7 @@ if (lyrics_api_source == "SELFMADE"):
 
 ######## WEB SOCKET ########
 #socketio = SocketIO(app, cors_allowed_origins=["https://chordsync.io", "https://chordsync.onrender.com", 'http://192.168.2.100:5000/'])
-socketio = SocketIO(app, async_mode='eventlet', cors_allowed_origins="*")
+socketio = SocketIO(app, cors_allowed_origins="*")
 
 
 ######## SPOTIFY API ########
@@ -173,17 +147,6 @@ elif (dev_or_prod == "DEVELOPMENT"):
 
 spotify_scope = 'user-modify-playback-state,user-read-playback-state'
 sp_oauth = SpotifyOAuth(client_id=spotify_client_id, client_secret=spotify_client_secret, redirect_uri=spotify_redirect_uri, scope=spotify_scope, show_dialog=True, cache_path=None)
-
-# Add this function to create the SpotifyOAuth object
-def create_spotify_oauth():
-    return SpotifyOAuth(
-        client_id=spotify_client_id,
-        client_secret=spotify_client_secret,
-        redirect_uri=spotify_redirect_uri,
-        scope=spotify_scope,
-        show_dialog=True,
-        cache_path=None
-    )
 
 
 ######## GOOGLE API ########
@@ -275,23 +238,14 @@ def callback():
     global is_logged_in
     error = request.args.get('error')
     code = request.args.get('code')
-    
+
     if error:
         # User declined the authorization
         is_logged_in = False
     elif code:
         # User accepted the authorization, proceed to get the token
         is_logged_in = True
-        # Create the SpotifyOAuth object
-        sp_oauth = create_spotify_oauth()
-        
-        try:
-            # Fix for the deprecation warning - explicitly set as_dict=True
-            token_info = sp_oauth.get_access_token(code, as_dict=True)
-            session['token_info'] = token_info
-        except Exception as e:
-            ic(f"Error in callback: {e}")
-            is_logged_in = False
+        session['token_info'] = sp_oauth.get_access_token(code)
     else:
         # No code and no error, handle according to your application's logic
         is_logged_in = False
