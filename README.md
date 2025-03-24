@@ -16,8 +16,7 @@
 </a>
 
 ## News:
-ChordSync still functions for retrieving songs and chords, but due to changes in Spotify's API, obtaining synced lyrics is no longer possible, causing the auto-scrolling feature to fail. 
-For more details on the lyrics retrieval issue, see my other repository: [SpotifyLyrics](https://github.com/simonroedig/SpotifyLyrics).
+ChordSync now uses [LRCLIB](https://lrclib.net/) to get the synced lyrics. See point `8` for details and information about the previous approach.
 
 ## User Story:
 "As a guitarist who enjoys playing along with songs, I often find it frustrating that my chord sheets require constant scrolling and manual adjustment to stay synchronized with the song, disrupting my playing flow. Additionally, I frequently play songs from my Spotify playlist, which necessitates actively searching and finding the correct chord sheets after each song. Seeking a solution, I discovered ChordSync, a revolutionary software designed to streamline the play-along experience for guitarists. With ChordSync's instant connection to Spotify, I can effortlessly select a song and have the corresponding chord sheet immediately retreived and displayed from Ultimate Guitar via a refined search algorithm. The innovative auto-scrolling algorithm ensures bidirectional synchronization between the chord sheet and the song itself. Whether navigating different sections in the song's timeline or on the chord sheet, ChordSync seamlessly adjusts, eliminating the need for manual corrections and enabling effortless song navigation. Moreover, with the repeat functionality, I can define specific sections in the chord sheet and practice them repeatedly by simply clicking the lyrics or chords, allowing for focused practice on particular parts of the song. To ensure ChordSync displays only syncable songs, I can activate the functionality to instruct Spotify to exclusively play and skip to songs that ChordSync can successfully process. Furthermore, ChordSync integrates standard guitar tool functionalities like capo settings, chord preferences, BPM and key display, and even a tuner, with the added benefit of persisting user preferences across songs, automatically applying them to newly parsed chord sheets. With ChordSync, not only can I play along with my favorite songs effortlessly, but I can also discover and explore new music recommended by Spotify while simultaneously improving my guitar skills."
@@ -59,9 +58,10 @@ to paste exactly into this file
    - Don't copy the "script" code, but click on adjust/customize and `locate and copy the search engine ID`
    - `Paste` this value `to the .env file ` at `GOOGLE_SEARCH_ENGINE_ID`
 - **8.** ChordSyncs' main algorithm is based on Musixmatchs lyrics that is also the lyrics you find when you listen to a song on spotify,
-to retreive these lyrics you need a `sp_dc cookie` from spotify:
+to retreive these lyrics in this way you need a `sp_dc cookie` from spotify:
    - A general `detailed guide to retreive this cookie` was provided by [akashrchandran](https://github.com/akashrchandran/akashrchandran) -> [here](https://github.com/akashrchandran/syrics/wiki/Finding-sp_dc).
    - `Paste` the (very long) content of the sp_dc cookie `to the .env file` at `SP_DC_COOKIE`
+   - `NEW: `This approach is not working anymore. So for now ChordSync is rewritten to use [LRCLIB](https://lrclib.net/) for the lyrics retrieval. So there are basically no extra steps required regarding point 8 of setting up ChordSync right now!
 - **9.** The setup should be complete, the main `entry point of ChordSync` is the file `App.py`, which you can either `run with your Code-Editor/IDE` or via `clicking App.py directly`
    - It will open a terminal with some information, you should see the following:
    ```
